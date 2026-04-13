@@ -90,5 +90,7 @@ export function joinUrl(base: string, path?: string | null): string | null {
 }
 
 export function getPublicApiBaseUrl(): string {
-  return normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL)
+  return normalizeBaseUrl(
+    process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_HOSTNAME ?? ''
+  )
 }

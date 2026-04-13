@@ -71,8 +71,7 @@ export function ShopHeader({
               {t('Search results', 'نتائج البحث')}
             </p>
             <h1
-              className="text-xl font-black md:text-4xl"
-              style={{ fontFamily: "'Playfair Display', serif" }}
+              className="font-display text-xl font-black md:text-4xl"
             >
               &quot;{search}&quot;
             </h1>
@@ -101,8 +100,7 @@ export function ShopHeader({
                 {t('Curated store browse', 'تصفح منسق للمتجر')}
               </p>
               <h1
-                className="text-2xl font-black leading-none md:text-5xl"
-                style={{ fontFamily: "'Playfair Display', serif" }}
+                className="font-display text-2xl font-black leading-none md:text-5xl"
               >
                 {selectedCat
                   ? (isAr ? activeCategory?.nameAr : activeCategory?.nameEn) ?? t('Collection', 'التشكيلة')

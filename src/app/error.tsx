@@ -24,8 +24,7 @@ export default function GlobalError({
     <div className="min-h-[80vh] flex flex-col items-center justify-center px-4 text-center">
       <div className="relative mb-8">
         <span
-          className="text-[120px] md:text-[160px] font-black text-slate-100 leading-none select-none"
-          style={{ fontFamily: "'Playfair Display', serif" }}
+          className="font-display text-[120px] font-black leading-none text-slate-100 select-none md:text-[160px]"
         >
           500
         </span>

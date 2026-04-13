@@ -5,8 +5,7 @@ export default function NotFound() {
     <div className="min-h-[80vh] flex flex-col items-center justify-center px-4 text-center">
       {/* Big 404 */}
       <div className="relative mb-8">
-        <span className="text-[120px] md:text-[180px] font-black text-slate-100 leading-none select-none"
-          style={{ fontFamily: "'Playfair Display', serif" }}>
+        <span className="font-display text-[120px] font-black leading-none text-slate-100 select-none md:text-[180px]">
           404
         </span>
         <div className="absolute inset-0 flex items-center justify-center">

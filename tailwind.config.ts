@@ -8,9 +8,9 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans:  ['var(--font-kufi)', 'Noto Kufi Arabic', 'sans-serif'],
-        kufi:  ['var(--font-kufi)', 'Noto Kufi Arabic', 'sans-serif'],
-        display: ['var(--font-playfair)', 'Playfair Display', 'var(--font-kufi)', 'Noto Kufi Arabic', 'serif'],
+        sans:  ['var(--font-kufi)', 'sans-serif'],
+        kufi:  ['var(--font-kufi)', 'sans-serif'],
+        display: ['var(--font-playfair)', 'var(--font-kufi)', 'serif'],
       },
     },
   },
