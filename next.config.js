@@ -40,6 +40,9 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 
 const remotePatterns = []
 const apiPattern = buildRemotePattern(process.env.NEXT_PUBLIC_API_URL)
+const imagePattern =
+  buildRemotePattern(process.env.NEXT_PUBLIC_IMAGE_BASE_URL) ??
+  buildRemotePattern(process.env.NEXT_PUBLIC_BLOB_BASE_URL)
 
 if (isDevelopment) {
   remotePatterns.push(
@@ -50,6 +53,10 @@ if (isDevelopment) {
 
 if (apiPattern) {
   remotePatterns.push(apiPattern)
+}
+
+if (imagePattern) {
+  remotePatterns.push(imagePattern)
 }
 
 remotePatterns.push(
@@ -108,6 +115,7 @@ const nextConfig = {
   },
   images: {
     unoptimized: isDevelopment,
+    dangerouslyAllowLocalIP: isDevelopment,
     formats: ['image/avif', 'image/webp'],
     remotePatterns,
   },

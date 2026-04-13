@@ -12,7 +12,7 @@ import type { CustomerAddress } from '@/types'
 
 const EMPTY_FORM = {
   label: '', street: '', district: '', city: '',
-  country: 'SA', postalCode: '', phoneNumber: '', isDefault: false,
+  country: 'Sudan', phoneNumber: '', isDefault: false,
 }
 
 type FormData = typeof EMPTY_FORM
@@ -103,8 +103,7 @@ export default function AddressesPage() {
       street: addr.street,
       district: addr.district ?? '',
       city: addr.city,
-      country: addr.country ?? 'SA',
-      postalCode: addr.postalCode ?? '',
+      country: addr.country ?? 'Sudan',
       phoneNumber: addr.phoneNumber,
       isDefault: addr.isDefault,
     })
@@ -129,7 +128,7 @@ export default function AddressesPage() {
       return
     }
     if (!form.street.trim()) {
-      toast.error(t('Street is required', 'الشارع مطلوب'))
+      toast.error(t('Landmark is required', 'المعلم البارز مطلوب'))
       return
     }
     if (!form.city.trim()) {
@@ -144,8 +143,10 @@ export default function AddressesPage() {
     setSaving(true)
 
     try {
+      const payload = { ...form, country: 'Sudan' }
+
       if (editId) {
-        await addressApi.update(token, editId, form)
+        await addressApi.update(token, editId, payload)
         toast.success(t('Address updated', 'تم تحديث العنوان'))
 
         startTransition(() => {
@@ -154,10 +155,9 @@ export default function AddressesPage() {
               address.id === editId
                 ? {
                     ...address,
-                    ...form,
+                    ...payload,
                     district: form.district || undefined,
-                    country: form.country || 'SA',
-                    postalCode: form.postalCode || undefined,
+                    country: 'Sudan',
                   }
                 : form.isDefault
                   ? { ...address, isDefault: false }
@@ -166,7 +166,7 @@ export default function AddressesPage() {
           )
         })
       } else {
-        const created = await addressApi.create(token, { ...form, country: form.country || 'SA' })
+        const created = await addressApi.create(token, payload)
         toast.success(t('Address saved', 'تم حفظ العنوان'))
 
         const nextAddress = created
@@ -315,7 +315,7 @@ export default function AddressesPage() {
                       {[addr.street, addr.district, addr.city].filter(Boolean).join(', ')}
                     </p>
                     <p className="text-sm text-slate-500">
-                      {[addr.country, addr.postalCode].filter(Boolean).join(' • ')}
+                      {t('Sudan', 'السودان')}
                     </p>
                     <p className="mt-2 text-sm font-semibold text-slate-700">{addr.phoneNumber}</p>
                   </div>
@@ -384,10 +384,10 @@ export default function AddressesPage() {
 
                 <div className="md:col-span-2">
                   <InputField
-                    label={t('Street', 'الشارع')}
+                    label={t('Landmark', 'معلم بارز')}
                     value={form.street}
                     onChange={(value) => set('street', value)}
-                    placeholder={t('Street name and building number', 'اسم الشارع ورقم المبنى')}
+                    placeholder={t('Nearby landmark', 'وصف المعلم البارز القريب')}
                     dir="auto"
                   />
                 </div>
@@ -408,28 +408,12 @@ export default function AddressesPage() {
                   dir="auto"
                 />
 
-                <InputField
-                  label={t('Country', 'الدولة')}
-                  value={form.country}
-                  onChange={(value) => set('country', value)}
-                  placeholder={t('Country', 'الدولة')}
-                  dir="auto"
-                />
-
-                <InputField
-                  label={t('Postal Code', 'الرمز البريدي')}
-                  value={form.postalCode}
-                  onChange={(value) => set('postalCode', value)}
-                  placeholder={t('Postal Code', 'الرمز البريدي')}
-                  dir="auto"
-                />
-
                 <div className="md:col-span-2">
                   <InputField
                     label={t('Phone Number', 'رقم الجوال')}
                     value={form.phoneNumber}
                     onChange={(value) => set('phoneNumber', value)}
-                    placeholder={t('05xxxxxxxx', '05xxxxxxxx')}
+                    placeholder="0129222222"
                     type="tel"
                     dir="ltr"
                   />

@@ -47,16 +47,8 @@ export function Navbar() {
     return (
       <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/95 shadow-sm backdrop-blur">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 md:h-16">
-          <Link href="/" className="flex flex-shrink-0 items-center gap-1.5">
-            <span
-              className="text-xl font-black tracking-tight text-slate-900 md:text-2xl"
-              style={{ fontFamily: "'Playfair Display', serif" }}
-            >
-              LUXE
-            </span>
-            <span className="hidden text-[11px] font-bold uppercase tracking-[0.18em] text-amber-600 sm:block">
-              Store
-            </span>
+          <Link href="/" className="flex flex-shrink-0 items-center" aria-label={t('inOne home', 'الصفحة الرئيسية inOne')}>
+            <span className="text-2xl font-black tracking-[0.2em] text-slate-900 md:text-[28px]">INONE</span>
           </Link>
 
           <div className="hidden max-w-md flex-1 md:flex">
@@ -80,16 +72,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/95 shadow-sm backdrop-blur">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 md:h-16">
-        <Link href="/" className="flex flex-shrink-0 items-center gap-1.5">
-          <span
-            className="text-xl font-black tracking-tight text-slate-900 md:text-2xl"
-            style={{ fontFamily: "'Playfair Display', serif" }}
-          >
-            LUXE
-          </span>
-          <span className="hidden text-xs font-bold uppercase tracking-widest text-amber-600 sm:block">
-            Store
-          </span>
+        <Link href="/" className="flex flex-shrink-0 items-center" aria-label={t('inOne home', 'الصفحة الرئيسية inOne')}>
+          <span className="text-2xl font-black tracking-[0.2em] text-slate-900 md:text-[28px]">INONE</span>
         </Link>
 
         <div className="hidden max-w-md flex-1 md:flex">
@@ -99,7 +83,8 @@ export function Navbar() {
         <nav className="flex items-center gap-1">
           <button
             onClick={toggle}
-            className="hidden items-center rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 transition-colors hover:border-amber-400 hover:text-amber-600 sm:flex"
+            aria-label={t('Change language', 'تغيير اللغة')}
+            className="flex items-center rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-bold text-slate-600 transition-colors hover:border-amber-400 hover:text-amber-600"
           >
             {locale === 'ar' ? 'EN' : 'ع'}
           </button>

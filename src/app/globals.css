@@ -42,6 +42,16 @@ h1, h2, h3, h4, h5, h6 {
 .scrollbar-none { scrollbar-width: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }
 
+/* Hide scrollbar while keeping horizontal scroll behavior */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Mobile tap */
 * { -webkit-tap-highlight-color: transparent; }
 

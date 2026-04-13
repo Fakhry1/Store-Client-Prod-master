@@ -920,7 +920,7 @@ function Field({ label, value, onChange, type = 'text', required, placeholder, t
 
 export default function CartPageClient({ initialStep = 'cart' }: CartPageClientProps) {
   const router = useRouter()
-  const { cart, updateItem, removeItem, isLoading } = useCart()
+  const { cart, updateItem, removeItem, isLoading, refreshCart } = useCart()
   const { token, user }  = useAuth()
   const { t, locale }    = useLocale()
   const isRTL = (locale as string) === 'ar'
@@ -1089,7 +1089,12 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
         deliveryFee: isDelivery ? DELIVERY_FEE : 0,
         deliveryAddressId: isDelivery ? selectedAddr : undefined,
       } as any)
-      router.push(`/orders?id=${order.id}&new=1`)
+
+      // Refresh cart and pass remaining count to orders page when only part of cart was ordered.
+      const refreshedCart = await refreshCart(true)
+      const remainingItems = refreshedCart?.totalItems ?? 0
+
+      router.push(`/orders?id=${order.id}&new=1${remainingItems > 0 ? `&remaining=${remainingItems}` : ''}`)
     } catch (e: any) {
       const msg = e?.message || t('Failed to place order', 'فشل إنشاء الطلب')
       setOrderError(msg); showToast(msg, 'error')

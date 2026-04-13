@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useLocale } from '@/context/locale'
 
 // ── CategoryName ──────────────────────────────────────────────────────────────
@@ -45,7 +46,7 @@ export function ActiveFilterChip({
   const { locale } = useLocale()
   const label = locale === 'ar' ? labelAr : labelEn
   return (
-    <a href={href}
+    <Link href={href} prefetch={false}
       className="flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-800
         border border-amber-200 rounded-full text-xs font-bold hover:bg-red-50
         hover:text-red-700 hover:border-red-200 transition-all">
@@ -54,7 +55,7 @@ export function ActiveFilterChip({
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
           d="M6 18L18 6M6 6l12 12" />
       </svg>
-    </a>
+    </Link>
   )
 }
 
@@ -81,11 +82,11 @@ export function EmptyState({ search }: { search?: string }) {
           : t('No products match the selected filters', 'لا توجد منتجات تطابق الفلاتر المختارة')
         }
       </p>
-      <a href="/shop"
+      <Link href="/shop" prefetch={false}
         className="px-7 py-3 bg-slate-900 text-white text-sm font-black
           rounded-2xl hover:bg-amber-500 transition-colors">
         {t('Clear filters', 'مسح الفلاتر')}
-      </a>
+      </Link>
     </div>
   )
 }

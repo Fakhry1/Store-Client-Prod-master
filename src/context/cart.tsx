@@ -15,7 +15,7 @@ interface CartContextValue {
   addItem: (productId: number, variantId: number, branchId: number, qty?: number) => Promise<void>
   updateItem: (itemId: number, quantity: number) => Promise<void>
   removeItem: (itemId: number) => Promise<void>
-  refreshCart: (force?: boolean) => Promise<void>
+  refreshCart: (force?: boolean) => Promise<Cart | null>
 }
 
 type FetchCartOptions = {
@@ -32,8 +32,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const lastFetchRef            = useRef<number>(0)
 
   const fetchCart = useCallback(async ({ force = false, background = false }: FetchCartOptions = {}) => {
-    if (authLoading) return
-    if (!force && Date.now() - lastFetchRef.current < STALE_MS) return
+    if (authLoading) return cart
+    if (!force && Date.now() - lastFetchRef.current < STALE_MS) return cart
 
     if (!background) {
       setLoading(true)
@@ -49,16 +49,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       lastFetchRef.current = Date.now()
       setCart(data)
+      return data
     } catch {
       if (!background) {
         setCart(null)
       }
+      return null
     } finally {
       if (!background) {
         setLoading(false)
       }
     }
-  }, [authLoading, token])
+  }, [authLoading, cart, token])
 
   useEffect(() => {
     void fetchCart()

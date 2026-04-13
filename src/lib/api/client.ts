@@ -11,6 +11,12 @@ function getBaseUrl() {
 
 export const COOKIE_AUTH_SESSION = '__cookie_session__'
 
+type ApiErrorResponse = {
+  message?: string
+  title?: string
+  errors?: Record<string, string[]>
+}
+
 type RequestOptions = {
   method?: string
   body?: unknown
@@ -93,8 +99,14 @@ export async function apiRequest<T>(
     clearTimeout(timeout)
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: res.statusText }))
-      throw new ApiError(res.status, err.message ?? 'Request failed')
+      const err = await res.json().catch(() => ({ message: res.statusText })) as ApiErrorResponse
+      const validationMessage = err.errors
+        ? Object.values(err.errors).flat().find(Boolean)
+        : undefined
+      throw new ApiError(
+        res.status,
+        validationMessage ?? err.message ?? err.title ?? 'Request failed'
+      )
     }
 
     if (res.status === 204) return undefined as T

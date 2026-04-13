@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "node -e \"const {spawn}=require('child_process'); const port=process.env.PORT||process.env.WEBSITES_PORT||3000; spawn('npx', ['next', 'start', '-p', String(port)], { stdio: 'inherit', shell: true });\"",
+    "start": "npx next start -p 3000",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {

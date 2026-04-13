@@ -1,7 +1,7 @@
 import { normalizeBaseUrl } from './url'
 
 export const STORE_NAME =
-  process.env.NEXT_PUBLIC_STORE_NAME?.trim() || 'LUXE Store'
+  process.env.NEXT_PUBLIC_STORE_NAME?.trim() || 'inOne Store'
 
 export const STORE_CURRENCY = {
   code: 'SDG',
@@ -13,7 +13,7 @@ export const STORE_KEYWORDS = [
   'متجر إلكتروني',
   'تسوق أونلاين',
   'عروض',
-  'LUXE Store',
+  'inOne Store',
   'online store',
   'shopping',
   'offers',

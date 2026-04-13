@@ -4,11 +4,9 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createPortal } from 'react-dom'
 import { useLocale } from '@/context/locale'
-import type { Category, Facets, ProductQuery } from '@/types'
+import type { Category } from '@/types'
 
 interface Props {
-  facets: Facets | null
-  currentQuery: ProductQuery
   categories: Category[]
   activeBranches: { id: number; name: string; isActive: boolean }[]
   selectedBranch: number
@@ -66,8 +64,15 @@ export function MobileFiltersDrawer({
     setOpen(false)
   }
 
-  const hasFilters = Boolean(selectedCat)
-  const activeCount = [selectedCat].filter(Boolean).length
+  const hasCategoryFilter = Boolean(selectedCat)
+  const hasBrandFilter = Boolean(searchParams.get('brandId'))
+  const hasMinPrice = Boolean(searchParams.get('minPrice'))
+  const hasMaxPrice = Boolean(searchParams.get('maxPrice'))
+  const attrCount = Array.from(searchParams.keys()).filter((key) => key.startsWith('attrs[')).length
+  const hasFilters = hasCategoryFilter || hasBrandFilter || hasMinPrice || hasMaxPrice || attrCount > 0
+  const activeCount = [hasCategoryFilter, hasBrandFilter, hasMinPrice || hasMaxPrice]
+    .filter(Boolean)
+    .length + attrCount
 
   const drawer = open
     ? createPortal(

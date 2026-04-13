@@ -1,4 +1,5 @@
 import { GroupedProductCard } from '@/components/product/GroupedProductCard'
+import Link from 'next/link'
 import { ShopHeader } from '@/components/shop/ShopHeader'
 import { FacetsSidebar } from '@/components/shop/FacetsSidebar'
 import { MobileFiltersDrawer } from '@/components/shop/MobileFiltersDrawer'
@@ -88,20 +89,20 @@ const getCachedFacets = unstable_cache(
 
 export default async function ShopPage({ searchParams }: PageProps) {
   const params = await searchParams
-  const defaultBranch = Number(process.env.NEXT_PUBLIC_DEFAULT_BRANCH_ID ?? '1')
-  const requestedBranch = params.branch ? Number(params.branch) : undefined
+  const defaultBranch = parsePositiveInt(process.env.NEXT_PUBLIC_DEFAULT_BRANCH_ID) ?? 1
+  const requestedBranch = parsePositiveInt(params.branch)
 
   const selectedBranch = requestedBranch || defaultBranch
-  const selectedCat = params.category ? Number(params.category) : undefined
+  const selectedCat = parsePositiveInt(params.category)
 
   const query: ProductQuery = {
     branchId: selectedBranch,
     categoryId: selectedCat,
-    brandId: params.brandId ? Number(params.brandId) : undefined,
-    minPrice: params.minPrice ? Number(params.minPrice) : undefined,
-    maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
+    brandId: parsePositiveInt(params.brandId),
+    minPrice: parseNonNegativeNumber(params.minPrice),
+    maxPrice: parseNonNegativeNumber(params.maxPrice),
     search: params.search,
-    page: params.page ? Number(params.page) : 1,
+    page: parsePositiveInt(params.page) ?? 1,
     limit: 24,
     sort: (params.sort as ProductQuery['sort']) ?? 'newest',
     attrs: parseAttrsFromParams(params),
@@ -196,9 +197,10 @@ export default async function ShopPage({ searchParams }: PageProps) {
                   const href = `/shop?${buildQS(params, { branch: String(branch.id), page: undefined })}`
                   const active = branch.id === selectedBranch
                   return (
-                    <a
+                    <Link
                       key={branch.id}
                       href={href}
+                      prefetch={false}
                       className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-all ${
                         active
                           ? 'bg-slate-900 font-bold text-white shadow-sm'
@@ -211,7 +213,7 @@ export default async function ShopPage({ searchParams }: PageProps) {
                         }`}
                       />
                       {branch.name}
-                    </a>
+                    </Link>
                   )
                 })}
               </div>
@@ -226,9 +228,10 @@ export default async function ShopPage({ searchParams }: PageProps) {
                 const href = `/shop?${buildQS(params, { category: category.id ? String(category.id) : undefined, page: undefined })}`
                 const active = category.id === selectedCat || (!category.id && !selectedCat)
                 return (
-                  <a
+                  <Link
                     key={category.id ?? 'all'}
                     href={href}
+                    prefetch={false}
                     className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-all ${
                       active
                         ? 'border border-amber-200 bg-amber-50 font-bold text-amber-800'
@@ -242,7 +245,7 @@ export default async function ShopPage({ searchParams }: PageProps) {
                       }`}
                     />
                     <CategoryName cat={category} />
-                  </a>
+                  </Link>
                 )
               })}
             </div>
@@ -253,15 +256,16 @@ export default async function ShopPage({ searchParams }: PageProps) {
         </aside>
 
         <main className="min-w-0 flex-1">
-          <div className="-mx-3 mb-5 px-3 lg:hidden">
+          <div className="hidden">
             <div className="scrollbar-hide flex snap-x gap-2 overflow-x-auto pb-2">
               {categoryItems.map((category) => {
                 const href = `/shop?${buildQS(params, { category: category.id ? String(category.id) : undefined, page: undefined })}`
                 const active = category.id === selectedCat || (!category.id && !selectedCat)
                 return (
-                  <a
+                  <Link
                     key={category.id ?? 'all'}
                     href={href}
+                    prefetch={false}
                     className={`snap-start whitespace-nowrap rounded-full border px-4 py-2 text-sm font-bold transition-all ${
                       active
                         ? 'border-slate-900 bg-slate-900 text-white shadow-sm'
@@ -269,7 +273,7 @@ export default async function ShopPage({ searchParams }: PageProps) {
                     }`}
                   >
                     <CategoryName cat={category} />
-                  </a>
+                  </Link>
                 )
               })}
             </div>
@@ -279,8 +283,6 @@ export default async function ShopPage({ searchParams }: PageProps) {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0 flex items-center gap-3">
                 <MobileFiltersDrawer
-                  facets={facets}
-                  currentQuery={query}
                   categories={categories}
                   activeBranches={activeBranches}
                   selectedBranch={selectedBranch}
@@ -443,4 +445,16 @@ function toQueryParams(query: ProductQuery): Record<string, string> {
   }
 
   return params
+}
+
+function parsePositiveInt(value?: string | null): number | undefined {
+  if (!value) return undefined
+  const parsed = Number(value)
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined
+}
+
+function parseNonNegativeNumber(value?: string | null): number | undefined {
+  if (!value) return undefined
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined
 }

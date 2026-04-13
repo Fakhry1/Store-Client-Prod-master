@@ -39,6 +39,7 @@ export function GroupedProductCard({
   return (
     <Link
       href={detailUrl}
+      prefetch={false}
       className={`group relative flex h-full flex-col overflow-hidden rounded-[28px] border bg-white shadow-[0_12px_28px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_42px_rgba(15,23,42,0.08)] ${
         allOutOfStock ? 'border-stone-200 opacity-75' : 'border-stone-200 hover:border-stone-300'
       }`}

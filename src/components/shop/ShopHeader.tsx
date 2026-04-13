@@ -54,11 +54,12 @@ export function ShopHeader({
 
   if (search) {
     return (
-      <section className="relative overflow-hidden border-b border-stone-200 bg-[#121418] px-4 py-10 text-white md:px-6 md:py-12">
+      <section className="relative overflow-hidden border-b border-stone-200 bg-[#121418] px-4 py-7 text-white md:px-6 md:py-12">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.12),transparent_34%)]" />
         <div className="relative mx-auto flex max-w-7xl items-center gap-4">
           <Link
             href="/shop"
+            prefetch={false}
             className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/8 transition-colors hover:bg-white/14"
           >
             <svg className="h-4 w-4 flip-rtl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,7 +71,7 @@ export function ShopHeader({
               {t('Search results', 'نتائج البحث')}
             </p>
             <h1
-              className="text-2xl font-black md:text-4xl"
+              className="text-xl font-black md:text-4xl"
               style={{ fontFamily: "'Playfair Display', serif" }}
             >
               &quot;{search}&quot;
@@ -92,22 +93,22 @@ export function ShopHeader({
       <div className="absolute -start-20 top-16 h-56 w-56 rounded-full bg-white/6 blur-3xl" />
       <div className="absolute end-0 top-10 h-64 w-64 rounded-full bg-amber-400/10 blur-3xl" />
 
-      <div className="relative px-4 py-10 md:px-6 md:py-12">
+      <div className="relative px-4 py-7 md:px-6 md:py-12">
         <div className="mx-auto max-w-7xl">
-          <div className="flex flex-wrap items-end justify-between gap-5">
+          <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="max-w-2xl">
               <p className="mb-3 text-xs font-bold uppercase tracking-[0.24em] text-amber-300">
                 {t('Curated store browse', 'تصفح منسق للمتجر')}
               </p>
               <h1
-                className="text-3xl font-black leading-none md:text-5xl"
+                className="text-2xl font-black leading-none md:text-5xl"
                 style={{ fontFamily: "'Playfair Display', serif" }}
               >
                 {selectedCat
                   ? (isAr ? activeCategory?.nameAr : activeCategory?.nameEn) ?? t('Collection', 'التشكيلة')
                   : t('Our Collection', 'تشكيلتنا')}
               </h1>
-              <p className="mt-3 max-w-lg text-sm leading-7 text-white/58">
+              <p className="mt-2 max-w-lg text-sm leading-6 text-white/58">
                 {selectedCat
                   ? t(
                       'Browse cleaner, faster listings inside this category with a mobile-first layout.',
@@ -119,13 +120,13 @@ export function ShopHeader({
                     )}
               </p>
 
-              <div className="mt-6 flex flex-wrap gap-3">
-                <div className="rounded-2xl border border-white/10 bg-white/8 px-4 py-3 backdrop-blur">
-                  <p className="text-2xl font-black text-white">{totalCount}</p>
+              <div className="mt-4 flex flex-wrap gap-2.5">
+                <div className="rounded-2xl border border-white/10 bg-white/8 px-3.5 py-2.5 backdrop-blur">
+                  <p className="text-xl font-black text-white">{totalCount}</p>
                   <p className="text-xs font-medium text-white/55">{t('Available products', 'منتجات متاحة')}</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/8 px-4 py-3 backdrop-blur">
-                  <p className="text-2xl font-black text-white">{Math.max(categories.length, 1)}</p>
+                <div className="rounded-2xl border border-white/10 bg-white/8 px-3.5 py-2.5 backdrop-blur">
+                  <p className="text-xl font-black text-white">{Math.max(categories.length, 1)}</p>
                   <p className="text-xs font-medium text-white/55">{t('Categories', 'تصنيفات')}</p>
                 </div>
               </div>
@@ -141,6 +142,7 @@ export function ShopHeader({
                     <Link
                       key={branch.id}
                       href={buildCategoryUrl(selectedCat, branch.id)}
+                      prefetch={false}
                       className={`rounded-full px-4 py-2 text-xs font-black transition-all ${
                         branch.id === selectedBranch
                           ? 'bg-amber-400 text-slate-950 shadow-[0_8px_24px_rgba(251,191,36,0.28)]'
@@ -158,11 +160,12 @@ export function ShopHeader({
       </div>
 
       {categories.length > 0 && (
-        <div className="relative px-4 pb-6 md:px-6 md:pb-7">
+        <div className="relative px-4 pb-4 md:px-6 md:pb-7">
           <div className="mx-auto max-w-7xl">
             <div className="scrollbar-hide flex snap-x gap-3 overflow-x-auto pb-1">
               <Link
                 href={buildCategoryUrl(undefined, selectedBranch)}
+                prefetch={false}
                 className={`group relative min-w-[124px] flex-shrink-0 snap-start overflow-hidden rounded-[28px] border px-4 py-4 transition-all duration-300 ${
                   !selectedCat
                     ? 'border-amber-300 bg-amber-400 text-slate-950 shadow-[0_14px_36px_rgba(251,191,36,0.26)]'
@@ -187,6 +190,7 @@ export function ShopHeader({
                   <Link
                     key={category.id}
                     href={buildCategoryUrl(category.id, selectedBranch)}
+                    prefetch={false}
                     className={`group relative min-w-[132px] flex-shrink-0 snap-start overflow-hidden rounded-[28px] border bg-gradient-to-br px-4 py-4 transition-all duration-300 ${
                       isActive
                         ? `${gradient} ring-2 ring-amber-300 shadow-[0_16px_40px_rgba(15,23,42,0.12)]`

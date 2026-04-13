@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useLocale } from '@/context/locale'
 
 const SORT_OPTIONS = [
   { value: 'newest',       labelAr: 'الأحدث',        labelEn: 'Newest' },
@@ -16,6 +17,7 @@ interface Props {
 export function SortDropdown({ currentSort = 'newest' }: Props) {
   const router       = useRouter()
   const searchParams = useSearchParams()
+  const { locale } = useLocale()
 
   const handleChange = (sort: string) => {
     const qs = new URLSearchParams(searchParams.toString())
@@ -32,10 +34,10 @@ export function SortDropdown({ currentSort = 'newest' }: Props) {
         className="appearance-none ps-8 pe-3 py-2 text-sm border border-slate-200
           rounded-xl bg-white text-slate-700 font-medium
           focus:outline-none focus:border-amber-400 cursor-pointer
-          max-w-[140px] truncate">
+          w-[min(52vw,190px)] sm:w-[170px]">
         {SORT_OPTIONS.map(opt => (
           <option key={opt.value} value={opt.value}>
-            {opt.labelAr}
+            {locale === 'ar' ? opt.labelAr : opt.labelEn}
           </option>
         ))}
       </select>

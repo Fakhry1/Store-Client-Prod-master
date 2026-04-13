@@ -173,6 +173,12 @@ export default function OrdersPage() {
   const sp        = useSearchParams()
   const orderId   = sp.get('id') ? Number(sp.get('id')) : null
   const isNew     = sp.get('new') === '1'
+  const remainingInCart = (() => {
+    const value = sp.get('remaining')
+    if (!value) return 0
+    const parsed = Number(value)
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : 0
+  })()
   const { token, isLoading: authLoading } = useAuth()
   const { t, locale } = useLocale()
   const currencyLabel = getCurrencyLabel(locale)
@@ -180,6 +186,9 @@ export default function OrdersPage() {
   const [orders,     setOrders]     = useState<Order[]>([])
   const [detail,     setDetail]     = useState<Order | null>(null)
   const [loading,    setLoading]    = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalOrders, setTotalOrders] = useState(0)
   const [filterTab,  setFilterTab]  = useState(-1)
   const ordersLoadedRef = useRef(false)
   const detailCacheRef = useRef<Map<number, Order>>(new Map())
@@ -217,17 +226,24 @@ export default function OrdersPage() {
           detailCacheRef.current.set(orderId, loadedDetail)
           startTransition(() => setDetail(loadedDetail))
         } else {
-          const res = await orderApi.myOrders(token) as any
+          const res = await orderApi.myOrders(token, undefined, 1, 20) as any
           if (reqId !== requestIdRef.current) return
           const nextOrders = Array.isArray(res) ? res : (res?.orders ?? [])
+          const nextTotal = Array.isArray(res) ? nextOrders.length : Number(res?.total ?? nextOrders.length)
           ordersLoadedRef.current = true
-          startTransition(() => setOrders(nextOrders))
+          startTransition(() => {
+            setOrders(nextOrders)
+            setCurrentPage(1)
+            setTotalOrders(nextTotal)
+          })
         }
       } catch {
         if (reqId !== requestIdRef.current) return
         if (!orderId) {
           ordersLoadedRef.current = true
           setOrders([])
+          setCurrentPage(1)
+          setTotalOrders(0)
         }
       } finally {
         if (reqId === requestIdRef.current) setLoading(false)
@@ -248,6 +264,7 @@ export default function OrdersPage() {
     return (
       <OrderDetail
         order={detail} isNew={isNew}
+        remainingInCart={remainingInCart}
         onBack={() => router.push('/orders')}
       />
     )
@@ -256,6 +273,38 @@ export default function OrdersPage() {
   const filtered = filterTab === -1
     ? orders
     : orders.filter(o => o.status === filterTab)
+
+  const hasMoreOrders = orders.length < totalOrders
+
+  async function handleLoadMore() {
+    if (!token || orderId || loadingMore || !hasMoreOrders) return
+
+    setLoadingMore(true)
+    try {
+      const nextPage = currentPage + 1
+      const res = await orderApi.myOrders(token, undefined, nextPage, 20) as any
+      const nextOrders = Array.isArray(res) ? res : (res?.orders ?? [])
+      const nextTotal = Array.isArray(res) ? nextOrders.length : Number(res?.total ?? totalOrders)
+
+      startTransition(() => {
+        setOrders((prev) => {
+          const seen = new Set(prev.map((item) => item.id))
+          const merged = [...prev]
+          for (const order of nextOrders) {
+            if (!seen.has(order.id)) {
+              seen.add(order.id)
+              merged.push(order)
+            }
+          }
+          return merged
+        })
+        setCurrentPage(nextPage)
+        setTotalOrders(nextTotal)
+      })
+    } finally {
+      setLoadingMore(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#f8f6f2] py-6 md:py-8">
@@ -442,6 +491,19 @@ export default function OrdersPage() {
                 </Link>
               )
             })}
+
+            {filterTab === -1 && hasMoreOrders && (
+              <button
+                type="button"
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loadingMore
+                  ? t('Loading more...', 'جارٍ تحميل المزيد...')
+                  : t('Load more orders', 'تحميل المزيد من الطلبات')}
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -450,8 +512,8 @@ export default function OrdersPage() {
 }
 
 // ─── Order Detail ─────────────────────────────────────────────────────────────
-function OrderDetail({ order, isNew, onBack }: {
-  order: Order; isNew: boolean; onBack: () => void
+function OrderDetail({ order, isNew, remainingInCart, onBack }: {
+  order: Order; isNew: boolean; remainingInCart: number; onBack: () => void
 }) {
   const { token } = useAuth()
   const { t, locale } = useLocale()
@@ -551,6 +613,17 @@ function OrderDetail({ order, isNew, onBack }: {
             </div>
             {/* Body */}
             <div className="px-5 py-4 space-y-3">
+              {remainingInCart > 0 && (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3.5 py-3">
+                  <p className="text-xs font-black text-amber-900">
+                    {t(
+                      `${remainingInCart} items are still in your cart and were not included in this order.`,
+                      `تبقّى ${remainingInCart} منتج في السلة ولم يتم تضمينه في هذا الطلب.`
+                    )}
+                  </p>
+                </div>
+              )}
+
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
                   <span className="text-base">📍</span>

@@ -18,6 +18,7 @@ function replaceCountMessage(
 
 export function translateApiError(message: string, t: TranslateFn) {
   const normalized = message.trim()
+  const normalizedLower = normalized.toLowerCase()
 
   if (!normalized) {
     return t(
@@ -114,29 +115,39 @@ export function translateApiError(message: string, t: TranslateFn) {
     return t(normalized, stockMessage)
   }
 
-  if (normalized.includes('phone') && normalized.includes('password')) {
+  if (
+    (normalizedLower.includes('newpassword') || normalizedLower.includes('password')) &&
+    (normalizedLower.includes('minimum length') || normalizedLower.includes('at least'))
+  ) {
+    return t(
+      'Password must be at least 8 characters long.',
+      'كلمة المرور يجب أن تكون 8 أحرف على الأقل.'
+    )
+  }
+
+  if (normalizedLower.includes('phone') && normalizedLower.includes('password')) {
     return t('Invalid phone number or password.', 'رقم الهاتف أو كلمة المرور غير صحيحين.')
   }
 
-  if (normalized.includes('password') && normalized.includes('current')) {
+  if (normalizedLower.includes('password') && normalizedLower.includes('current')) {
     return t('Current password is incorrect.', 'كلمة المرور الحالية غير صحيحة.')
   }
 
-  if (normalized.includes('already exists') && normalized.includes('phone')) {
+  if (normalizedLower.includes('already exists') && normalizedLower.includes('phone')) {
     return t(
       'An account with this phone number already exists.',
       'يوجد حساب مسجل بهذا الرقم بالفعل.'
     )
   }
 
-  if (normalized.includes('already exists') && normalized.includes('email')) {
+  if (normalizedLower.includes('already exists') && normalizedLower.includes('email')) {
     return t(
       'An account with this email already exists.',
       'يوجد حساب مسجل بهذا البريد بالفعل.'
     )
   }
 
-  if (normalized.includes('required')) {
+  if (normalizedLower.includes('required')) {
     return t(
       normalized,
       'بعض البيانات المطلوبة غير مكتملة. يرجى التحقق والمحاولة مجددًا.'

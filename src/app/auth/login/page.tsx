@@ -133,7 +133,7 @@ export default function LoginPage() {
                   href="/auth/forgot-password"
                   className="text-xs font-bold text-amber-600 transition-colors hover:text-amber-700"
                 >
-                  {t('Reset by email?', 'إعادة التعيين بالبريد؟')}
+                  {t('Forgot password?', 'نسيت كلمة المرور؟')}
                 </Link>
               </div>
 

@@ -10,7 +10,7 @@ import { translateApiError } from '@/lib/errors'
 
 const EMPTY_FORM = {
   label: '', street: '', district: '', city: '',
-  country: 'SA', postalCode: '', phoneNumber: '', isDefault: false,
+  country: 'Sudan', phoneNumber: '', isDefault: false,
 }
 type FormData = typeof EMPTY_FORM
 
@@ -55,13 +55,13 @@ export default function AddressModal({ token, onClose, onSaved }: AddressModalPr
 
   async function handleSave() {
     if (!form.label.trim())       { toast.error(t('Label is required',  'التسمية مطلوبة'));  return }
-    if (!form.street.trim())      { toast.error(t('Street is required', 'الشارع مطلوب'));    return }
+    if (!form.street.trim())      { toast.error(t('Landmark is required', 'المعلم البارز مطلوب')); return }
     if (!form.city.trim())        { toast.error(t('City is required',   'المدينة مطلوبة')); return }
     if (!form.phoneNumber.trim()) { toast.error(t('Phone is required',  'الجوال مطلوب'));    return }
 
     setSaving(true)
     try {
-      await addressApi.create(token, { ...form, country: form.country || 'SA' })
+      await addressApi.create(token, { ...form, country: 'Sudan' })
       toast.success(t('Address saved', 'تم حفظ العنوان'))
       onSaved()   // يُعيد تحميل العناوين ويختار الجديد تلقائياً
       onClose()
@@ -120,15 +120,15 @@ export default function AddressModal({ token, onClose, onSaved }: AddressModalPr
               label={t('Phone *', 'الجوال *')}
               value={form.phoneNumber}
               onChange={v => set('phoneNumber', v)}
-              placeholder="+966 5X XXX XXXX"
+              placeholder="0129222222"
               type="tel" dir="ltr" />
           </div>
 
           <InputField
-            label={t('Street *', 'الشارع *')}
+            label={t('Landmark *', 'معلم بارز *')}
             value={form.street}
             onChange={v => set('street', v)}
-            placeholder={t('Street name and number', 'اسم الشارع ورقمه')} />
+            placeholder={t('Nearby landmark', 'وصف المعلم البارز القريب')} />
 
           <div className="grid grid-cols-2 gap-3">
             <InputField
@@ -142,12 +142,6 @@ export default function AddressModal({ token, onClose, onSaved }: AddressModalPr
               onChange={v => set('city', v)}
               placeholder={t('Riyadh, Jeddah...', 'الرياض، جدة...')} />
           </div>
-
-          <InputField
-            label={t('Postal Code', 'الرمز البريدي')}
-            value={form.postalCode}
-            onChange={v => set('postalCode', v)}
-            placeholder="12345" dir="ltr" />
 
           <label className="flex items-center gap-2.5 cursor-pointer pt-1">
             <input type="checkbox" checked={form.isDefault}

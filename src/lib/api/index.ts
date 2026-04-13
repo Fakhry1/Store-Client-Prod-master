@@ -38,9 +38,39 @@ export const authApi = {
       token,
     }),
 
-  forgotPassword: (email: string) =>
-    apiRequest<void>('/api/customer/auth/forgot-password', {
-      method: 'POST', body: { email }
+  forgotPassword: (input: string | { email?: string; phoneNumber?: string }) => {
+    const body =
+      typeof input === 'string'
+        ? { email: input.trim() }
+        : {
+            ...(input.email?.trim() ? { email: input.email.trim() } : {}),
+            ...(input.phoneNumber?.trim() ? { phoneNumber: input.phoneNumber.trim() } : {}),
+          }
+    return apiRequest<{ message?: string; expiresInSeconds?: number }>('/api/customer/auth/forgot-password', {
+      method: 'POST', body
+    })
+  },
+
+  requestPasswordResetOtp: (phoneNumber: string) =>
+    apiRequest<{ message?: string; expiresInSeconds?: number }>('/api/customer/auth/forgot-password', {
+      method: 'POST',
+      body: { phoneNumber: phoneNumber.trim() },
+    }),
+
+  verifyPasswordResetOtp: (phoneNumber: string, otp: string) =>
+    apiRequest<{ resetToken: string; message?: string }>('/api/customer/auth/forgot-password/verify-otp', {
+      method: 'POST', body: { phoneNumber, otp }
+    }),
+
+  resetPasswordWithOtp: (data: {
+    phoneNumber: string
+    otp?: string
+    resetToken?: string
+    newPassword: string
+    confirmPassword: string
+  }) =>
+    apiRequest<{ message?: string }>('/api/customer/auth/forgot-password/reset-password', {
+      method: 'POST', body: data
     }),
 
   updateProfile: (token: string | undefined, data: {
@@ -196,9 +226,16 @@ export const orderApi = {
       }
     ).then(res => res.order),
 
-  myOrders: (token: string | undefined, status?: number) => {
-    const qs = status !== undefined ? `?status=${status}` : ''
-    return apiRequest<{ total: number; orders: Order[] }>(`/api/order/my-orders${qs}`, { token })
+  myOrders: (token: string | undefined, status?: number, page = 1, limit = 100) => {
+    const params = new URLSearchParams()
+    params.set('page', String(page))
+    params.set('limit', String(limit))
+
+    if (status !== undefined) {
+      params.set('status', String(status))
+    }
+
+    return apiRequest<{ total: number; orders: Order[] }>(`/api/order/my-orders?${params.toString()}`, { token })
   },
 
   getById: (token: string | undefined, id: number) =>
