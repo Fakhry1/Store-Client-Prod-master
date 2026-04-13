@@ -1,0 +1,78 @@
+/* stylelint-disable-next-line */
+@import "tailwindcss/base";
+/* stylelint-disable-next-line */
+@import "tailwindcss/components";
+/* stylelint-disable-next-line */
+@import "tailwindcss/utilities";
+
+:root {
+  --font-playfair: 'Playfair Display', serif;
+}
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+body {
+  font-family: var(--font-kufi), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.55;
+  text-rendering: optimizeLegibility;
+}
+
+input,
+button,
+select,
+textarea {
+  font: inherit;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: normal;
+}
+
+/* RTL icon flip */
+[dir="rtl"] .flip-rtl { transform: scaleX(-1); }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+.scrollbar-none { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+/* Mobile tap */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Safe area for bottom nav */
+.safe-area-pb { padding-bottom: env(safe-area-inset-bottom); }
+
+@layer utilities {
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-clamp: 1;
+  }
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-clamp: 2;
+  }
+}
+
+/* Toast animations */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes toast-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(-8px) scale(0.96); }
+}
+.toast-in  { animation: toast-in  0.25s ease forwards; }
+.toast-out { animation: toast-out 0.2s  ease forwards; }

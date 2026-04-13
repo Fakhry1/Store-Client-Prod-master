@@ -1,0 +1,116 @@
+/** @type {import('next').NextConfig} */
+
+if (process.env.NODE_ENV === 'development' && process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0') {
+  console.warn('[store] TLS verification disabled - development mode only')
+}
+
+function normalizeUrl(input) {
+  const raw = (input || '').trim()
+  if (!raw) return ''
+  if (/^https?:\/\//i.test(raw)) return raw.replace(/\/$/, '')
+
+  const host = raw.replace(/\/$/, '')
+  const isLocal =
+    host.startsWith('localhost') ||
+    host.startsWith('127.0.0.1') ||
+    host.startsWith('0.0.0.0')
+
+  return `${isLocal ? 'http' : 'https'}://${host}`
+}
+
+function buildRemotePattern(input) {
+  const normalized = normalizeUrl(input)
+  if (!normalized) return null
+
+  const url = new URL(normalized)
+  const pattern = {
+    protocol: url.protocol.replace(':', ''),
+    hostname: url.hostname,
+    pathname: '/**',
+  }
+
+  if (url.port) {
+    pattern.port = url.port
+  }
+
+  return pattern
+}
+
+const isDevelopment = process.env.NODE_ENV === 'development'
+
+const remotePatterns = []
+const apiPattern = buildRemotePattern(process.env.NEXT_PUBLIC_API_URL)
+
+if (isDevelopment) {
+  remotePatterns.push(
+    { protocol: 'https', hostname: 'localhost', port: '44304', pathname: '/**' },
+    { protocol: 'http', hostname: 'localhost', port: '44304', pathname: '/**' }
+  )
+}
+
+if (apiPattern) {
+  remotePatterns.push(apiPattern)
+}
+
+remotePatterns.push(
+  {
+    protocol: 'https',
+    hostname: 'images.unsplash.com',
+    pathname: '/**',
+  },
+  {
+    protocol: 'https',
+    hostname: '**.blob.core.windows.net',
+    pathname: '/**',
+  }
+)
+
+function buildContentSecurityPolicy() {
+  const directives = [
+    "default-src 'self'",
+    `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ''}`,
+    "style-src 'self' 'unsafe-inline'",
+    `img-src 'self' data: blob: https:${isDevelopment ? ' http:' : ''}`,
+    "font-src 'self' data:",
+    "connect-src 'self'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+  ]
+
+  if (!isDevelopment) {
+    directives.push('upgrade-insecure-requests')
+  }
+
+  return directives.join('; ')
+}
+
+const nextConfig = {
+  reactStrictMode: true,
+  poweredByHeader: false,
+  compress: true,
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'Content-Security-Policy', value: buildContentSecurityPolicy() },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains; preload' },
+        ],
+      },
+    ]
+  },
+  images: {
+    unoptimized: isDevelopment,
+    formats: ['image/avif', 'image/webp'],
+    remotePatterns,
+  },
+}
+
+module.exports = nextConfig
