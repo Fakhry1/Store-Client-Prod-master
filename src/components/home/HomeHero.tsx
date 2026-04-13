@@ -25,6 +25,12 @@ export function HomeHero({ featuredCount, categoriesCount, hasOffers }: Props) {
     { label: t('Premium picks', 'اختيارات فاخرة'), href: '#premium-picks' },
   ]
 
+  const promisePoints = [
+    t('Mobile-first browsing', 'تصفح مصمم للموبايل'),
+    t('Curated premium edits', 'اختيارات فاخرة منسقة'),
+    t('Faster path to checkout', 'طريق أسرع لإتمام الطلب'),
+  ]
+
   return (
     <section className="relative isolate overflow-hidden bg-[#0f1115]">
       <div className="absolute inset-0">
@@ -44,21 +50,21 @@ export function HomeHero({ featuredCount, categoriesCount, hasOffers }: Props) {
         <div className="absolute end-0 top-1/3 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto grid min-h-[88vh] max-w-7xl items-center gap-10 px-6 py-16 md:min-h-[92vh] md:grid-cols-[1.05fr_0.95fr] md:py-20">
+      <div className="relative mx-auto grid min-h-[88vh] max-w-7xl items-center gap-10 px-6 py-14 md:min-h-[92vh] md:grid-cols-[1.02fr_0.98fr] md:py-20">
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-white/75 backdrop-blur">
             <span className="h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_16px_rgba(251,191,36,0.9)]" />
             {t('Curated everyday luxury', 'أناقة يومية مختارة بعناية')}
           </div>
 
-          <h1 className="mt-6 max-w-xl text-4xl font-black leading-[1.15] tracking-normal text-white md:text-6xl md:leading-[1.08]">
-            {t('Refined shopping for modern essentials', 'تجربة تسوق راقية للاحتياجات العصرية')}
+          <h1 className="mt-6 max-w-xl text-xl font-black leading-[1.2] tracking-normal !text-white sm:text-2xl md:text-6xl">
+            {t('A sharper storefront for premium everyday picks', 'واجهة أذكى لاكتشاف اختياراتك اليومية الفاخرة')}
           </h1>
 
-          <p className="mt-5 max-w-lg text-sm leading-8 text-white/85 drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)] md:text-base">
+          <p className="mt-5 max-w-xl text-[13px] leading-7 !text-white/90 drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)] md:text-base">
             {t(
-              'Discover premium selections, cleaner product browsing, and a faster checkout flow designed for both mobile and desktop.',
-              'اكتشف منتجات مختارة بعناية، وتصفحًا أوضح، وتجربة شراء أسرع مصممة للموبايل والديسكتوب.'
+              'Shop a cleaner catalog, discover premium edits faster, and move from browsing to checkout with less friction.',
+              'تصفّح كتالوجًا أوضح، واكتشف اختيارات فاخرة أسرع، وانتقل من الاستكشاف إلى الشراء بخطوات أقل.'
             )}
           </p>
 
@@ -74,16 +80,31 @@ export function HomeHero({ featuredCount, categoriesCount, hasOffers }: Props) {
             ))}
           </div>
 
-          <div className="mt-6 max-w-xl rounded-[26px] border border-amber-300/20 bg-amber-400/10 p-4 backdrop-blur">
-            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-300">
-              {t('Coverage notice', 'تنبيه التغطية')}
-            </p>
-            <p className="mt-2 text-sm leading-6 text-white/80">
-              {t(
-                'Service is currently available in selected cities only. Confirm your city before completing delivery.',
-                'الخدمة متاحة حاليًا في مدن محددة فقط. تأكد من مدينتك قبل إكمال طلب التوصيل.'
-              )}
-            </p>
+          <div className="mt-7 grid gap-3 sm:grid-cols-[1.2fr_0.8fr]">
+            <div className="rounded-[28px] border border-white/12 bg-white/8 p-4 backdrop-blur">
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-300">
+                {t('Why it feels better', 'لماذا التجربة أفضل')}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {promisePoints.map((item) => (
+                  <span key={item} className="rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-xs font-bold !text-white">
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[28px] border border-amber-300/20 bg-amber-400/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-300">
+                {t('Coverage notice', 'تنبيه التغطية')}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-white/80">
+                {t(
+                  'Delivery is available in selected cities. Confirm your area before finishing checkout.',
+                  'التوصيل متاح حاليًا في مدن محددة. تأكد من نطاق خدمتك قبل إنهاء الطلب.'
+                )}
+              </p>
+            </div>
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -91,7 +112,7 @@ export function HomeHero({ featuredCount, categoriesCount, hasOffers }: Props) {
               href="/shop"
               className="inline-flex items-center gap-2.5 rounded-2xl bg-amber-400 px-6 py-3.5 text-sm font-black text-slate-950 transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-300 hover:shadow-[0_12px_36px_rgba(251,191,36,0.35)]"
             >
-              {t('Explore the store', 'استكشف المتجر')}
+              {t('Start shopping', 'ابدأ التسوق')}
               <svg
                 className={`h-4 w-4 ${isRTL ? 'rotate-180' : ''}`}
                 fill="none"
@@ -108,7 +129,7 @@ export function HomeHero({ featuredCount, categoriesCount, hasOffers }: Props) {
                 className="inline-flex items-center gap-2.5 rounded-2xl border border-white/18 bg-white/8 px-6 py-3.5 text-sm font-bold text-white backdrop-blur transition-all duration-300 hover:border-white/30 hover:bg-white/14"
               >
                 <span className="text-base">%</span>
-                {t('See live offers', 'شاهد العروض الحالية')}
+                {t('Browse live offers', 'تصفّح العروض الحالية')}
               </a>
             )}
           </div>
@@ -143,7 +164,7 @@ export function HomeHero({ featuredCount, categoriesCount, hasOffers }: Props) {
                       {t('Editorial selection', 'اختيارات تحريرية')}
                     </span>
                     <h2 className="mt-3 max-w-xs text-2xl font-black leading-tight text-white">
-                      {t('Premium pieces with a cleaner shopping journey', 'منتجات مميزة مع رحلة شراء أوضح وأسهل')}
+                      {t('Premium pieces with a faster path from interest to order', 'منتجات مميزة مع طريق أسرع من الاكتشاف إلى الطلب')}
                     </h2>
                   </div>
                 </div>

@@ -89,8 +89,7 @@ export function SectionHeader({
       <div>
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-amber-600">{eyebrow}</p>
         <h2
-          className="text-3xl font-black leading-[1.15] text-slate-900 md:text-4xl"
-          style={{ fontFamily: "'Playfair Display', serif" }}
+          className="font-display text-3xl font-black leading-[1.15] text-slate-900 md:text-4xl"
         >
           {title}
         </h2>
@@ -126,8 +125,7 @@ export function HomeCTA() {
               {t('A sharper store experience is ready', 'تجربة متجر أوضح أصبحت جاهزة')}
             </p>
             <h2
-              className="text-3xl font-black leading-[1.15] text-white md:text-5xl md:leading-[1.08]"
-              style={{ fontFamily: "'Playfair Display', serif" }}
+              className="font-display text-3xl font-black leading-[1.15] text-white md:text-5xl md:leading-[1.08]"
             >
               {t('Browse the full collection in one polished flow', 'تصفح المجموعة الكاملة في رحلة أكثر أناقة')}
             </h2>
@@ -166,8 +164,7 @@ export function OffersHeader({ count }: { count: number }) {
           </span>
         </div>
         <h2
-          className="text-3xl font-black leading-[1.15] text-white md:text-4xl"
-          style={{ fontFamily: "'Playfair Display', serif" }}
+          className="font-display text-3xl font-black leading-[1.15] text-white md:text-4xl"
         >
           {t('Deals worth catching', 'عروض تستحق المتابعة')}
         </h2>

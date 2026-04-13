@@ -35,12 +35,20 @@ export function GroupedProductCard({
       ? `/product?id=${group.productId}&variant=${firstVariantId}&branch=${branchId}`
       : `/product?id=${group.productId}&branch=${branchId}`
   const variantCount = group.variants.length
+  const offerLabel = group.hasActiveOffer && group.maxDiscount > 0
+    ? t('Limited offer', 'عرض محدود')
+    : t('Ready to explore', 'جاهز للاستكشاف')
+  const stockLabel = allOutOfStock
+    ? t('Currently unavailable', 'غير متوفر حاليًا')
+    : group.totalStock <= 5
+      ? t('Low stock', 'كمية محدودة')
+      : t('In stock', 'متوفر الآن')
 
   return (
     <Link
       href={detailUrl}
       prefetch={false}
-      className={`group relative flex h-full flex-col overflow-hidden rounded-[28px] border bg-white shadow-[0_12px_28px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_42px_rgba(15,23,42,0.08)] ${
+      className={`group relative flex h-full flex-col overflow-hidden rounded-[30px] border bg-white shadow-[0_12px_28px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_48px_rgba(15,23,42,0.1)] ${
         allOutOfStock ? 'border-stone-200 opacity-75' : 'border-stone-200 hover:border-stone-300'
       }`}
     >
@@ -78,6 +86,21 @@ export function GroupedProductCard({
               -{Math.round(group.maxDiscount)}%
             </span>
           )}
+        </div>
+
+        <div className="absolute inset-x-3 top-14 flex items-center justify-between gap-2">
+          <span className="rounded-full border border-white/30 bg-slate-950/62 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-white backdrop-blur">
+            {offerLabel}
+          </span>
+          <span className={`rounded-full px-2.5 py-1 text-[10px] font-black backdrop-blur ${
+            allOutOfStock
+              ? 'bg-white/90 text-slate-500'
+              : group.totalStock <= 5
+                ? 'bg-amber-300/90 text-slate-950'
+                : 'bg-emerald-100/90 text-emerald-800'
+          }`}>
+            {stockLabel}
+          </span>
         </div>
 
         {variantCount > 1 && (
@@ -122,15 +145,37 @@ export function GroupedProductCard({
           ))}
         </div>
 
+        <div className="mt-3 rounded-[22px] border border-stone-100 bg-stone-50/80 px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                {t('From', 'يبدأ من')}
+              </p>
+              <span className="mt-1 inline-flex items-end gap-1 text-lg font-black text-slate-900">
+                {priceDisplay}
+                <span className="mb-0.5 text-[11px] font-bold text-slate-400">{currencyLabel}</span>
+              </span>
+            </div>
+
+            {group.hasActiveOffer && firstVariant && firstVariant.basePrice > group.minPrice && (
+              <div className="text-end">
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-600">
+                  {t('Save more', 'وفر أكثر')}
+                </p>
+                <div className="mt-1 text-xs text-slate-400 line-through">{firstVariant.basePrice.toFixed(0)}</div>
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="mt-auto flex items-end justify-between gap-3 pt-4">
           <div>
-            <span className="text-base font-black text-slate-900">
-              {priceDisplay}
-              <span className="ms-1 text-xs font-medium text-slate-400">{currencyLabel}</span>
-            </span>
-            {group.hasActiveOffer && firstVariant && firstVariant.basePrice > group.minPrice && (
-              <div className="text-xs text-slate-400 line-through">{firstVariant.basePrice.toFixed(0)}</div>
-            )}
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+              {t('Best for', 'مناسب لـ')}
+            </p>
+            <p className="mt-1 text-sm font-bold text-slate-600">
+              {variantCount > 1 ? t('Comparison and selection', 'المقارنة والاختيار') : t('Quick purchase', 'شراء سريع')}
+            </p>
           </div>
 
           <span className={`flex h-10 w-10 items-center justify-center rounded-2xl transition-colors ${allOutOfStock ? 'bg-stone-200 text-stone-400' : 'bg-slate-900 text-white group-hover:bg-amber-500'}`}>

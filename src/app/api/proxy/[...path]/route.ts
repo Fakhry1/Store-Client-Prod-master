@@ -3,7 +3,12 @@ import https from 'node:https'
 import { URL } from 'node:url'
 import { NextRequest, NextResponse } from 'next/server'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
+const API_BASE_URL = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? ''
+const MAX_PROXY_BODY_BYTES = Number(process.env.PROXY_MAX_BODY_BYTES ?? 1_048_576)
+const REQUEST_TIMEOUT_MS = Number(process.env.PROXY_REQUEST_TIMEOUT_MS ?? 10_000)
+const HTTP_AGENT = new http.Agent({ keepAlive: true })
+const HTTPS_AGENT = new https.Agent({ keepAlive: true, rejectUnauthorized: true })
+const HTTPS_AGENT_INSECURE = new https.Agent({ keepAlive: true, rejectUnauthorized: false })
 const REQUEST_HEADER_DENYLIST = new Set([
   'accept-encoding',
   'connection',
@@ -28,7 +33,7 @@ type RouteContext = {
 
 function buildTargetUrl(pathSegments: string[], search: string) {
   if (!API_BASE_URL) {
-    throw new Error('NEXT_PUBLIC_API_URL is not configured')
+    throw new Error('API_URL is not configured')
   }
 
   const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL : `${API_BASE_URL}/`
@@ -49,10 +54,26 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
   const { path } = await context.params
   const targetUrl = buildTargetUrl(path, request.nextUrl.search)
   const transport = targetUrl.protocol === 'https:' ? https : http
+  const contentLength = Number(request.headers.get('content-length') ?? '0')
+
+  if (contentLength > MAX_PROXY_BODY_BYTES) {
+    return NextResponse.json(
+      { message: 'Payload too large' },
+      { status: 413 }
+    )
+  }
+
   const body =
     request.method === 'GET' || request.method === 'HEAD'
       ? undefined
       : Buffer.from(await request.arrayBuffer())
+
+  if (body && body.length > MAX_PROXY_BODY_BYTES) {
+    return NextResponse.json(
+      { message: 'Payload too large' },
+      { status: 413 }
+    )
+  }
 
   const requestHeaders: Record<string, string> = {}
   request.headers.forEach((value, key) => {
@@ -76,8 +97,8 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
         headers: requestHeaders,
         agent:
           targetUrl.protocol === 'https:'
-            ? new https.Agent({ rejectUnauthorized: !allowInsecureLocalhost(targetUrl) })
-            : undefined,
+            ? (allowInsecureLocalhost(targetUrl) ? HTTPS_AGENT_INSECURE : HTTPS_AGENT)
+            : HTTP_AGENT,
       },
       (res) => {
         const chunks: Buffer[] = []
@@ -97,6 +118,9 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
       }
     )
 
+    req.setTimeout(REQUEST_TIMEOUT_MS, () => {
+      req.destroy(new Error(`Upstream request timed out after ${REQUEST_TIMEOUT_MS}ms`))
+    })
     req.on('error', reject)
 
     if (body && body.length > 0) {

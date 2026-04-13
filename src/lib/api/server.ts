@@ -7,7 +7,10 @@ type ServerRequestOptions = {
   timeoutMs?: number
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://localhost:44304'
+const BASE_URL = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'https://localhost:44304'
+const HTTP_AGENT = new http.Agent({ keepAlive: true })
+const HTTPS_AGENT = new https.Agent({ keepAlive: true, rejectUnauthorized: true })
+const HTTPS_AGENT_INSECURE = new https.Agent({ keepAlive: true, rejectUnauthorized: false })
 
 function buildUrl(path: string): URL {
   return new URL(path, BASE_URL)
@@ -19,6 +22,11 @@ function allowInsecureLocalhost(url: URL): boolean {
     url.protocol === 'https:' &&
     ['localhost', '127.0.0.1', '::1'].includes(url.hostname)
   )
+}
+
+function getAgent(url: URL): http.Agent | https.Agent {
+  if (url.protocol !== 'https:') return HTTP_AGENT
+  return allowInsecureLocalhost(url) ? HTTPS_AGENT_INSECURE : HTTPS_AGENT
 }
 
 export async function serverApiGet<T>(
@@ -37,9 +45,7 @@ export async function serverApiGet<T>(
           Accept: 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        agent: url.protocol === 'https:'
-          ? new https.Agent({ rejectUnauthorized: !allowInsecureLocalhost(url) })
-          : undefined,
+        agent: getAgent(url),
       },
       (res) => {
         let raw = ''

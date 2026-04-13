@@ -11,9 +11,12 @@ npm run dev
 ## إعداد `.env.local`
 
 ```env
+API_URL=https://localhost:44304
 NEXT_PUBLIC_API_URL=https://localhost:44304
 NEXT_PUBLIC_API_HOSTNAME=localhost
 NEXT_PUBLIC_DEFAULT_BRANCH_ID=1
+# Optional: collect CSP violations in report-only mode before enforcing stricter policy
+# CSP_REPORT_ONLY=1
 # Development only, never enable this in staging/production:
 # NODE_TLS_REJECT_UNAUTHORIZED=0
 ```

@@ -10,7 +10,7 @@ const config: Config = {
       fontFamily: {
         sans:  ['var(--font-kufi)', 'Noto Kufi Arabic', 'sans-serif'],
         kufi:  ['var(--font-kufi)', 'Noto Kufi Arabic', 'sans-serif'],
-        display: ['var(--font-playfair)', 'Playfair Display', 'serif'],
+        display: ['var(--font-playfair)', 'Playfair Display', 'var(--font-kufi)', 'Noto Kufi Arabic', 'serif'],
       },
     },
   },

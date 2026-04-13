@@ -1,10 +1,7 @@
 import { GroupedProductCard } from '@/components/product/GroupedProductCard'
 import Link from 'next/link'
 import { ShopHeader } from '@/components/shop/ShopHeader'
-import { FacetsSidebar } from '@/components/shop/FacetsSidebar'
-import { MobileFiltersDrawer } from '@/components/shop/MobileFiltersDrawer'
 import { Pagination } from '@/components/shop/Pagination'
-import { SortDropdown } from '@/components/shop/SortDropdown'
 import { summaryToGroup } from '@/lib/groupCatalog'
 import {
   CategoryName,
@@ -17,6 +14,19 @@ import { serverApiGet } from '@/lib/api/server'
 import type { Branch, Category, Facets, ProductPage, ProductQuery } from '@/types'
 import type { Metadata } from 'next'
 import { unstable_cache } from 'next/cache'
+import dynamic from 'next/dynamic'
+
+const FacetsSidebar = dynamic(
+  () => import('@/components/shop/FacetsSidebar').then((mod) => mod.FacetsSidebar)
+)
+
+const MobileFiltersDrawer = dynamic(
+  () => import('@/components/shop/MobileFiltersDrawer').then((mod) => mod.MobileFiltersDrawer)
+)
+
+const SortDropdown = dynamic(
+  () => import('@/components/shop/SortDropdown').then((mod) => mod.SortDropdown)
+)
 
 export const revalidate = 300
 
@@ -169,11 +179,8 @@ export default async function ShopPage({ searchParams }: PageProps) {
   const products = productPage?.items ?? []
   const totalCount = productPage?.totalCount ?? 0
   const groups = products.map((product) => summaryToGroup(product, selectedBranch))
-  const featuredCategories = categories.filter((category) => !category.parentCategoryId)
   const activeCategory = categories.find((category) => category.id === selectedCat)
   const activeBranch = activeBranches.find((branch) => branch.id === selectedBranch)
-
-  const categoryItems: CategoryItem[] = [ALL_CATEGORY_ITEM, ...featuredCategories]
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#f8f6f2]">
@@ -256,30 +263,15 @@ export default async function ShopPage({ searchParams }: PageProps) {
         </aside>
 
         <main className="min-w-0 flex-1">
-          <div className="hidden">
-            <div className="scrollbar-hide flex snap-x gap-2 overflow-x-auto pb-2">
-              {categoryItems.map((category) => {
-                const href = `/shop?${buildQS(params, { category: category.id ? String(category.id) : undefined, page: undefined })}`
-                const active = category.id === selectedCat || (!category.id && !selectedCat)
-                return (
-                  <Link
-                    key={category.id ?? 'all'}
-                    href={href}
-                    prefetch={false}
-                    className={`snap-start whitespace-nowrap rounded-full border px-4 py-2 text-sm font-bold transition-all ${
-                      active
-                        ? 'border-slate-900 bg-slate-900 text-white shadow-sm'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400'
-                    }`}
-                  >
-                    <CategoryName cat={category} />
-                  </Link>
-                )
-              })}
+          <div className="sticky top-[7.4rem] z-20 mb-5 rounded-[28px] border border-stone-200 bg-white/92 p-3 shadow-[0_16px_34px_rgba(15,23,42,0.08)] backdrop-blur md:static md:bg-white/90 md:shadow-[0_16px_34px_rgba(15,23,42,0.04)]">
+            <div className="mb-2 flex items-center justify-between gap-3 md:hidden">
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+                {params.search ? 'Focused results' : 'Browse tools'}
+              </p>
+              <span className="rounded-full bg-stone-100 px-3 py-1 text-[10px] font-black text-slate-500">
+                {totalCount} items
+              </span>
             </div>
-          </div>
-
-          <div className="mb-5 rounded-[28px] border border-stone-200 bg-white/90 p-3 shadow-[0_16px_34px_rgba(15,23,42,0.04)] backdrop-blur">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0 flex items-center gap-3">
                 <MobileFiltersDrawer

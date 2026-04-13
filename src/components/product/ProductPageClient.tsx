@@ -633,6 +633,21 @@ function ProductPageInner({
     },
   ]
 
+  const purchaseSignals = [
+    {
+      label: t('Delivery', 'التوصيل'),
+      value: t('Selected cities only', 'في مدن مختارة فقط'),
+    },
+    {
+      label: t('Pickup', 'الاستلام'),
+      value: t(`Branch #${branchId}`, `الفرع #${branchId}`),
+    },
+    {
+      label: t('Order status', 'حالة الطلب'),
+      value: inStock ? t('Ready to add now', 'جاهز للإضافة الآن') : t('Temporarily unavailable', 'غير متوفر مؤقتًا'),
+    },
+  ]
+
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f8f6f2_0%,#ffffff_42%,#f4ede1_100%)]">
 
@@ -829,16 +844,20 @@ function ProductPageInner({
               </p>
             )}
 
-            {/* Price */}
-            <div className="rounded-[28px] border border-stone-200 bg-[linear-gradient(135deg,#fffefb_0%,#faf7f1_100%)] p-4 shadow-[0_12px_26px_rgba(15,23,42,0.04)]">
-              <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="rounded-[30px] border border-stone-200 bg-[linear-gradient(135deg,#fffefb_0%,#faf7f1_100%)] p-4 shadow-[0_12px_26px_rgba(15,23,42,0.04)]">
+              <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex flex-wrap items-end gap-3">
-                  <span className="text-4xl font-black leading-none text-slate-900">
+                  <div>
+                    <p className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+                      {t('Current price', 'السعر الحالي')}
+                    </p>
+                    <span className="text-4xl font-black leading-none text-slate-900">
                     {selected.currentPrice.toFixed(2)}
                     <span className="ms-1 text-lg font-bold text-slate-400">
                       {currencyLabel}
                     </span>
-                  </span>
+                    </span>
+                  </div>
                   {hasSavings && (
                     <div className="mb-1 flex items-center gap-2">
                       <span className="text-base text-slate-400 line-through">
@@ -851,10 +870,24 @@ function ProductPageInner({
                   )}
                 </div>
 
-                <div className="min-w-[10rem] rounded-2xl border border-white/80 bg-white/90 px-3 py-2 shadow-sm">
-                  <p className="text-[11px] font-bold text-slate-400">{t('Selected option', 'الخيار المحدد')}</p>
+                <div className="min-w-[12rem] rounded-[24px] border border-white/80 bg-white/90 px-3.5 py-3 shadow-sm">
+                  <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">{t('Selected option', 'الخيار المحدد')}</p>
                   <p className="mt-1 truncate text-sm font-black text-slate-800">{selectedVariantLabel}</p>
+                  <p className={`mt-2 text-xs font-bold ${inStock ? 'text-emerald-600' : 'text-rose-500'}`}>
+                    {inStock
+                      ? t(`${remainingStock} available to add`, `${remainingStock} متاح للإضافة`)
+                      : t('Unavailable right now', 'غير متوفر الآن')}
+                  </p>
                 </div>
+              </div>
+
+              <div className="mt-4 grid gap-2.5 sm:grid-cols-3">
+                {purchaseSignals.map((item) => (
+                  <div key={item.label} className="rounded-[20px] border border-stone-200 bg-white/88 px-3.5 py-3">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">{item.label}</p>
+                    <p className="mt-1 text-sm font-bold text-slate-700">{item.value}</p>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -1124,17 +1157,17 @@ function ProductPageInner({
 
             {/* Qty + Add to Cart */}
             <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-20 md:static">
-              <div className="rounded-[30px] border border-stone-200 bg-white/95 p-2.5 shadow-[0_18px_34px_rgba(15,23,42,0.12)] backdrop-blur md:rounded-[28px] md:border md:bg-[#faf7f1] md:p-3 md:shadow-none">
-                <div className="mb-2 flex items-center justify-between px-2 md:hidden">
+              <div className="rounded-[32px] border border-stone-200 bg-white/95 p-2.5 shadow-[0_18px_34px_rgba(15,23,42,0.12)] backdrop-blur md:rounded-[30px] md:border md:bg-[#faf7f1] md:p-4 md:shadow-none">
+                <div className="mb-3 flex items-center justify-between rounded-[24px] border border-stone-200 bg-white px-3 py-3 md:mb-4">
                   <div>
-                    <p className="text-[11px] font-bold text-slate-400">{t('Selected total', '\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u062d\u0627\u0644\u064a')}</p>
-                    <p className="text-sm font-black text-slate-900">
+                    <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">{t('Selected total', '\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u062d\u0627\u0644\u064a')}</p>
+                    <p className="text-base font-black text-slate-900 md:text-lg">
                       {(selected.currentPrice * qty).toFixed(2)} {currencyLabel}
                     </p>
                     <p className="mt-0.5 text-[11px] text-slate-500">{selectedVariantLabel}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-500 shadow-sm">
+                    <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-bold text-slate-600 shadow-sm">
                       {qty} {t('pcs', '\u0642\u0637\u0639\u0629')}
                     </span>
                     <span className={`text-[11px] font-bold ${inStock ? 'text-emerald-600' : 'text-rose-500'}`}>
@@ -1198,6 +1231,20 @@ function ProductPageInner({
                   </>
                 )}
               </button>
+                </div>
+
+                <div className="mt-3 grid gap-2 md:hidden">
+                  <div className="rounded-[22px] border border-stone-200 bg-[#faf7f1] px-3.5 py-3">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                      {t('Purchase note', 'ملاحظة الشراء')}
+                    </p>
+                    <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
+                      {t(
+                        'Choose your exact option first, then confirm quantity before adding to cart.',
+                        'اختر خيارك الدقيق أولًا، ثم أكد الكمية قبل الإضافة إلى السلة.'
+                      )}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

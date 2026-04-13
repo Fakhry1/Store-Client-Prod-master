@@ -18,6 +18,7 @@ export function Navbar() {
   const { locale, toggle, t } = useLocale()
   const [mounted, setMounted] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -37,6 +38,7 @@ export function Navbar() {
 
   useEffect(() => {
     setMenuOpen(false)
+    setMobileSearchOpen(false)
   }, [pathname])
 
   const initials = user
@@ -72,9 +74,30 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/95 shadow-sm backdrop-blur">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 md:h-16">
-        <Link href="/" className="flex flex-shrink-0 items-center" aria-label={t('inOne home', 'الصفحة الرئيسية inOne')}>
-          <span className="text-2xl font-black tracking-[0.2em] text-slate-900 md:text-[28px]">INONE</span>
-        </Link>
+        <div className="flex min-w-0 items-center gap-2.5 md:gap-3">
+          <Link href="/" className="flex flex-shrink-0 items-center" aria-label={t('inOne home', 'الصفحة الرئيسية inOne')}>
+            <span className="text-2xl font-black tracking-[0.2em] text-slate-900 md:text-[28px]">INONE</span>
+          </Link>
+
+          <Link
+            href="/shop"
+            className="hidden rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-slate-500 transition-colors hover:border-amber-300 hover:text-amber-700 md:inline-flex"
+          >
+            {t('Shop', 'المتجر')}
+          </Link>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setMobileSearchOpen(true)}
+          className="flex min-w-0 flex-1 items-center gap-2 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-medium text-slate-400 transition-colors hover:border-amber-300 hover:text-slate-600 md:hidden"
+          aria-label={t('Open search', 'فتح البحث')}
+        >
+          <svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0" />
+          </svg>
+          <span className="truncate">{t('Search products...', 'ابحث عن منتجات...')}</span>
+        </button>
 
         <div className="hidden max-w-md flex-1 md:flex">
           <SearchBar placeholder={t('Search products...', 'ابحث عن منتجات...')} />
@@ -84,7 +107,15 @@ export function Navbar() {
           <button
             onClick={toggle}
             aria-label={t('Change language', 'تغيير اللغة')}
-            className="flex items-center rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-bold text-slate-600 transition-colors hover:border-amber-400 hover:text-amber-600"
+            className="hidden items-center rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-bold text-slate-600 transition-colors hover:border-amber-400 hover:text-amber-600 md:flex"
+          >
+            {locale === 'ar' ? 'EN' : 'ع'}
+          </button>
+
+          <button
+            onClick={toggle}
+            aria-label={t('Change language', 'تغيير اللغة')}
+            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 text-[11px] font-black text-slate-600 transition-colors hover:border-amber-400 hover:text-amber-600 md:hidden"
           >
             {locale === 'ar' ? 'EN' : 'ع'}
           </button>
@@ -156,7 +187,7 @@ export function Navbar() {
                     <p className="mt-0.5 truncate text-xs text-slate-500">{user.email}</p>
                   </div>
                   <div className="py-1.5">
-                    {[ 
+                    {[
                       { href: '/account/profile', label: t('My Profile', 'ملفي الشخصي'), icon: <UserIcon /> },
                       { href: '/orders', label: t('My Orders', 'طلباتي'), icon: <OrderIcon /> },
                       { href: '/wishlist', label: t('Wishlist', 'المفضلة'), icon: <HeartIcon /> },
@@ -230,14 +261,67 @@ export function Navbar() {
         </nav>
       </div>
 
-      <div className="px-4 pb-2.5 md:hidden">
-        <SearchBar placeholder={t('Search products...', 'ابحث عن منتجات...')} />
+      <div className="border-t border-stone-100 px-4 py-2 md:hidden">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+          <Link href="/shop?sort=newest" className="whitespace-nowrap rounded-full bg-slate-900 px-3 py-1.5 text-[11px] font-black text-white">
+            {t('New in', 'وصل حديثًا')}
+          </Link>
+          <Link href="/shop?sort=price_desc" className="whitespace-nowrap rounded-full border border-stone-200 bg-white px-3 py-1.5 text-[11px] font-bold text-slate-600">
+            {t('Premium picks', 'اختيارات فاخرة')}
+          </Link>
+          <Link href="/shop?sort=price_asc" className="whitespace-nowrap rounded-full border border-stone-200 bg-white px-3 py-1.5 text-[11px] font-bold text-slate-600">
+            {t('Smart deals', 'صفقات ذكية')}
+          </Link>
+        </div>
       </div>
+
+      {mobileSearchOpen && (
+        <div className="fixed inset-0 z-[90] md:hidden">
+          <button
+            type="button"
+            aria-label={t('Close search', 'إغلاق البحث')}
+            className="absolute inset-0 bg-slate-950/45 backdrop-blur-sm"
+            onClick={() => setMobileSearchOpen(false)}
+          />
+
+          <div className="absolute inset-x-0 top-0 rounded-b-[32px] border-b border-stone-200 bg-[#fcfaf5] px-4 pb-5 pt-4 shadow-[0_20px_60px_rgba(15,23,42,0.16)]">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-600">{t('Find faster', 'ابحث أسرع')}</p>
+                <p className="mt-1 text-lg font-black text-slate-900">{t('Search the catalog', 'ابحث داخل المتجر')}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileSearchOpen(false)}
+                className="flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-slate-500"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <SearchBar
+              placeholder={t('Search products...', 'ابحث عن منتجات...')}
+              autoFocus
+              onSearchComplete={() => setMobileSearchOpen(false)}
+            />
+          </div>
+        </div>
+      )}
     </header>
   )
 }
 
-function SearchBar({ placeholder }: { placeholder: string }) {
+function SearchBar({
+  placeholder,
+  autoFocus = false,
+  onSearchComplete,
+}: {
+  placeholder: string
+  autoFocus?: boolean
+  onSearchComplete?: () => void
+}) {
   const router = useRouter()
   const pathname = usePathname()
   const { t } = useLocale()
@@ -254,6 +338,12 @@ function SearchBar({ placeholder }: { placeholder: string }) {
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (autoFocus && mounted) {
+      inputRef.current?.focus()
+    }
+  }, [autoFocus, mounted])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -298,13 +388,21 @@ function SearchBar({ placeholder }: { placeholder: string }) {
 
   function removeRecent(query: string, event: ReactMouseEvent) {
     event.stopPropagation()
-    const next = recent.filter((item) => item !== query)
-    localStorage.setItem(RECENT_KEY, JSON.stringify(next))
-    setRecent(next)
+    try {
+      const next = recent.filter((item) => item !== query)
+      localStorage.setItem(RECENT_KEY, JSON.stringify(next))
+      setRecent(next)
+    } catch {
+      setRecent(recent.filter((item) => item !== query))
+    }
   }
 
   function clearRecent() {
-    localStorage.removeItem(RECENT_KEY)
+    try {
+      localStorage.removeItem(RECENT_KEY)
+    } catch {
+      // Ignore local storage issues.
+    }
     setRecent([])
   }
 
@@ -315,6 +413,7 @@ function SearchBar({ placeholder }: { placeholder: string }) {
     setFocused(false)
     setHighlighted(-1)
     inputRef.current?.blur()
+    onSearchComplete?.()
     router.push(trimmed ? `/shop?search=${encodeURIComponent(trimmed)}` : '/shop')
   }
 
@@ -384,6 +483,7 @@ function SearchBar({ placeholder }: { placeholder: string }) {
           type="search"
           value={value}
           placeholder={placeholder}
+          autoFocus={autoFocus}
           autoComplete="off"
           onChange={(event) => {
             setValue(event.target.value)

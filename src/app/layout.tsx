@@ -20,37 +20,13 @@ const playfair = localFont({
   preload: false,
 })
 
-const tajawal = localFont({
+const notoKufi = localFont({
   src: [
-    {
-      path: '../../public/fonts/tajawal-arabic-400-normal.woff2',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: '../../public/fonts/tajawal-arabic-500-normal.woff2',
-      weight: '500',
-      style: 'normal',
-    },
-    {
-      path: '../../public/fonts/tajawal-arabic-700-normal.woff2',
-      weight: '700',
-      style: 'normal',
-    },
-    {
-      path: '../../public/fonts/tajawal-latin-400-normal.woff2',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: '../../public/fonts/tajawal-latin-700-normal.woff2',
-      weight: '700',
-      style: 'normal',
-    },
+    { path: '../../public/fonts/noto-kufi-arabic-main.woff2', weight: '100 900', style: 'normal' },
   ],
   variable: '--font-kufi',
   display: 'swap',
-  preload: true,
+  preload: false,
 })
 
 const siteUrl = getSiteUrl()
@@ -105,7 +81,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html
       lang="ar"
       dir="rtl"
-      className={`${playfair.variable} ${tajawal.variable}`}
+      className={`${playfair.variable} ${notoKufi.variable}`}
       suppressHydrationWarning
     >
       <body className="antialiased font-kufi bg-stone-50" suppressHydrationWarning>

@@ -65,7 +65,7 @@ export async function apiRequest<T>(
   { method = 'GET', body, token, signal, credentials, cacheMode, timeoutMs = 8000 }: RequestOptions = {}
 ): Promise<T> {
   const headers: Record<string, string> = {}
-  const defaultCacheMode = method === 'GET' ? 'default' : 'no-store'
+  const defaultCacheMode = 'no-store'
   const controller = new AbortController()
   const finalSignal = combineAbortSignals(signal, controller.signal)
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
