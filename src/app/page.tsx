@@ -5,7 +5,7 @@ import { TrustBar, CategoriesSection, OffersHeader, ProductCollectionSection, Ho
 import { OfferCard, FeaturedCard } from '@/components/home/HomeCards'
 import { DeferredRender } from '@/components/home/DeferredRender'
 
-export const revalidate = 300
+export const dynamic = 'force-dynamic'
 
 const DEFAULT_BRANCH = Number(process.env.NEXT_PUBLIC_DEFAULT_BRANCH_ID ?? '1')
 const PRODUCT_PREVIEW_LIMIT = 12

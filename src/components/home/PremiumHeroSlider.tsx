@@ -473,7 +473,7 @@ export function PremiumHeroSlider({ slides }: Props) {
                           priority={index === 0}
                           loading={index === 0 ? 'eager' : 'lazy'}
                           fetchPriority={index === 0 ? 'high' : 'auto'}
-                          sizes="(max-width: 1024px) 100vw, 48vw"
+                          sizes="(max-width: 1024px) 100vw, 55vw"
                           className="object-cover object-center opacity-85 md:opacity-60"
                           onLoad={() => {
                             setLoadedImages((current) => ({ ...current, [slide.id]: true }))
@@ -502,8 +502,8 @@ export function PremiumHeroSlider({ slides }: Props) {
                               {getBadgeLabel(slide)}
                             </span>
                             {discount ? (
-                              <span className="inline-flex items-center rounded-full border border-white/15 bg-white/12 px-3.5 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-white backdrop-blur-xl">
-                                {t('Up to', 'حتى')} {discount}% {t('Off', 'خصم')}
+                              <span className="inline-flex items-center rounded-full border border-emerald-400/40 bg-emerald-500 px-4 py-2 text-sm font-black text-white shadow-[0_4px_12px_rgba(16,185,129,0.35)]">
+                                {t('Save', 'وفّر')} {discount}%
                               </span>
                             ) : null}
                           </div>
