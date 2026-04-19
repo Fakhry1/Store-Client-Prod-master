@@ -7,6 +7,9 @@ export default defineConfig([
     '.next/**',
     'out/**',
     'build/**',
+    '.lighthouse-tmp/**',
+    'lighthouse-*.json',
+    'lighthouse-prod-desktop/**',
     'next-env.d.ts',
   ]),
   {

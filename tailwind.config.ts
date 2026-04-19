@@ -8,9 +8,9 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans:  ['var(--font-kufi)', 'sans-serif'],
-        kufi:  ['var(--font-kufi)', 'sans-serif'],
-        display: ['var(--font-playfair)', 'var(--font-kufi)', 'serif'],
+        sans: ['var(--font-kufi)', 'Segoe UI', 'Tahoma', 'sans-serif'],
+        kufi: ['var(--font-kufi)', 'Segoe UI', 'Tahoma', 'sans-serif'],
+        display: ['var(--font-kufi)', 'Segoe UI', 'Tahoma', 'sans-serif'],
       },
     },
   },
