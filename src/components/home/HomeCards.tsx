@@ -165,8 +165,10 @@ export function FeaturedCard({
               <div className="text-xs text-slate-400 line-through">{item.basePrice.toFixed(0)}</div>
             )}
           </div>
-          <span className="rounded-full bg-stone-100 px-3 py-1 text-[11px] font-bold text-slate-600">
-            {t('Premium pick', 'اختيار مميز')}
+          <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-stone-100 text-slate-600 transition-colors group-hover:bg-slate-900 group-hover:text-white">
+            <svg className="h-4 w-4 flip-rtl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </span>
         </div>
       </div>

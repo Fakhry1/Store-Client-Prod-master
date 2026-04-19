@@ -60,6 +60,16 @@ p, li, label, span {
 /* RTL icon flip */
 [dir="rtl"] .flip-rtl { transform: scaleX(-1); }
 
+/* Address modal: push above bottom nav on mobile */
+.mobile-address-modal {
+  padding-bottom: calc(1rem + 60px + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 640px) {
+  .mobile-address-modal {
+    padding-bottom: 1rem;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }

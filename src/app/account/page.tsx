@@ -44,7 +44,9 @@ export default function AccountPage() {
                 {user.firstName} {user.lastName}
               </h2>
               {user.phoneNumber && (
-                <p className="text-xs text-slate-400 mt-0.5">{user.phoneNumber}</p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  <span dir="ltr">{user.phoneNumber}</span>
+                </p>
               )}
             </div>
           </div>

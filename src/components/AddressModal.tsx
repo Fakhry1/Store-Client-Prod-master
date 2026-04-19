@@ -75,8 +75,8 @@ export default function AddressModal({ token, onClose, onSaved }: AddressModalPr
   return (
     /* Backdrop */
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4
-        bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4 pt-4 sm:p-4
+        bg-black/40 backdrop-blur-sm mobile-address-modal"
       onClick={e => { if (e.target === e.currentTarget) onClose() }}>
 
       {/* Panel */}
@@ -140,7 +140,7 @@ export default function AddressModal({ token, onClose, onSaved }: AddressModalPr
               label={t('City *', 'المدينة *')}
               value={form.city}
               onChange={v => set('city', v)}
-              placeholder={t('Riyadh, Jeddah...', 'الرياض، جدة...')} />
+              placeholder={t('Khartoum, Bahri...', 'الخرطوم، بحري...')} />
           </div>
 
           <label className="flex items-center gap-2.5 cursor-pointer pt-1">

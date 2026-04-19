@@ -88,21 +88,6 @@ export function GroupedProductCard({
           )}
         </div>
 
-        <div className="absolute inset-x-3 top-14 flex items-center justify-between gap-2">
-          <span className="rounded-full border border-white/30 bg-slate-950/62 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-white backdrop-blur">
-            {offerLabel}
-          </span>
-          <span className={`rounded-full px-2.5 py-1 text-[10px] font-black backdrop-blur ${
-            allOutOfStock
-              ? 'bg-white/90 text-slate-500'
-              : group.totalStock <= 5
-                ? 'bg-amber-300/90 text-slate-950'
-                : 'bg-emerald-100/90 text-emerald-800'
-          }`}>
-            {stockLabel}
-          </span>
-        </div>
-
         {variantCount > 1 && (
           <div className="absolute bottom-3 start-3 rounded-full bg-slate-950/72 px-3 py-1 text-[10px] font-black text-white backdrop-blur">
             {variantCount} {t('options', 'خيارات')}

@@ -790,7 +790,11 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
                 <p className="text-[10px] text-slate-400 uppercase tracking-wide font-bold">
                   {t('Payment', 'الدفع')}
                 </p>
-                <p className="font-bold text-slate-800 text-xs">{order.paymentMethodText}</p>
+                <p className="font-bold text-slate-800 text-xs">
+                  {/credit.?card/i.test(order.paymentMethodText)
+                    ? t('Banking App', 'تطبيق بنكي')
+                    : order.paymentMethodText}
+                </p>
               </div>
             </div>
           </div>
@@ -966,7 +970,7 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
           <h3 className="font-black text-slate-900 mb-4">{t('Payment Summary', 'ملخص الدفع')}</h3>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between text-slate-600">
-              <span>{t('Subtotal', 'المجموع الفرعي')}</span>
+              <span>{t('Price', 'السعر')}</span>
               <span className="font-semibold">{order.subtotal.toFixed(2)} {currencyLabel}</span>
             </div>
             {order.discountAmount > 0 && (
@@ -989,7 +993,7 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
             </div>
             <div className="flex justify-between text-base font-black text-slate-900
               pt-3 border-t border-slate-200">
-              <span>{t('Gross total', 'الإجمالي قبل المحفظة')}</span>
+              <span>{t('Total', 'الإجمالي')}</span>
               <span className="text-amber-600">{order.total.toFixed(2)} {currencyLabel}</span>
             </div>
             {getWalletAppliedAmount(order) > 0 && (

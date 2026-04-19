@@ -470,17 +470,22 @@ function ProductPageInner({
       return
     }
     if (!selected) return
+
+    // Optimistic update — flip immediately, revert on failure
+    const prev = wishlisted
+    setWishlisted(!prev)
     setWishlistLoading(true)
     try {
-      if (wishlisted) {
+      if (prev) {
         await wishlistApi.remove(token, selected.id)
-        setWishlisted(false)
       } else {
         await wishlistApi.add(token, productId, selected.id)
-        setWishlisted(true)
       }
-    } catch {}
-    finally { setWishlistLoading(false) }
+    } catch {
+      setWishlisted(prev)
+    } finally {
+      setWishlistLoading(false)
+    }
   }
   useEffect(() => {
     if (!product || !hasAttrs || !Object.keys(sel).length) return
