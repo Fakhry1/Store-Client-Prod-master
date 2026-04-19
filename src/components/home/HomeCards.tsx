@@ -46,7 +46,7 @@ export function OfferCard({
             src={getImg(item.imagePath)}
             alt={name}
             fill
-            sizes="(max-width: 768px) 50vw, 16vw"
+            sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 15vw"
             priority={priority}
             loading={priority ? 'eager' : 'lazy'}
             className="object-cover opacity-92 transition-all duration-500 group-hover:scale-105 group-hover:opacity-100"
@@ -109,7 +109,7 @@ export function FeaturedCard({
             src={getImg(item.imagePath)}
             alt={name}
             fill
-            sizes="(max-width: 640px) 50vw, 25vw"
+            sizes="(max-width: 1024px) 46vw, 23vw"
             priority={priority}
             loading={priority ? 'eager' : 'lazy'}
             className="object-cover transition-transform duration-700 group-hover:scale-105"

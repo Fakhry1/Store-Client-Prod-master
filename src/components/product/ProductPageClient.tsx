@@ -8,7 +8,6 @@ import { catalogApi, productApi, wishlistApi } from '@/lib/api'
 import { useCart } from '@/context/cart'
 import { useAuth } from '@/context/auth'
 import { useLocale } from '@/context/locale'
-import { OfferCountdown } from '@/components/ui/OfferBadge'
 import { translateApiError } from '@/lib/errors'
 import { formatSavingsLabel, getCurrencyLabel } from '@/lib/store'
 import { getPublicApiBaseUrl, joinUrl } from '@/lib/url'
@@ -375,35 +374,34 @@ function ProductPageInner({
       .finally(() => {
         if (reqId === productReqIdRef.current) setLoading(false)
       })
-  }, [productId, variantId, router, initialProduct, initialProductImages, preloadedVariantId])
+  }, [productId, variantId, router, initialProduct, initialProductImages, preloadedVariantId, token, branchId])
 
-  // Check wishlist status when variant changes
+  // Keep wishlist + branch availability in sync for all entry paths
+  // (SSR initial product, cached product, and fresh fetch).
   useEffect(() => {
-    if (!token || !selected) {
-      setWishlisted(false)
-      return
-    }
-    const reqId = ++wishlistReqIdRef.current
-    wishlistApi.check(token, selected.id)
-      .then(r => {
-        if (reqId === wishlistReqIdRef.current) {
-          setWishlisted(r.isWishlisted)
-        }
-      })
-      .catch(() => {})
-  }, [token, selected])
-
-  useEffect(() => {
-    if (!product?.id || !branchId) return
+    if (!product?.id) return
 
     const reqId = ++branchAvailabilityReqIdRef.current
 
-    catalogApi.getProductAvailability(branchId, product.id)
-      .then((items: BranchProductAvailabilityItem[]) => {
+    Promise.all([
+      token && selected?.id
+        ? wishlistApi.check(token, selected.id).catch(() => ({ isWishlisted: false }))
+        : Promise.resolve({ isWishlisted: false }),
+      branchId
+        ? catalogApi.getProductAvailability(branchId, product.id).catch(() => [])
+        : Promise.resolve([]),
+    ])
+      .then(([wishlistResult, availabilityItems]) => {
         if (reqId !== branchAvailabilityReqIdRef.current) return
 
+        if (wishlistResult?.isWishlisted !== undefined) {
+          setWishlisted(wishlistResult.isWishlisted)
+        }
+
+        if (!Array.isArray(availabilityItems) || availabilityItems.length === 0) return
+
         const availabilityByVariantId = new Map(
-          items.map((item) => [item.variantId, item] as const)
+          (availabilityItems as BranchProductAvailabilityItem[]).map((item) => [Number(item.variantId), item] as const)
         )
 
         setProduct((currentProduct) => {
@@ -411,12 +409,14 @@ function ProductPageInner({
 
           const nextVariants = currentProduct.variants.map((variant) => {
             const availability = availabilityByVariantId.get(variant.id)
+            if (!availability) return variant
+
+            const rawStock = availability.isAvailable ? Number(availability.quantityInStock) : 0
+            const nextStock = Number.isFinite(rawStock) ? Math.max(0, rawStock) : 0
+
             return {
               ...variant,
-              quantityInStock:
-                availability && availability.isAvailable
-                  ? Math.max(0, availability.quantityInStock)
-                  : 0,
+              quantityInStock: nextStock,
             }
           })
 
@@ -428,18 +428,27 @@ function ProductPageInner({
 
         setSelected((currentSelected) => {
           if (!currentSelected) return currentSelected
+
           const availability = availabilityByVariantId.get(currentSelected.id)
+          if (!availability) return currentSelected
+
+          const rawStock = availability.isAvailable ? Number(availability.quantityInStock) : 0
+          const nextStock = Number.isFinite(rawStock) ? Math.max(0, rawStock) : 0
+
           return {
             ...currentSelected,
-            quantityInStock:
-              availability && availability.isAvailable
-                ? Math.max(0, availability.quantityInStock)
-                : 0,
+            quantityInStock: nextStock,
           }
         })
       })
       .catch(() => {})
-  }, [branchId, product?.id])
+
+    return () => {
+      if (reqId === branchAvailabilityReqIdRef.current) {
+        branchAvailabilityReqIdRef.current += 1
+      }
+    }
+  }, [branchId, product?.id, selected?.id, token])
 
   // Close zoom on Escape
   useEffect(() => {
@@ -617,36 +626,12 @@ function ProductPageInner({
     : 0
   const hasSavings = selected.hasActiveOffer && savings > 0 && (selected.discountPercentage ?? 0) > 0
   const lowStock = inStock && remainingStock <= 5
-
-  const serviceHighlights = [
-    {
-      label: t('Secure checkout', '\u062f\u0641\u0639 \u0622\u0645\u0646'),
-      value: t('Protected order flow', '\u0631\u062d\u0644\u0629 \u0634\u0631\u0627\u0621 \u0645\u0648\u062b\u0648\u0642\u0629'),
-    },
-    {
-      label: t('Fast support', '\u062f\u0639\u0645 \u0633\u0631\u064a\u0639'),
-      value: t('Responsive after purchase', '\u0645\u062a\u0627\u0628\u0639\u0629 \u0633\u0631\u064a\u0639\u0629 \u0628\u0639\u062f \u0627\u0644\u0634\u0631\u0627\u0621'),
-    },
-    {
-      label: t('Store quality', '\u062c\u0648\u062f\u0629 \u0645\u062e\u062a\u0627\u0631\u0629'),
-      value: t('Curated premium assortment', '\u0645\u0646\u062a\u062c\u0627\u062a \u0645\u062e\u062a\u0627\u0631\u0629 \u0628\u0639\u0646\u0627\u064a\u0629'),
-    },
-  ]
-
-  const purchaseSignals = [
-    {
-      label: t('Delivery', 'التوصيل'),
-      value: t('Selected cities only', 'في مدن مختارة فقط'),
-    },
-    {
-      label: t('Pickup', 'الاستلام'),
-      value: t(`Branch #${branchId}`, `الفرع #${branchId}`),
-    },
-    {
-      label: t('Order status', 'حالة الطلب'),
-      value: inStock ? t('Ready to add now', 'جاهز للإضافة الآن') : t('Temporarily unavailable', 'غير متوفر مؤقتًا'),
-    },
-  ]
+  const offerEndLabel = hasSavings && selected.offerEndsAt
+    ? t(
+        `Offer ends ${new Date(selected.offerEndsAt).toLocaleDateString('en-SA', { day: 'numeric', month: 'long' })}`,
+        `ينتهي العرض ${new Date(selected.offerEndsAt).toLocaleDateString('ar-SA', { day: 'numeric', month: 'long' })}`,
+      )
+    : null
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f8f6f2_0%,#ffffff_42%,#f4ede1_100%)]">
@@ -703,6 +688,8 @@ function ProductPageInner({
                   src={imgSrc}
                   alt={name}
                   fill
+                  priority
+                  fetchPriority="high"
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                   onError={() => setImgError(true)}
@@ -800,6 +787,7 @@ function ProductPageInner({
                       {src && (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={src} alt={`${name} ${idx + 1}`}
+                          loading={idx === 0 ? 'eager' : 'lazy'}
                           className="w-full h-full object-cover" />
                       )}
                     </button>
@@ -870,31 +858,13 @@ function ProductPageInner({
                   )}
                 </div>
 
-                <div className="min-w-[12rem] rounded-[24px] border border-white/80 bg-white/90 px-3.5 py-3 shadow-sm">
-                  <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">{t('Selected option', 'الخيار المحدد')}</p>
-                  <p className="mt-1 truncate text-sm font-black text-slate-800">{selectedVariantLabel}</p>
-                  <p className={`mt-2 text-xs font-bold ${inStock ? 'text-emerald-600' : 'text-rose-500'}`}>
-                    {inStock
-                      ? t(`${remainingStock} available to add`, `${remainingStock} متاح للإضافة`)
-                      : t('Unavailable right now', 'غير متوفر الآن')}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-4 grid gap-2.5 sm:grid-cols-3">
-                {purchaseSignals.map((item) => (
-                  <div key={item.label} className="rounded-[20px] border border-stone-200 bg-white/88 px-3.5 py-3">
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">{item.label}</p>
-                    <p className="mt-1 text-sm font-bold text-slate-700">{item.value}</p>
+                {offerEndLabel ? (
+                  <div className="flex min-w-[12rem] items-center justify-end self-end text-xs font-bold text-red-500 sm:text-sm">
+                    {offerEndLabel}
                   </div>
-                ))}
+                ) : null}
               </div>
             </div>
-
-            {/* Offer countdown Ã¢â‚¬â€ live timer */}
-            {hasSavings && selected.offerEndsAt && (
-              <OfferCountdown endsAt={selected.offerEndsAt} locale={locale} />
-            )}
 
             {/* Stock badge */}
             {inStock && lowStock && (
@@ -904,7 +874,7 @@ function ProductPageInner({
               </div>
             )}
 
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3">
               <div className="rounded-[24px] border border-stone-200 bg-[#faf7f1] px-4 py-3">
                 <p className="text-[11px] font-bold text-slate-400">{t('Availability', '\u0627\u0644\u062a\u0648\u0641\u0631')}</p>
                 <p className={`mt-1 text-sm font-black ${inStock ? 'text-emerald-600' : 'text-red-500'}`}>
@@ -920,21 +890,6 @@ function ProductPageInner({
                 <p className="text-[11px] font-bold text-slate-400">{t('Branch', '\u0627\u0644\u0641\u0631\u0639')}</p>
                 <p className="mt-1 text-sm font-black text-slate-800">#{branchId}</p>
               </div>
-              <div className="rounded-[24px] border border-stone-200 bg-[#faf7f1] px-4 py-3 col-span-2 sm:col-span-1">
-                <p className="text-[11px] font-bold text-slate-400">{t('Option', '\u0627\u0644\u062e\u064a\u0627\u0631')}</p>
-                <p className="mt-1 text-sm font-black text-slate-800 truncate">
-                  {selectedVariantLabel}
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              {serviceHighlights.map((item) => (
-                <div key={item.label} className="rounded-[24px] border border-stone-200 bg-white px-4 py-3.5">
-                  <p className="text-[11px] font-black uppercase tracking-[0.16em] text-amber-600">{item.label}</p>
-                  <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{item.value}</p>
-                </div>
-              ))}
             </div>
 
             <div className="h-px w-full bg-slate-200" />

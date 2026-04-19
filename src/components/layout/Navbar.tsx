@@ -3,6 +3,7 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import type { MouseEvent as ReactMouseEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/context/auth'
 import { useCart } from '@/context/cart'
@@ -50,7 +51,15 @@ export function Navbar() {
       <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/95 shadow-sm backdrop-blur">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 md:h-16">
           <Link href="/" className="flex flex-shrink-0 items-center" aria-label={t('inOne home', 'الصفحة الرئيسية inOne')}>
-            <span className="text-2xl font-black tracking-[0.2em] text-slate-900 md:text-[28px]">INONE</span>
+            <Image
+              src="/inone-logo-original-cropped.png"
+              alt="inOne"
+              width={183}
+              height={60}
+              quality={100}
+              priority
+              className="h-9 w-auto md:h-10"
+            />
           </Link>
 
           <div className="hidden max-w-md flex-1 md:flex">
@@ -76,7 +85,15 @@ export function Navbar() {
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 md:h-16">
         <div className="flex min-w-0 items-center gap-2.5 md:gap-3">
           <Link href="/" className="flex flex-shrink-0 items-center" aria-label={t('inOne home', 'الصفحة الرئيسية inOne')}>
-            <span className="text-2xl font-black tracking-[0.2em] text-slate-900 md:text-[28px]">INONE</span>
+            <Image
+              src="/inone-logo-original-cropped.png"
+              alt="inOne"
+              width={183}
+              height={60}
+              quality={100}
+              priority
+              className="h-9 w-auto md:h-10"
+            />
           </Link>
 
           <Link

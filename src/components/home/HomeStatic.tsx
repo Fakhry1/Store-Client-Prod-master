@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRef } from 'react'
 import { useLocale } from '@/context/locale'
 
 function IconWrap({ children }: { children: React.ReactNode }) {
@@ -24,39 +25,14 @@ export function TrustBar() {
         </svg>
       ),
     },
-    {
-      title: t('Secure payment', 'دفع آمن'),
-      sub: t('Trusted checkout flow', 'رحلة دفع موثوقة'),
-      icon: (
-        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 11c0 1.657-1.79 3-4 3s-4-1.343-4-3 1.79-3 4-3 4 1.343 4 3zm8 0c0 1.657-1.79 3-4 3-.693 0-1.345-.132-1.91-.365M12 11V7a4 4 0 118 0v4m-8 0v6a4 4 0 108 0v-6" />
-        </svg>
-      ),
-    },
-    {
-      title: t('Easy returns', 'إرجاع سهل'),
-      sub: t('Clear post-purchase support', 'دعم واضح بعد الشراء'),
-      icon: (
-        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 4v5h5M20 20v-5h-5M5.636 18.364A9 9 0 103.35 8.05M18.364 5.636A9 9 0 0120.65 15.95" />
-        </svg>
-      ),
-    },
-    {
-      title: t('Verified quality', 'جودة موثقة'),
-      sub: t('Carefully curated selections', 'اختيارات منتقاة بعناية'),
-      icon: (
-        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3l7 4v5c0 5-3.5 7.74-7 9-3.5-1.26-7-4-7-9V7l7-4zm-1 10l2 2 4-4" />
-        </svg>
-      ),
-    },
   ]
+  const isSingleItem = items.length === 1
 
   return (
     <section className="border-y border-stone-200 bg-white">
       <div className="mx-auto max-w-7xl px-6 py-5">
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className={isSingleItem ? 'mx-auto max-w-3xl' : ''}>
+          <div className={`grid gap-3 ${isSingleItem ? 'grid-cols-1' : 'md:grid-cols-2 xl:grid-cols-4'}`}>
           {items.map((item) => (
             <div
               key={item.title}
@@ -69,6 +45,7 @@ export function TrustBar() {
               </div>
             </div>
           ))}
+          </div>
         </div>
       </div>
     </section>
@@ -87,9 +64,9 @@ export function SectionHeader({
   return (
     <div className="flex items-end justify-between gap-4">
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-amber-600">{eyebrow}</p>
+        <p className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-amber-600">{eyebrow}</p>
         <h2
-          className="font-display text-3xl font-black leading-[1.15] text-slate-900 md:text-4xl"
+          className="font-display text-2xl font-black leading-[1.2] text-slate-900 md:text-[32px]"
         >
           {title}
         </h2>
@@ -97,7 +74,7 @@ export function SectionHeader({
       {link && (
         <Link
           href={link.href}
-          className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 transition-colors hover:text-slate-900"
+          className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-500 transition-colors hover:text-slate-900"
         >
           {link.label}
           <svg className="h-4 w-4 flip-rtl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,7 +90,10 @@ export function HomeCTA() {
   const { t } = useLocale()
 
   return (
-    <section className="bg-white py-16 md:py-20">
+    <section
+      className="bg-white py-16 md:py-20"
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '560px' }}
+    >
       <div className="mx-auto max-w-7xl px-6">
         <div className="relative overflow-hidden rounded-[36px] border border-[#2f3138] bg-[#101216] px-6 py-12 text-center shadow-[0_30px_90px_rgba(2,6,23,0.18)] md:px-10 md:py-16">
           <div className="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.22),transparent_55%)]" />
@@ -125,7 +105,7 @@ export function HomeCTA() {
               {t('A sharper store experience is ready', 'تجربة متجر أوضح أصبحت جاهزة')}
             </p>
             <h2
-              className="font-display text-3xl font-black leading-[1.15] text-white md:text-5xl md:leading-[1.08]"
+              className="font-display text-xl font-black leading-[1.2] text-white md:text-[2rem] md:leading-[1.15]"
             >
               {t('Browse the full collection in one polished flow', 'تصفح المجموعة الكاملة في رحلة أكثر أناقة')}
             </h2>
@@ -164,7 +144,7 @@ export function OffersHeader({ count }: { count: number }) {
           </span>
         </div>
         <h2
-          className="font-display text-3xl font-black leading-[1.15] text-white md:text-4xl"
+          className="font-display text-xl font-black leading-[1.2] text-white md:text-[28px]"
         >
           {t('Deals worth catching', 'عروض تستحق المتابعة')}
         </h2>
@@ -216,27 +196,67 @@ const CARD_ACCENTS = [
 ]
 
 export function CategoriesSection({ categories }: { categories: any[] }) {
-  const { t, locale } = useLocale()
+  const { t, locale, isRTL } = useLocale()
+  const scrollRef = useRef<HTMLDivElement | null>(null)
+
+  function scrollCategories(direction: 'next' | 'prev') {
+    if (!scrollRef.current) return
+
+    const amount = Math.min(scrollRef.current.clientWidth * 0.82, 320)
+    const signedAmount = direction === 'next'
+      ? (isRTL ? -amount : amount)
+      : (isRTL ? amount : -amount)
+
+    scrollRef.current.scrollBy({ left: signedAmount, behavior: 'smooth' })
+  }
 
   return (
-    <section className="py-16 md:py-20">
+    <section
+      className="py-16 md:py-20"
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '760px' }}
+    >
       <div className="mx-auto max-w-7xl px-6">
         <SectionHeader
           eyebrow={t('Browse by', 'تصفح حسب')}
           title={t('Categories', 'التصنيفات')}
           link={{ href: '/shop', label: t('View All', 'عرض الكل') }}
         />
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        <div className="mt-5 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => scrollCategories('prev')}
+            aria-label={t('Previous categories', 'التصنيفات السابقة')}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)] transition-colors hover:text-slate-900"
+          >
+            <svg className={`h-4 w-4 ${isRTL ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollCategories('next')}
+            aria-label={t('Next categories', 'التصنيفات التالية')}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)] transition-colors hover:text-slate-900"
+          >
+            <svg className={`h-4 w-4 ${isRTL ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+        <div
+          ref={scrollRef}
+          className="mt-5 flex gap-3 overflow-x-auto pb-2 scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
           {categories.map((cat: any, index: number) => (
             <Link
               key={cat.id}
               href={`/shop?category=${cat.id}`}
-              className={`group rounded-[28px] border bg-gradient-to-br px-4 py-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(15,23,42,0.08)] ${CARD_ACCENTS[index % CARD_ACCENTS.length]}`}
+              className={`group flex min-h-[170px] min-w-[160px] snap-start flex-col items-center justify-center rounded-[28px] border bg-gradient-to-br px-4 py-5 text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(15,23,42,0.08)] sm:min-w-[180px] ${CARD_ACCENTS[index % CARD_ACCENTS.length]}`}
             >
               <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm">
                 {getCategoryIcon(cat.nameAr ?? '', cat.nameEn ?? '', index)}
               </span>
-              <p className="mt-4 text-sm font-black leading-6 text-slate-900">
+              <p className="mt-4 text-[13px] font-black leading-5 text-slate-900 md:text-sm">
                 {locale === 'ar' ? cat.nameAr : cat.nameEn}
               </p>
               <p className="mt-1 text-xs text-slate-500">
@@ -272,7 +292,11 @@ export function ProductCollectionSection({
   const { t } = useLocale()
 
   return (
-    <section id={id} className="py-16 md:py-20">
+    <section
+      id={id}
+      className="py-16 md:py-20"
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '920px' }}
+    >
       <div className="mx-auto max-w-7xl px-6">
         <SectionHeader
           eyebrow={t(eyebrowEn, eyebrowAr)}

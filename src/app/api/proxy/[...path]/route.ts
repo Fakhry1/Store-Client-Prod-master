@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const API_BASE_URL = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? ''
 const MAX_PROXY_BODY_BYTES = Number(process.env.PROXY_MAX_BODY_BYTES ?? 1_048_576)
-const REQUEST_TIMEOUT_MS = Number(process.env.PROXY_REQUEST_TIMEOUT_MS ?? 10_000)
+const REQUEST_TIMEOUT_MS = Number(process.env.PROXY_REQUEST_TIMEOUT_MS ?? 20_000)
 const HTTP_AGENT = new http.Agent({ keepAlive: true })
 const HTTPS_AGENT = new https.Agent({ keepAlive: true, rejectUnauthorized: true })
 const HTTPS_AGENT_INSECURE = new https.Agent({ keepAlive: true, rejectUnauthorized: false })
@@ -84,51 +84,74 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
     requestHeaders[key] = value
   })
 
-  const upstream = await new Promise<{
+  let upstream: {
     status: number
     statusText: string
     headers: http.IncomingHttpHeaders
     body: Buffer
-  }>((resolve, reject) => {
-    const req = transport.request(
-      targetUrl,
-      {
-        method: request.method,
-        headers: requestHeaders,
-        agent:
-          targetUrl.protocol === 'https:'
-            ? (allowInsecureLocalhost(targetUrl) ? HTTPS_AGENT_INSECURE : HTTPS_AGENT)
-            : HTTP_AGENT,
-      },
-      (res) => {
-        const chunks: Buffer[] = []
+  }
 
-        res.on('data', (chunk) => {
-          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
-        })
+  try {
+    upstream = await new Promise<{
+      status: number
+      statusText: string
+      headers: http.IncomingHttpHeaders
+      body: Buffer
+    }>((resolve, reject) => {
+      const req = transport.request(
+        targetUrl,
+        {
+          method: request.method,
+          headers: requestHeaders,
+          agent:
+            targetUrl.protocol === 'https:'
+              ? (allowInsecureLocalhost(targetUrl) ? HTTPS_AGENT_INSECURE : HTTPS_AGENT)
+              : HTTP_AGENT,
+        },
+        (res) => {
+          const chunks: Buffer[] = []
 
-        res.on('end', () => {
-          resolve({
-            status: res.statusCode ?? 500,
-            statusText: res.statusMessage ?? 'Internal Server Error',
-            headers: res.headers,
-            body: Buffer.concat(chunks),
+          res.on('data', (chunk) => {
+            chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
           })
-        })
+
+          res.on('end', () => {
+            resolve({
+              status: res.statusCode ?? 500,
+              statusText: res.statusMessage ?? 'Internal Server Error',
+              headers: res.headers,
+              body: Buffer.concat(chunks),
+            })
+          })
+        }
+      )
+
+      req.setTimeout(REQUEST_TIMEOUT_MS, () => {
+        req.destroy(new Error(`Upstream request timed out after ${REQUEST_TIMEOUT_MS}ms`))
+      })
+      req.on('error', reject)
+
+      if (body && body.length > 0) {
+        req.write(body)
       }
-    )
 
-    req.setTimeout(REQUEST_TIMEOUT_MS, () => {
-      req.destroy(new Error(`Upstream request timed out after ${REQUEST_TIMEOUT_MS}ms`))
+      req.end()
     })
-    req.on('error', reject)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Upstream request failed'
 
-    if (body && body.length > 0) {
-      req.write(body)
+    if (message.includes('timed out')) {
+      return NextResponse.json(
+        { message },
+        { status: 504 }
+      )
     }
 
-    req.end()
-  })
+    return NextResponse.json(
+      { message: 'Unable to reach upstream service' },
+      { status: 502 }
+    )
+  }
 
   const response = new NextResponse(new Uint8Array(upstream.body), {
     status: upstream.status,

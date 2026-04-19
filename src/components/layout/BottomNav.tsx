@@ -57,8 +57,8 @@ export function BottomNav() {
       label:  t('Shop', 'المتجر'),
       active: pathname.startsWith('/shop') || pathname.startsWith('/product'),
       icon: (a: boolean) => (
-        <svg className="w-5 h-5" fill={a ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={a ? 0 : 1.8}
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={a ? 2.2 : 1.8}
             d="M4 6h16M4 10h16M4 14h16M4 18h16" />
         </svg>
       ),

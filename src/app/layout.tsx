@@ -43,6 +43,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+  icons: {
+    icon: '/inone-logo.svg',
+    shortcut: '/inone-logo.svg',
+    apple: '/inone-logo.svg',
+  },
   openGraph: {
     title: STORE_NAME,
     description: getStoreDescription('ar'),
@@ -51,11 +56,20 @@ export const metadata: Metadata = {
     siteName: STORE_NAME,
     locale: 'ar_SA',
     alternateLocale: ['en_US'],
+    images: [
+      {
+        url: '/inone-logo.svg',
+        width: 360,
+        height: 120,
+        alt: STORE_NAME,
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: STORE_NAME,
     description: getStoreDescription('en'),
+    images: ['/inone-logo.svg'],
   },
   robots: {
     index: true,
@@ -76,6 +90,10 @@ export const viewport: Viewport = {
   themeColor: '#f8f6f2',
 }
 
+const imageOrigin = process.env.NEXT_PUBLIC_IMAGE_BASE_URL
+  ? new URL(process.env.NEXT_PUBLIC_IMAGE_BASE_URL).origin
+  : null
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
@@ -84,7 +102,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       className={`${playfair.variable} ${notoKufi.variable}`}
       suppressHydrationWarning
     >
-      <body className="antialiased font-kufi bg-stone-50" suppressHydrationWarning>
+      <body className="bg-transparent font-kufi antialiased text-slate-900" suppressHydrationWarning>
+        {imageOrigin && (
+          <>
+            <link rel="preconnect" href={imageOrigin} />
+            <link rel="dns-prefetch" href={imageOrigin} />
+          </>
+        )}
         <LocaleProvider>
           <AuthProvider>
             <CartProvider>

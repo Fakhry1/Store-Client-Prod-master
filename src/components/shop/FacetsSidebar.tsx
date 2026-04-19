@@ -161,21 +161,23 @@ export function FacetsSidebar({ facets, currentQuery }: Props) {
         </FacetSection>
       )}
 
-      {facets.attributes.map((attribute) => {
+      {facets.attributes.map((attribute, attributeIndex) => {
         const selectedIds = currentAttrs[attribute.attributeId] ? currentAttrs[attribute.attributeId].split(',').map(Number) : []
         const isColorAttribute = attribute.options.some((option) => option.colorHex)
         const title = locale === 'ar' ? attribute.nameAr || attribute.nameEn : attribute.nameEn || attribute.nameAr
+        const attributeKey = `${attribute.attributeId}-${attribute.nameEn || attribute.nameAr || 'attribute'}-${attributeIndex}`
 
         return (
-          <FacetSection key={attribute.attributeId} title={title} eyebrow={t('Options', 'خيارات')}>
+          <FacetSection key={attributeKey} title={title} eyebrow={t('Options', 'خيارات')}>
             {isColorAttribute ? (
               <div className="flex flex-wrap gap-2 px-1 pt-1">
-                {attribute.options.map((option) => {
+                {attribute.options.map((option, optionIndex) => {
                   const active = selectedIds.includes(option.optionId)
                   const colorLabel = locale === 'ar' ? option.valueAr || option.valueEn : option.valueEn || option.valueAr
+                  const optionKey = `${attribute.attributeId}-${option.optionId}-${option.valueEn || option.valueAr || 'option'}-${optionIndex}`
                   return (
                     <button
-                      key={option.optionId}
+                      key={optionKey}
                       onClick={() => toggleAttrOption(attribute.attributeId, option.optionId)}
                       title={colorLabel}
                       className={`relative h-9 w-9 rounded-full border-2 transition-all ${
@@ -196,12 +198,13 @@ export function FacetsSidebar({ facets, currentQuery }: Props) {
               </div>
             ) : (
               <div className="flex flex-col gap-1.5">
-                {attribute.options.map((option) => {
+                {attribute.options.map((option, optionIndex) => {
                   const active = selectedIds.includes(option.optionId)
                   const optionLabel = locale === 'ar' ? option.valueAr || option.valueEn : option.valueEn || option.valueAr
+                  const optionKey = `${attribute.attributeId}-${option.optionId}-${option.valueEn || option.valueAr || 'option'}-${optionIndex}`
                   return (
                     <FilterButton
-                      key={option.optionId}
+                      key={optionKey}
                       label={optionLabel}
                       count={option.count}
                       active={active}

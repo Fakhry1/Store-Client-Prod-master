@@ -8,15 +8,33 @@ import { useRouter } from 'next/navigation'
 import { useCart } from '@/context/cart'
 import { useAuth } from '@/context/auth'
 import { useLocale } from '@/context/locale'
-import { PhoneNumberField } from '@/components/forms/PhoneNumberField'
 import { promoApi, orderApi, addressApi, walletApi } from '@/lib/api'
 import type { PromoResult, CustomerAddress, CartItem, Cart, CustomerWalletDetails } from '@/types'
-import { formatInternationalPhoneForDisplay } from '@/lib/phone'
 import { getCurrencyLabel } from '@/lib/store'
 import { getPublicApiBaseUrl, joinUrl } from '@/lib/url'
 
 const AddressModal = dynamic(() => import('@/components/AddressModal'), {
   loading: () => null,
+})
+
+const CheckoutFormSection = dynamic(() => import('@/components/cart/CheckoutFormSection'), {
+  loading: () => (
+    <div className="space-y-3">
+      <div className="h-56 animate-pulse rounded-2xl border border-slate-100 bg-white" />
+      <div className="h-64 animate-pulse rounded-2xl border border-slate-100 bg-white" />
+      <div className="h-40 animate-pulse rounded-2xl border border-slate-100 bg-white" />
+    </div>
+  ),
+})
+
+const OrderReviewSection = dynamic(() => import('@/components/cart/OrderReviewSection'), {
+  loading: () => (
+    <div className="space-y-3">
+      <div className="h-20 animate-pulse rounded-2xl border border-slate-100 bg-white" />
+      <div className="h-52 animate-pulse rounded-2xl border border-slate-100 bg-white" />
+      <div className="h-40 animate-pulse rounded-2xl border border-slate-100 bg-white" />
+    </div>
+  ),
 })
 
 const API_URL = getPublicApiBaseUrl()
@@ -103,7 +121,7 @@ function BottomSheet({ open, onClose, children }: {
   return (
     <div className="fixed inset-0 z-50">
       <button className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="absolute inset-x-0 bottom-0 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto">
+      <div className="absolute inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+7rem)] max-h-[calc(85vh-7rem)] overflow-y-auto rounded-t-3xl bg-white shadow-2xl md:bottom-0 md:max-h-[85vh]">
         <div className="sticky top-0 bg-white pt-3 pb-2 px-4">
           <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto" />
         </div>
@@ -658,263 +676,7 @@ function CartItemRow({ item, onUpdate, onRemove, locale, t }: {
   )
 }
 
-// â”€â”€â”€ Checkout Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-function CheckoutForm({ t, name, setName, phone, setPhone, notes, setNotes, payment, setPayment,
-  fulfillment, addresses, selectedAddr, setSelectedAddr, onMount, onAddAddress }: {
-  t: (en: string, ar: string) => string
-  name: string; setName: (v: string) => void; phone: string; setPhone: (v: string) => void
-  notes: string; setNotes: (v: string) => void; payment: number; setPayment: (v: number) => void
-  fulfillment: 'pickup' | 'delivery'; addresses: CustomerAddress[]
-  selectedAddr: number | null; setSelectedAddr: (v: number) => void
-  onMount: (force?: boolean) => Promise<void>; onAddAddress: () => void
-}) {
-  useEffect(() => { void onMount() }, [onMount])
-  const isDelivery = fulfillment === 'delivery'
-
-  return (
-    <div className="space-y-3">
-      {/* Contact */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-4 md:p-5">
-        <h3 className="font-black text-slate-900 mb-4 text-sm flex items-center gap-2">
-          <span className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center font-black flex-shrink-0">1</span>
-          {t('Contact Info', 'بيانات التواصل')}
-        </h3>
-        <div className="grid sm:grid-cols-2 gap-3">
-          <Field label={t('Full Name', 'الاسم الكامل')} value={name} onChange={setName}
-            required placeholder={t('Your name', 'اسمك')} />
-          <PhoneNumberField
-            label={t('Phone', 'الجوال')}
-            value={phone}
-            onChange={setPhone}
-            required
-            hint={t('Country code and local number are saved together', 'يتم حفظ مفتاح الدولة والرقم معًا')}
-          />
-        </div>
-      </div>
-
-      {/* Address */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-4 md:p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-black text-slate-900 text-sm flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center font-black flex-shrink-0">2</span>
-            {isDelivery ? t('Delivery Address', 'عنوان التوصيل') : t('Pickup Address', 'عنوان الاستلام')}
-          </h3>
-          <button onClick={onAddAddress}
-            className="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1 transition-colors">
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-            </svg>
-            {t('Add new', 'إضافة جديد')}
-          </button>
-        </div>
-
-        {addresses.length === 0 ? (
-          <button onClick={onAddAddress}
-            className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-slate-200 hover:border-amber-400 hover:bg-amber-50/50 transition-all group">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-amber-100 flex items-center justify-center flex-shrink-0 transition-colors">
-              <svg className="w-5 h-5 text-slate-400 group-hover:text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <div className="text-start">
-              <p className="text-sm font-bold text-slate-700">{t('Add an address', 'أضف عنواناً')}</p>
-              <p className="text-xs text-slate-400 mt-0.5">{t('Tap here', 'اضغط هنا')}</p>
-            </div>
-          </button>
-        ) : (
-          <div className="space-y-2">
-            {addresses.map(addr => (
-              <label key={addr.id}
-                className={`flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all
-                  ${selectedAddr === addr.id ? 'border-slate-900 bg-slate-50' : 'border-slate-200 hover:border-slate-300'}`}>
-                <input type="radio" checked={selectedAddr === addr.id}
-                  onChange={() => setSelectedAddr(addr.id)} className="mt-0.5 accent-slate-900" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-bold text-slate-800">{addr.label}</p>
-                    {addr.isDefault && (
-                      <span className="text-[10px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">
-                        {t('Default', 'افتراضي')}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-400 mt-0.5 truncate">{addr.street}, {addr.city}</p>
-                </div>
-              </label>
-            ))}
-          </div>
-        )}
-
-        {isDelivery && (
-          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between text-xs">
-            <span className="font-bold text-amber-800">{t('Delivery fee', 'رسوم التوصيل')}</span>
-            <span className="font-black text-amber-900">{DELIVERY_FEE.toFixed(2)} {getCurrencyLabel('ar')}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Payment */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-4 md:p-5">
-        <h3 className="font-black text-slate-900 mb-4 text-sm flex items-center gap-2">
-          <span className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center font-black flex-shrink-0">3</span>
-          {t('Payment Method', 'طريقة الدفع')}
-        </h3>
-        <div className="grid grid-cols-2 gap-2">
-          {[
-            { id: 1, icon: '💵', label: t('Cash', 'كاش'),   sub: t('On pickup', 'عند الاستلام') },
-            { id: 2, icon: '💳', label: t('Bankak', 'بنكك'), sub: t('Bank App', 'تطبيق بنكي') },
-          ].map(p => (
-            <label key={p.id}
-              className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all
-                ${payment === p.id ? 'border-slate-900 bg-slate-50' : 'border-slate-200 hover:border-slate-300'}`}>
-              <input type="radio" checked={payment === p.id} onChange={() => setPayment(p.id)} className="accent-slate-900" />
-              <div>
-                <p className="text-lg leading-none">{p.icon}</p>
-                <p className="text-sm font-bold text-slate-800 mt-0.5">{p.label}</p>
-                <p className="text-[10px] text-slate-400">{p.sub}</p>
-              </div>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Notes */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-4 md:p-5">
-        <Field label={t('Notes (optional)', 'ملاحظات (اختياري)')} value={notes} onChange={setNotes}
-          textarea placeholder={t('Any special requests...', 'أي طلبات خاصة...')} />
-      </div>
-    </div>
-  )
-}
-
-// â”€â”€â”€ Order Review â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-function OrderReview({ cart, name, phone, payment, addresses, selectedAddr, promoResult,
-  fulfillment, locale, t }: {
-  cart: Cart | null; name: string; phone: string; payment: number
-  addresses: CustomerAddress[]; selectedAddr: number | null
-  promoResult: PromoResult | null; fulfillment: 'pickup' | 'delivery'
-  locale: string; t: (en: string, ar: string) => string
-}) {
-  const addr      = addresses.find(a => a.id === selectedAddr)
-  const isDelivery = fulfillment === 'delivery'
-  const items = cart?.items ?? []
-
-  const displayPhone = formatInternationalPhoneForDisplay(phone)
-  const currencyLabel = getCurrencyLabel(locale)
-  return (
-    <div className="space-y-3">
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3">
-        <span className="text-2xl">👀</span>
-        <div>
-          <p className="font-black text-amber-900 text-sm">{t('Review before confirming', 'راجع طلبك قبل التأكيد')}</p>
-          <p className="text-xs text-amber-700 mt-0.5">{t('Last chance to make changes', 'آخر فرصة للتعديل')}</p>
-        </div>
-      </div>
-
-      {/* Products */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-4">
-        <h3 className="font-black text-slate-900 text-sm mb-3">{t('Products', 'المنتجات')} ({items.length})</h3>
-        <div className="space-y-3">
-          {items.map(item => (
-            <div key={item.id} className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-lg bg-slate-50 border border-slate-100 flex-shrink-0 overflow-hidden relative">
-                {item.imagePath && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={joinUrl(API_URL, item.imagePath) ?? ''} alt=""
-                    className="w-full h-full object-cover"
-                    onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-slate-800 truncate">
-                  {locale === 'ar' ? item.productNameAr || item.productNameEn : item.productNameEn}
-                </p>
-                <p className="text-[11px] text-slate-400">
-                  {locale === 'ar' ? item.variantNameAr || item.variantNameEn : item.variantNameEn}
-                  {' · '}{t('Qty', 'الكمية')}: {item.quantity}
-                </p>
-              </div>
-              <span className="text-sm font-black text-slate-900 flex-shrink-0">{item.itemTotal.toFixed(2)}</span>
-            </div>
-          ))}
-          {items.length === 0 && (
-            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm font-bold text-slate-500">
-              {t('Cart items are still loading. Please wait a moment.', 'عناصر السلة ما زالت قيد التحميل. انتظر لحظة من فضلك.')}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Fulfillment + Address */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-4">
-        <h3 className="font-black text-slate-900 text-sm mb-3">
-          {isDelivery ? t('Delivery Details', 'تفاصيل التوصيل') : t('Pickup Details', 'تفاصيل الاستلام')}
-        </h3>
-        <div className="flex items-center gap-2 text-sm font-bold mb-3 p-3 bg-slate-50 rounded-xl">
-          <span>{isDelivery ? '🚚' : '🏪'}</span>
-          <span className="text-slate-800">{isDelivery ? t('Delivery', 'توصيل') : t('Pickup', 'استلام')}</span>
-        </div>
-        {addr && (
-          <div className="p-3 bg-slate-50 rounded-xl">
-            <p className="text-xs text-slate-400 mb-0.5">{t('Address', 'العنوان')}</p>
-            <p className="text-sm font-bold text-slate-800">{addr.label}</p>
-            <p className="text-xs text-slate-500 mt-0.5">{addr.street}, {addr.city}</p>
-          </div>
-        )}
-      </div>
-
-      {/* Contact + Payment */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-4">
-        <h3 className="font-black text-slate-900 text-sm mb-3">{t('Contact & Payment', 'التواصل والدفع')}</h3>
-        <div className="grid grid-cols-2 gap-2">
-          {[
-            { label: t('Name', 'الاسم'), value: name },
-            { label: t('Phone', 'الجوال'), value: displayPhone },
-            { label: t('Payment', 'الدفع'), value: payment === 1 ? `💵 ${t('Cash', 'كاش')}` : `💳 ${t('Bankak', 'بنكك')}` },
-          ].map(row => (
-            <div key={row.label} className="p-3 bg-slate-50 rounded-xl">
-              <p className="text-[11px] text-slate-400 mb-0.5">{row.label}</p>
-              <p className="text-sm font-bold text-slate-800 truncate">{row.value}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {promoResult?.isValid && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2">
-          <TagIcon className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-          <p className="text-sm font-bold text-emerald-700">
-            {t('Promo applied', 'كود الخصم مُطبَّق')} — {t('Saved', 'وفّرت')} {(promoResult.discountAmount ?? 0).toFixed(2)} {currencyLabel}
-          </p>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// â”€â”€â”€ Field â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-function Field({ label, value, onChange, type = 'text', required, placeholder, textarea }: {
-  label: string; value: string; onChange: (v: string) => void
-  type?: string; required?: boolean; placeholder?: string; textarea?: boolean
-}) {
-  const cls = 'w-full px-4 py-3 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition-all bg-white placeholder:text-slate-300'
-  return (
-    <div>
-      <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-1.5">{label}</label>
-      {textarea
-        ? <textarea value={value} onChange={e => onChange(e.target.value)} rows={3}
-            placeholder={placeholder} className={`${cls} resize-none`} />
-        : <input type={type} value={value} onChange={e => onChange(e.target.value)}
-            required={required} placeholder={placeholder} className={cls} />
-      }
-    </div>
-  )
-}
+// â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -952,6 +714,7 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
   const [addrLoaded, setAddrLoaded]     = useState(false)
   const [showAddressModal, setShowAddressModal] = useState(false)
   const addrLoadedRef = useRef(false)
+  const addrLoadingPromiseRef = useRef<Promise<void> | null>(null)
   const walletReqIdRef = useRef(0)
 
   const hasOut = !!cart?.items?.some(i => !i.isAvailable || i.stockQuantity < i.quantity)
@@ -965,22 +728,35 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
 
   const loadAddresses = useCallback(async (force = false) => {
     if (!token || (addrLoadedRef.current && !force)) return
-    try {
-      const res  = await addressApi.list(token)
-      const list = (res as any)?.addresses ?? []
-      const def = list.find((a: any) => a.isDefault) ?? list[0]
-      startTransition(() => {
-        setAddresses(list)
-        setSelectedAddr((prev) => {
-          if (prev && list.some((addr: CustomerAddress) => addr.id === prev)) {
-            return prev
-          }
-          return def ? def.id : null
+    if (addrLoadingPromiseRef.current && !force) return addrLoadingPromiseRef.current
+
+    let loadPromise: Promise<void> | null = null
+    loadPromise = (async () => {
+      try {
+        const res  = await addressApi.list(token)
+        const list = (res as any)?.addresses ?? []
+        const def = list.find((a: any) => a.isDefault) ?? list[0]
+        startTransition(() => {
+          setAddresses(list)
+          setSelectedAddr((prev) => {
+            if (prev && list.some((addr: CustomerAddress) => addr.id === prev)) {
+              return prev
+            }
+            return def ? def.id : null
+          })
         })
-      })
-      addrLoadedRef.current = true
-      setAddrLoaded(true)
-    } catch {}
+        addrLoadedRef.current = true
+        setAddrLoaded(true)
+      } catch {}
+      finally {
+        if (addrLoadingPromiseRef.current === loadPromise) {
+          addrLoadingPromiseRef.current = null
+        }
+      }
+    })()
+
+    addrLoadingPromiseRef.current = loadPromise
+    return loadPromise
   }, [token])
 
   useEffect(() => {
@@ -1134,11 +910,31 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
         ? t('Review Order', 'مراجعة الطلب')
         : t('Place Order', 'تأكيد الطلب')
 
-  // â”€â”€ Empty state â”€â”€
+    if (isLoading && !cart) {
+      return (
+        <div className="min-h-screen bg-[#f8f6f2] pb-28 md:pb-0">
+          <div className="mx-auto max-w-6xl px-4 py-5 md:px-6 md:py-10 space-y-5">
+            <div className="h-20 animate-pulse rounded-[32px] border border-stone-200 bg-white/88" />
+            <div className="h-14 animate-pulse rounded-2xl bg-slate-100" />
+            <div className="grid gap-5 lg:grid-cols-5">
+              <div className="space-y-3 lg:col-span-3">
+                <div className="h-32 animate-pulse rounded-[30px] border border-stone-200 bg-white" />
+                <div className="h-24 animate-pulse rounded-2xl border border-slate-100 bg-white" />
+                <div className="h-24 animate-pulse rounded-2xl border border-slate-100 bg-white" />
+                <div className="h-24 animate-pulse rounded-2xl border border-slate-100 bg-white" />
+              </div>
+              <div className="h-[460px] animate-pulse rounded-[32px] border border-stone-200 bg-white lg:col-span-2" />
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    // â”€â”€ Empty state â”€â”€
   if (!isLoading && (!cart || cart.items.length === 0)) {
     return (
-      <div className="min-h-[80vh] bg-[#f8f6f2] px-6 text-center">
-        <div className="mx-auto flex min-h-[80vh] max-w-md flex-col items-center justify-center">
+      <div className="min-h-[80svh] bg-[#f8f6f2] px-6 text-center">
+        <div className="mx-auto flex min-h-[80svh] max-w-md flex-col items-center justify-center">
         <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-[32px] border border-stone-200 bg-white shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
           <svg className="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -1252,18 +1048,21 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
                 }
               </>
             ) : step === 'checkout' ? (
-              <CheckoutForm
+              <CheckoutFormSection
                 t={t} name={name} setName={setName} phone={phone} setPhone={setPhone}
                 notes={notes} setNotes={setNotes} payment={payment} setPayment={setPayment}
                 fulfillment={fulfillment} addresses={addresses} selectedAddr={selectedAddr}
-                setSelectedAddr={setSelectedAddr} onMount={loadAddresses}
+                setSelectedAddr={setSelectedAddr}
                 onAddAddress={() => setShowAddressModal(true)}
+                locale={locale as string}
+                deliveryFee={DELIVERY_FEE}
               />
             ) : (
-              <OrderReview
+              <OrderReviewSection
                 cart={cart} name={name} phone={phone} payment={payment}
                 addresses={addresses} selectedAddr={selectedAddr} promoResult={promoResult}
                 fulfillment={fulfillment} locale={locale as string} t={t}
+                apiUrl={API_URL}
               />
             )}
 
