@@ -35,14 +35,12 @@ export function GroupedProductCard({
       ? `/product?id=${group.productId}&variant=${firstVariantId}&branch=${branchId}`
       : `/product?id=${group.productId}&branch=${branchId}`
   const variantCount = group.variants.length
-  const offerLabel = group.hasActiveOffer && group.maxDiscount > 0
-    ? t('Limited offer', 'عرض محدود')
-    : t('Ready to explore', 'جاهز للاستكشاف')
   const stockLabel = allOutOfStock
     ? t('Currently unavailable', 'غير متوفر حاليًا')
     : group.totalStock <= 5
       ? t('Low stock', 'كمية محدودة')
       : t('In stock', 'متوفر الآن')
+  const hasOfferPrice = group.hasActiveOffer && firstVariant && firstVariant.basePrice > group.minPrice
 
   return (
     <Link
@@ -131,25 +129,23 @@ export function GroupedProductCard({
         </div>
 
         <div className="mt-3 rounded-[22px] border border-stone-100 bg-stone-50/80 px-3 py-2.5">
-          <div className="flex items-center justify-between gap-3">
-            <div>
+          <div>
               <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
                 {t('From', 'يبدأ من')}
               </p>
-              <span className="mt-1 inline-flex items-end gap-1 text-lg font-black text-slate-900">
-                {priceDisplay}
-                <span className="mb-0.5 text-[11px] font-bold text-slate-400">{currencyLabel}</span>
-              </span>
-            </div>
+              <div className="mt-1 flex flex-col gap-1">
+                <span className="inline-flex items-end gap-1 text-lg font-black text-slate-900">
+                  {priceDisplay}
+                  <span className="mb-0.5 text-[11px] font-bold text-slate-400">{currencyLabel}</span>
+                </span>
 
-            {group.hasActiveOffer && firstVariant && firstVariant.basePrice > group.minPrice && (
-              <div className="text-end">
-                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-600">
-                  {t('Save more', 'وفر أكثر')}
-                </p>
-                <div className="mt-1 text-xs text-slate-400 line-through">{firstVariant.basePrice.toFixed(0)}</div>
+                {hasOfferPrice && (
+                  <div className="text-xs text-slate-400 line-through">
+                    {firstVariant.basePrice.toFixed(0)}
+                    <span className="ms-1 text-[10px] font-bold text-slate-400">{currencyLabel}</span>
+                  </div>
+                )}
               </div>
-            )}
           </div>
         </div>
 

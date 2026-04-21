@@ -1,5 +1,17 @@
 import type { CatalogItem } from '@/types'
 
+function getDiscountPercentage(basePrice: number, currentPrice: number, explicitDiscount?: number) {
+  if (typeof explicitDiscount === 'number' && explicitDiscount > 0) {
+    return Math.round(explicitDiscount)
+  }
+
+  if (basePrice > currentPrice && basePrice > 0) {
+    return Math.round(((basePrice - currentPrice) / basePrice) * 100)
+  }
+
+  return 0
+}
+
 export interface ProductGroup {
   productId:      number
   productNameEn:  string
@@ -35,11 +47,17 @@ export function groupCatalogItems(items: CatalogItem[]): ProductGroup[] {
       })
     }
     const g = map.get(item.productId)!
+    const discountPercentage = getDiscountPercentage(
+      item.basePrice,
+      item.currentPrice,
+      item.discountPercentage
+    )
+
     g.variants.push(item)
     g.minPrice       = Math.min(g.minPrice, item.currentPrice)
     g.maxPrice       = Math.max(g.maxPrice, item.currentPrice)
     g.hasActiveOffer = g.hasActiveOffer || item.hasActiveOffer
-    g.maxDiscount    = Math.max(g.maxDiscount, item.discountPercentage ?? 0)
+    g.maxDiscount    = Math.max(g.maxDiscount, discountPercentage)
     g.totalStock    += item.quantityInStock
   })
   return Array.from(map.values())
@@ -56,6 +74,8 @@ import type { ProductSummary } from '@/types'
  * الحل: نصنع variant وهمياً يحمل البيانات الأساسية حتى يعمل الكارد بشكل صحيح
  */
 export function summaryToGroup(p: ProductSummary, branchId: number): ProductGroup {
+  const discountPercentage = getDiscountPercentage(p.minPrice, p.minCurrentPrice)
+
   // نصنع CatalogItem وهمياً من بيانات الـ ProductSummary
   // هذا يمنع الـ crash ويسمح للكارد بعرض الصورة والسعر بشكل صحيح
   const dummyVariant: CatalogItem = {
@@ -74,7 +94,7 @@ export function summaryToGroup(p: ProductSummary, branchId: number): ProductGrou
     basePrice:          p.minPrice,
     currentPrice:       p.minCurrentPrice,
     hasActiveOffer:     p.hasActiveOffer,
-    discountPercentage: undefined,
+    discountPercentage,
     offerEndsAt:        undefined,
     quantityInStock:    p.variantCount > 0 ? 1 : 0,
     isLowStock:         false,
@@ -91,7 +111,7 @@ export function summaryToGroup(p: ProductSummary, branchId: number): ProductGrou
     minPrice:       p.minCurrentPrice,
     maxPrice:       p.minCurrentPrice,
     hasActiveOffer: p.hasActiveOffer,
-    maxDiscount:    0,
+    maxDiscount:    discountPercentage,
     totalStock:     p.variantCount > 0 ? 1 : 0,
   }
 }

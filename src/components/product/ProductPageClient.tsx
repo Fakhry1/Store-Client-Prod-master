@@ -12,6 +12,7 @@ import { translateApiError } from '@/lib/errors'
 import { formatSavingsLabel, getCurrencyLabel } from '@/lib/store'
 import { getPublicApiBaseUrl, joinUrl } from '@/lib/url'
 import type { Product, ProductVariant, VariantAttribute, BranchProductAvailabilityItem, ProductSummary } from '@/types'
+import { PriceDisplay } from '@/components/ui/PriceDisplay'
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Attribute Helpers Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
@@ -1381,6 +1382,9 @@ function RelatedProducts({ categoryId, currentProductId, locale, t, branchId }: 
             const brand  = locale === 'ar' ? (item.brandNameAr || item.brandNameEn || item.brand) : (item.brandNameEn || item.brandNameAr || item.brand)
             const imgSrc = buildStoreImageUrl(item.imagePath)
             const hasOffer = item.hasActiveOffer && item.minCurrentPrice < item.minPrice
+            const discountPercentage = hasOffer && item.minPrice > 0
+              ? Math.round(((item.minPrice - item.minCurrentPrice) / item.minPrice) * 100)
+              : undefined
 
             return (
               <Link
@@ -1410,7 +1414,7 @@ function RelatedProducts({ categoryId, currentProductId, locale, t, branchId }: 
                   {hasOffer && (
                     <span className="absolute top-2 start-2 bg-red-600 text-white
                       text-[10px] font-black px-1.5 py-0.5 rounded-full">
-                      {t('Offer', 'عرض')}
+                      -{discountPercentage}%
                     </span>
                   )}
                 </div>
@@ -1425,17 +1429,13 @@ function RelatedProducts({ categoryId, currentProductId, locale, t, branchId }: 
                   <p className="text-xs font-bold text-slate-800 line-clamp-2 leading-snug mb-1.5">
                     {name}
                   </p>
-                  <div className="flex items-baseline gap-1.5 flex-wrap">
-                    <span className="text-sm font-black text-slate-900">
-                      {item.minCurrentPrice.toFixed(2)}
-                      <span className="text-[10px] font-normal text-slate-400 ms-0.5">{currencyLabel}</span>
-                    </span>
-                    {hasOffer && (
-                      <span className="text-[10px] line-through text-slate-400">
-                        {item.minPrice.toFixed(2)}
-                      </span>
-                    )}
-                  </div>
+                  <PriceDisplay
+                    basePrice={item.minPrice}
+                    currentPrice={item.minCurrentPrice}
+                    hasActiveOffer={item.hasActiveOffer}
+                    discountPercentage={discountPercentage}
+                    size="sm"
+                  />
                 </div>
               </Link>
             )

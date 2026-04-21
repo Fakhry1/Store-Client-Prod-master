@@ -20,6 +20,18 @@ const SIZE = {
   lg: { current: 'text-3xl font-bold', base: 'text-lg' },
 }
 
+function resolveDiscountPercentage(basePrice: number, currentPrice: number, explicitDiscount?: number) {
+  if (typeof explicitDiscount === 'number' && explicitDiscount > 0) {
+    return Math.round(explicitDiscount)
+  }
+
+  if (basePrice > currentPrice && basePrice > 0) {
+    return Math.round(((basePrice - currentPrice) / basePrice) * 100)
+  }
+
+  return undefined
+}
+
 export function PriceDisplay({
   basePrice, currentPrice, hasActiveOffer,
   discountPercentage, offerEndsAt, size = 'md', layout = 'row'
@@ -27,24 +39,31 @@ export function PriceDisplay({
   const { locale } = useLocale()
   const s = SIZE[size]
   const currencyLabel = getCurrencyLabel(locale)
+  const hasOfferPrice = hasActiveOffer && basePrice > currentPrice
+  const resolvedDiscount = hasOfferPrice
+    ? resolveDiscountPercentage(basePrice, currentPrice, discountPercentage)
+    : undefined
+
   return (
-    <div className={`flex ${layout === 'col' ? 'flex-col gap-1' : 'items-center gap-2 flex-wrap'}`}>
-      <span className={`${s.current} text-slate-900`}>
-        {currentPrice.toFixed(2)} {currencyLabel}
-      </span>
-      {hasActiveOffer && (
-        <>
-          <span className={`${s.base} text-slate-400 line-through`}>
-            {basePrice.toFixed(2)}
-          </span>
-          {discountPercentage && (
-            <OfferBadge
-              discount={discountPercentage}
-              endsAt={offerEndsAt}
-              size={size === 'sm' ? 'sm' : 'md'}
-            />
-          )}
-        </>
+    <div className={`flex ${layout === 'col' || hasOfferPrice ? 'flex-col gap-1' : 'items-center gap-2 flex-wrap'}`}>
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className={`${s.current} text-slate-900`}>
+          {currentPrice.toFixed(2)} {currencyLabel}
+        </span>
+
+        {resolvedDiscount && (
+          <OfferBadge
+            discount={resolvedDiscount}
+            endsAt={offerEndsAt}
+            size={size === 'sm' ? 'sm' : 'md'}
+          />
+        )}
+      </div>
+
+      {hasOfferPrice && (
+        <span className={`${s.base} text-slate-400 line-through`}>
+          {basePrice.toFixed(2)} {currencyLabel}
+        </span>
       )}
     </div>
   )
