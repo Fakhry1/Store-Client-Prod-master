@@ -202,6 +202,7 @@ function buildStoreImageUrl(path?: string | null): string | null {
 type ProductPageClientProps = {
   initialProduct: Product | null
   initialProductImages: string[]
+  initialRelatedProducts: ProductSummary[]
   initialVariantId?: number
   branchId: number
 }
@@ -245,6 +246,7 @@ function getInitialActiveImageIndex(
 function ProductPageInner({
   initialProduct,
   initialProductImages,
+  initialRelatedProducts,
   initialVariantId,
   branchId: initialBranchId,
 }: ProductPageClientProps) {
@@ -270,7 +272,6 @@ function ProductPageInner({
   const [adding,        setAdding]        = useState(false)
   const [added,         setAdded]         = useState(false)
   const [error,         setError]         = useState('')
-  const [imgError,      setImgError]      = useState(false)
   const [activeImg,     setActiveImg]     = useState(
     initialProduct ? getInitialActiveImageIndex(initialProduct, initialProductImages, preloadedVariant) : 0
   )
@@ -626,7 +627,7 @@ function ProductPageInner({
   const shortDesc = desc && desc.length > 180 ? `${desc.slice(0, 180)}...` : desc
 
   const rawPath  = allImages[activeImg] || selected.imagePath || product.imagePath
-  const imgSrc   = (!imgError ? buildStoreImageUrl(rawPath) : null) ?? undefined
+  const imgSrc   = buildStoreImageUrl(rawPath) ?? '/placeholder.jpg'
   const savings  = selected.hasActiveOffer
     ? Math.max(0, selected.basePrice - selected.currentPrice)
     : 0
@@ -698,7 +699,9 @@ function ProductPageInner({
                   fetchPriority="high"
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  onError={() => setImgError(true)}
+                  onError={(event) => {
+                    ;(event.target as HTMLImageElement).src = '/placeholder.jpg'
+                  }}
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center
@@ -1291,9 +1294,9 @@ function ProductPageInner({
       {/* Ã¢â€â‚¬Ã¢â€â‚¬ Related Products Ã¢â€â‚¬Ã¢â€â‚¬ */}
       {product && (
         <RelatedProducts
+          items={initialRelatedProducts}
           categoryId={product.categoryId}
           branchId={branchId}
-          currentProductId={product.id}
           locale={locale}
           t={t}
         />
@@ -1304,52 +1307,15 @@ function ProductPageInner({
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Related Products Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
-function RelatedProducts({ categoryId, currentProductId, locale, t, branchId }: {
+function RelatedProducts({ items, categoryId, locale, t, branchId }: {
+  items: ProductSummary[]
   categoryId: number
-  currentProductId: number
   locale: string
   t: (en: string, ar: string) => string
   branchId: number
 }) {
-  const [items, setItems] = useState<ProductSummary[]>([])
-  const [loading, setLoading] = useState(true)
   const currencyLabel = getCurrencyLabel(locale)
-  const relatedCacheRef = useRef<Map<string, ProductSummary[]>>(new Map())
-  const relatedReqIdRef = useRef(0)
-
-  useEffect(() => {
-    const cacheKey = `${branchId}:${categoryId}:${currentProductId}`
-    const cachedItems = relatedCacheRef.current.get(cacheKey)
-    if (cachedItems) {
-      setItems(cachedItems)
-      setLoading(false)
-      return
-    }
-
-    const reqId = ++relatedReqIdRef.current
-    setLoading(true)
-    productApi.list({
-      branchId,
-      categoryId,
-      page: 1,
-      limit: 7,
-      sort: 'newest',
-    })
-      .then((data) => {
-        if (reqId !== relatedReqIdRef.current) return
-        const filtered = (data.items ?? [])
-          .filter((item) => item.id !== currentProductId)
-          .slice(0, 6)
-        relatedCacheRef.current.set(cacheKey, filtered)
-        setItems(filtered)
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (reqId === relatedReqIdRef.current) setLoading(false)
-      })
-  }, [categoryId, currentProductId, branchId])
-
-  if (!loading && items.length === 0) return null
+  if (items.length === 0) return null
 
   return (
     <div className="mx-auto max-w-7xl border-t border-stone-200 px-4 py-12 md:px-6">
@@ -1363,19 +1329,6 @@ function RelatedProducts({ categoryId, currentProductId, locale, t, branchId }: 
         </Link>
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {[1,2,3,4,5,6].map(i => (
-            <div key={i} className="bg-white rounded-2xl overflow-hidden animate-pulse">
-              <div className="aspect-square bg-slate-100" />
-              <div className="p-2.5 space-y-2">
-                <div className="h-3 bg-slate-100 rounded" />
-                <div className="h-3 w-16 bg-slate-100 rounded" />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6">
           {items.map(item => {
             const name   = locale === 'ar' ? (item.nameAr || item.nameEn) : item.nameEn
@@ -1441,7 +1394,6 @@ function RelatedProducts({ categoryId, currentProductId, locale, t, branchId }: 
             )
           })}
         </div>
-      )}
     </div>
   )
 }

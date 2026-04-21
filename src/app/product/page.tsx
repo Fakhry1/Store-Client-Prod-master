@@ -3,7 +3,7 @@ import { unstable_cache } from 'next/cache'
 import ProductPageClient from '@/components/product/ProductPageClient'
 import { serverApiGet } from '@/lib/api/server'
 import { getSiteUrl, STORE_NAME } from '@/lib/store'
-import type { Product } from '@/types'
+import type { Product, ProductPage, ProductSummary } from '@/types'
 
 export const revalidate = 600
 
@@ -23,6 +23,23 @@ function getCachedProduct(productId: number) {
   return unstable_cache(
     () => serverApiGet<Product>(`/api/product/${productId}`),
     [`product-page-product-${productId}`],
+    { revalidate: 600 }
+  )()
+}
+
+function getCachedRelatedProducts(categoryId: number, branchId: number) {
+  return unstable_cache(
+    () =>
+      serverApiGet<ProductPage>(
+        `/api/product?${new URLSearchParams({
+          categoryId: String(categoryId),
+          branchId: String(branchId),
+          page: '1',
+          limit: '7',
+          sort: 'newest',
+        }).toString()}`
+      ),
+    [`product-page-related-${categoryId}-${branchId}`],
     { revalidate: 600 }
   )()
 }
@@ -77,9 +94,16 @@ export default async function ProductPage({ searchParams }: ProductPageProps) {
   const branchId = parsePositiveInt(params.branch) ?? Number(process.env.NEXT_PUBLIC_DEFAULT_BRANCH_ID ?? '1')
 
   let initialProduct: Product | null = null
+  let initialRelatedProducts: ProductSummary[] = []
 
   if (productId) {
     initialProduct = await getCachedProduct(productId).catch(() => null)
+
+    if (initialProduct?.categoryId) {
+      initialRelatedProducts = await getCachedRelatedProducts(initialProduct.categoryId, branchId)
+        .then((page) => (page.items ?? []).filter((item) => item.id !== productId).slice(0, 6))
+        .catch(() => [] as ProductSummary[])
+    }
   }
 
   const initialProductImages =
@@ -92,6 +116,7 @@ export default async function ProductPage({ searchParams }: ProductPageProps) {
     <ProductPageClient
       initialProduct={initialProduct}
       initialProductImages={initialProductImages}
+      initialRelatedProducts={initialRelatedProducts}
       initialVariantId={initialVariantId}
       branchId={branchId}
     />

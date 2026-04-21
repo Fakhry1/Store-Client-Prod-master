@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useLocale } from '@/context/locale'
@@ -20,14 +19,13 @@ export function GroupedProductCard({
   priority?: boolean
 }) {
   const { locale, t } = useLocale()
-  const [imgError, setImgError] = useState(false)
 
   const firstVariant = group.variants.length > 0 ? group.variants[0] : null
   const allOutOfStock = group.totalStock === 0
   const name = locale === 'ar' ? group.productNameAr || group.productNameEn : group.productNameEn || group.productNameAr
   const currencyLabel = getCurrencyLabel(locale)
   const rawImgPath = firstVariant?.imagePath || group.imagePath
-  const imgSrc = !imgError ? joinUrl(API_BASE_URL, rawImgPath) : null
+  const imgSrc = joinUrl(API_BASE_URL, rawImgPath) ?? '/placeholder.jpg'
   const priceDisplay = group.minPrice === group.maxPrice ? group.minPrice.toFixed(0) : `${group.minPrice.toFixed(0)} - ${group.maxPrice.toFixed(0)}`
   const firstVariantId = firstVariant?.variantId ?? 0
   const detailUrl =
@@ -58,9 +56,11 @@ export function GroupedProductCard({
             fill
             priority={priority}
             loading={priority ? 'eager' : 'lazy'}
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
             className={`object-cover transition-transform duration-700 ${allOutOfStock ? 'opacity-60' : 'group-hover:scale-105'}`}
-            onError={() => setImgError(true)}
+            onError={(event) => {
+              ;(event.target as HTMLImageElement).src = '/placeholder.jpg'
+            }}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">

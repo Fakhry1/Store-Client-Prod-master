@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { memo, startTransition, useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useLocale } from '@/context/locale'
 import { getCurrencyLabel } from '@/lib/store'
@@ -16,6 +16,15 @@ export function FacetsSidebar({ facets, currentQuery }: Props) {
   const searchParams = useSearchParams()
   const { t, locale } = useLocale()
   const currency = getCurrencyLabel(locale)
+
+  const navigate = useCallback(
+    (url: string) => {
+      startTransition(() => {
+        router.replace(url, { scroll: false })
+      })
+    },
+    [router]
+  )
 
   const buildUrl = useCallback(
     (updates: Partial<ProductQuery> & { attrs?: Record<number, string> }) => {
@@ -60,17 +69,17 @@ export function FacetsSidebar({ facets, currentQuery }: Props) {
       if (next.length > 0) newAttrs[attributeId] = next.join(',')
       else delete newAttrs[attributeId]
 
-      router.push(buildUrl({ attrs: newAttrs }))
+      navigate(buildUrl({ attrs: newAttrs }))
     },
-    [searchParams, router, buildUrl]
+    [searchParams, navigate, buildUrl]
   )
 
   const toggleBrand = useCallback(
     (brandId: number) => {
       const current = currentQuery.brandId
-      router.push(buildUrl({ brandId: current === brandId ? undefined : brandId }))
+      navigate(buildUrl({ brandId: current === brandId ? undefined : brandId }))
     },
-    [currentQuery.brandId, router, buildUrl]
+    [currentQuery.brandId, navigate, buildUrl]
   )
 
   const clearAll = useCallback(() => {
@@ -78,10 +87,10 @@ export function FacetsSidebar({ facets, currentQuery }: Props) {
     if (searchParams.get('branch')) qs.set('branch', searchParams.get('branch')!)
     if (searchParams.get('branchId')) qs.set('branchId', searchParams.get('branchId')!)
     if (searchParams.get('search')) qs.set('search', searchParams.get('search')!)
-    router.push(`/shop?${qs}`)
-  }, [searchParams, router])
+    navigate(`/shop?${qs}`)
+  }, [searchParams, navigate])
 
-  const currentAttrs = parseAttrs(searchParams)
+  const currentAttrs = useMemo(() => parseAttrs(searchParams), [searchParams])
   const hasFilters =
     Boolean(currentQuery.brandId) ||
     Boolean(currentQuery.minPrice) ||
@@ -136,7 +145,7 @@ export function FacetsSidebar({ facets, currentQuery }: Props) {
             currentMin={currentQuery.minPrice}
             currentMax={currentQuery.maxPrice}
             currency={currency}
-            onApply={(min, max) => router.push(buildUrl({ minPrice: min, maxPrice: max }))}
+            onApply={(min, max) => navigate(buildUrl({ minPrice: min, maxPrice: max }))}
           />
         </FacetSection>
       )}
@@ -222,7 +231,7 @@ export function FacetsSidebar({ facets, currentQuery }: Props) {
   )
 }
 
-function FilterButton({
+const FilterButton = memo(function FilterButton({
   label,
   count,
   active,
@@ -273,9 +282,9 @@ function FilterButton({
       )}
     </button>
   )
-}
+})
 
-function FacetSection({
+const FacetSection = memo(function FacetSection({
   title,
   eyebrow,
   children,
@@ -305,7 +314,7 @@ function FacetSection({
       {open && <div className="pt-3">{children}</div>}
     </section>
   )
-}
+})
 
 function PriceRangeFilter({
   min,

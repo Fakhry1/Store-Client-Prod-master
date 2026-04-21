@@ -1,5 +1,6 @@
 'use client'
 
+import { startTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useLocale } from '@/context/locale'
 
@@ -23,7 +24,9 @@ export function SortDropdown({ currentSort = 'newest' }: Props) {
     const qs = new URLSearchParams(searchParams.toString())
     qs.set('sort', sort)
     qs.set('page', '1')
-    router.push(`/shop?${qs}`)
+    startTransition(() => {
+      router.replace(`/shop?${qs}`, { scroll: false })
+    })
   }
 
   return (

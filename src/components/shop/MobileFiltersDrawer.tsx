@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { startTransition, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createPortal } from 'react-dom'
 import { useLocale } from '@/context/locale'
@@ -56,11 +56,20 @@ export function MobileFiltersDrawer({
     [searchParams]
   )
 
+  const navigate = useCallback(
+    (url: string) => {
+      startTransition(() => {
+        router.replace(url, { scroll: false })
+      })
+    },
+    [router]
+  )
+
   function clearAll() {
     const qs = new URLSearchParams()
     const search = searchParams.get('search')
     if (search) qs.set('search', search)
-    router.push(`/shop?${qs}`)
+    navigate(`/shop?${qs}`)
     setOpen(false)
   }
 
@@ -121,7 +130,7 @@ export function MobileFiltersDrawer({
                           <button
                             key={branch.id}
                             onClick={() => {
-                              router.push(buildUrl({ branch: String(branch.id) }))
+                              navigate(buildUrl({ branch: String(branch.id) }))
                               setOpen(false)
                             }}
                             className={`rounded-2xl border px-3 py-3 text-sm font-black transition-all ${
@@ -143,7 +152,7 @@ export function MobileFiltersDrawer({
                     <div className="space-y-2">
                       <button
                         onClick={() => {
-                          router.push(buildUrl({ category: undefined }))
+                          navigate(buildUrl({ category: undefined }))
                           setOpen(false)
                         }}
                         className={`w-full rounded-2xl border px-4 py-3 text-start text-sm font-black transition-all ${
@@ -160,7 +169,7 @@ export function MobileFiltersDrawer({
                           <button
                             key={category.id}
                             onClick={() => {
-                              router.push(buildUrl({ category: String(category.id) }))
+                              navigate(buildUrl({ category: String(category.id) }))
                               setOpen(false)
                             }}
                             className={`w-full rounded-2xl border px-4 py-3 text-start text-sm font-black transition-all ${
