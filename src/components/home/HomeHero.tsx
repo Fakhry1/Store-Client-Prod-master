@@ -1,10 +1,8 @@
 import type { CatalogItem } from '@/types'
-import { PremiumHeroSlider, type HomeHeroSlide } from '@/components/home/PremiumHeroSlider'
+import type { HomeHeroSlide } from '@/components/home/PremiumHeroSlider'
+import { HomeHeroClient } from '@/components/home/HomeHeroClient'
 
 interface Props {
-  featuredCount: number
-  categoriesCount: number
-  hasOffers: boolean
   branchId: number
   heroProducts: CatalogItem[]
 }
@@ -55,13 +53,6 @@ function buildSlides(products: CatalogItem[], branchId: number): HomeHeroSlide[]
     }))
 }
 
-export function HomeHero({ featuredCount, categoriesCount, hasOffers, branchId, heroProducts }: Props) {
-  return (
-    <PremiumHeroSlider
-      slides={buildSlides(heroProducts, branchId)}
-      featuredCount={featuredCount}
-      categoriesCount={categoriesCount}
-      hasOffers={hasOffers}
-    />
-  )
+export function HomeHero({ branchId, heroProducts }: Props) {
+  return <HomeHeroClient slides={buildSlides(heroProducts, branchId)} />
 }

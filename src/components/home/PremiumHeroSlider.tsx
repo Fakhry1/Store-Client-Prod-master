@@ -52,9 +52,6 @@ export const HOME_HERO_SLIDE_EXAMPLE: HomeHeroSlide = {
 
 interface Props {
   slides: HomeHeroSlide[]
-  featuredCount: number
-  categoriesCount: number
-  hasOffers: boolean
 }
 
 function getImg(path?: string | null) {

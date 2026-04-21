@@ -1,11 +1,12 @@
 import { serverApiGet } from '@/lib/api/server'
+import { unstable_cache } from 'next/cache'
 import type { CatalogItem, Category, ProductPage, ProductSummary } from '@/types'
 import { HomeHero } from '@/components/home/HomeHero'
-import { TrustBar, CategoriesSection, OffersHeader, ProductCollectionSection, HomeCTA } from '@/components/home/HomeStatic'
-import { OfferCard, FeaturedCard } from '@/components/home/HomeCards'
-import { DeferredRender } from '@/components/home/DeferredRender'
+import { TrustBar } from '@/components/home/HomeStatic'
+import { HomeBelowFoldEntry } from '@/components/home/HomeBelowFoldEntry'
+import { HomeVitals } from '@/components/home/HomeVitals'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 const DEFAULT_BRANCH = Number(process.env.NEXT_PUBLIC_DEFAULT_BRANCH_ID ?? '1')
 const PRODUCT_PREVIEW_LIMIT = 12
@@ -50,9 +51,29 @@ function dedupeProducts(items: CatalogItem[]) {
  * non-empty branch succeeds. This avoids waiting for slower branches.
  */
 async function getCatalogFallback(candidateBranches: number[]) {
+  const [primaryBranch, ...fallbackBranches] = candidateBranches
+
+  if (primaryBranch) {
+    try {
+      const primaryItems = await serverApiGet<CatalogItem[]>(
+        `/api/branchinventory/public/branch/${primaryBranch}/catalog`
+      )
+
+      if (Array.isArray(primaryItems) && primaryItems.length > 0) {
+        return { items: primaryItems, branchId: primaryBranch }
+      }
+    } catch {
+      // Fall through to secondary branches.
+    }
+  }
+
+  if (fallbackBranches.length === 0) {
+    return { items: [] as CatalogItem[], branchId: primaryBranch ?? DEFAULT_BRANCH }
+  }
+
   try {
     return await Promise.any(
-      candidateBranches.map(async (branchId) => {
+      fallbackBranches.map(async (branchId) => {
         const items = await serverApiGet<CatalogItem[]>(
           `/api/branchinventory/public/branch/${branchId}/catalog`
         )
@@ -113,8 +134,12 @@ async function getHomeData() {
   }
 }
 
+const getCachedHomeData = unstable_cache(getHomeData, ['home-page-data'], {
+  revalidate,
+})
+
 export default async function HomePage() {
-  const { categories, offers, newArrivals, bestSellers, premiumPicks, branchId } = await getHomeData()
+  const { categories, offers, newArrivals, bestSellers, premiumPicks, branchId } = await getCachedHomeData()
   const heroProducts = bestSellers.length > 0
     ? bestSellers
     : premiumPicks.length > 0
@@ -125,102 +150,23 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen bg-[#F8F6F2]">
+      <HomeVitals />
+
       <HomeHero
-        featuredCount={premiumPicks.length}
-        categoriesCount={categories.length}
-        hasOffers={offers.length > 0}
         branchId={branchId}
         heroProducts={heroProducts}
       />
 
       <TrustBar />
 
-      <DeferredRender minHeight={900} rootMargin="260px 0px">
-        {categories.length > 0 && <CategoriesSection categories={categories} />}
-
-        {offers.length > 0 && (
-          <section id="offers" className="bg-[#0F0F0F] py-16 md:py-20">
-            <div className="mx-auto max-w-7xl px-6">
-              <OffersHeader count={offers.length} />
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-                {offers.map((item) => (
-                  <OfferCard
-                    key={`${item.productId}-${item.variantId}`}
-                    item={item}
-                    branchId={branchId}
-                    priority={false}
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {newArrivals.length > 0 && (
-          <ProductCollectionSection
-            id="new-arrivals"
-            eyebrowEn="Latest Drop"
-            eyebrowAr="وصل حديثًا"
-            titleEn="New Arrivals"
-            titleAr="وصل حديثًا"
-            linkLabelEn="View all"
-            linkLabelAr="عرض الكل"
-          >
-            {newArrivals.map((item) => (
-              <FeaturedCard
-                key={`${item.productId}-${item.variantId}-new`}
-                item={item}
-                branchId={branchId}
-                priority={false}
-              />
-            ))}
-          </ProductCollectionSection>
-        )}
-
-        {bestSellers.length > 0 && (
-          <ProductCollectionSection
-            id="best-sellers"
-            eyebrowEn="Top Picks"
-            eyebrowAr="الأكثر طلبًا"
-            titleEn="Best Sellers"
-            titleAr="الأكثر طلبًا"
-            linkLabelEn="Browse products"
-            linkLabelAr="تصفح المنتجات"
-          >
-            {bestSellers.map((item) => (
-              <FeaturedCard
-                key={`${item.productId}-${item.variantId}-best`}
-                item={item}
-                branchId={branchId}
-                priority={false}
-              />
-            ))}
-          </ProductCollectionSection>
-        )}
-
-        {premiumPicks.length > 0 && (
-          <ProductCollectionSection
-            id="premium-picks"
-            eyebrowEn="Premium Edit"
-            eyebrowAr="اختيارات فاخرة"
-            titleEn="Premium Picks"
-            titleAr="اختيارات فاخرة"
-            linkLabelEn="Browse the edit"
-            linkLabelAr="تصفح التشكيلة"
-          >
-            {premiumPicks.map((item) => (
-              <FeaturedCard
-                key={`${item.productId}-${item.variantId}-premium`}
-                item={item}
-                branchId={branchId}
-                priority={false}
-              />
-            ))}
-          </ProductCollectionSection>
-        )}
-
-        <HomeCTA />
-      </DeferredRender>
+      <HomeBelowFoldEntry
+        categories={categories}
+        offers={offers}
+        newArrivals={newArrivals}
+        bestSellers={bestSellers}
+        premiumPicks={premiumPicks}
+        branchId={branchId}
+      />
     </main>
   )
 }

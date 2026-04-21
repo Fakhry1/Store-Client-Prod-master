@@ -86,6 +86,9 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+  experimental: {
+    webVitalsAttribution: ['CLS', 'FCP', 'INP', 'LCP', 'TTFB'],
+  },
   async headers() {
     return [
       {
