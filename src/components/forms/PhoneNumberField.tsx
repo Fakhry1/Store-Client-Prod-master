@@ -72,12 +72,12 @@ export function PhoneNumberField({
             : 'border-slate-200 focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-500/20'
         }`}
       >
-        <div className="relative min-w-[9.5rem] border-slate-200 bg-stone-50/80 sm:min-w-[10.5rem]">
+        <div className="relative w-[5.25rem] border-slate-200 bg-stone-50/80 sm:w-[5.75rem]">
           <select
             value={countryIso}
             onChange={(e) => handleCountryChange(e.target.value)}
             dir={locale === 'ar' ? 'rtl' : 'ltr'}
-            className="h-full w-full appearance-none bg-transparent px-3 py-3 pe-8 text-sm font-bold text-transparent outline-none"
+            className="h-full w-full appearance-none bg-transparent px-2.5 py-3 pe-7 text-sm font-bold text-transparent outline-none"
           >
             {PHONE_COUNTRIES.map((country) => (
               <option key={country.iso} value={country.iso}>
@@ -85,7 +85,7 @@ export function PhoneNumberField({
               </option>
             ))}
           </select>
-          <div className="pointer-events-none absolute inset-0 flex items-center px-3 py-3">
+          <div className="pointer-events-none absolute inset-0 flex items-center px-2.5 py-3">
             <span className="text-sm font-black text-slate-700" dir="ltr">
               {selectedCountry.dialCode}
             </span>
