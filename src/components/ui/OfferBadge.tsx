@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useSyncExternalStore } from 'react'
 
 interface Props {
   discount: number
@@ -22,22 +22,8 @@ export function OfferBadge({ discount, endsAt, size = 'md' }: Props) {
 // ─── Live countdown — يتحدث كل ثانية ─────────────────────────────────────────
 
 export function LiveOfferTimer({ endsAt, className = '' }: { endsAt: string; className?: string }) {
-  const [timeLeft, setTimeLeft] = useState(() => calcTimeLeft(endsAt))
-
-  useEffect(() => {
-    const initial = calcTimeLeft(endsAt)
-    setTimeLeft(initial)
-    // لو العرض انتهى أو بعيد جداً (+48h) لا نشغّل الـ timer
-    if (!initial || initial.totalSeconds > 48 * 3600) return
-
-    const id = setInterval(() => {
-      const next = calcTimeLeft(endsAt)
-      setTimeLeft(next)
-      if (!next || next.totalSeconds <= 0) clearInterval(id)
-    }, 1000)
-
-    return () => clearInterval(id)
-  }, [endsAt])
+  const now = useNow(endsAt)
+  const timeLeft = calcTimeLeft(endsAt, now)
 
   if (!timeLeft || timeLeft.totalSeconds <= 0) return null
   if (timeLeft.totalSeconds > 48 * 3600) return null
@@ -64,19 +50,8 @@ export function LiveOfferTimer({ endsAt, className = '' }: { endsAt: string; cla
 // ─── Standalone countdown for product page ───────────────────────────────────
 
 export function OfferCountdown({ endsAt, locale }: { endsAt: string; locale: string }) {
-  const [timeLeft, setTimeLeft] = useState(() => calcTimeLeft(endsAt))
-
-  useEffect(() => {
-    const initial = calcTimeLeft(endsAt)
-    setTimeLeft(initial)
-    if (!initial || initial.totalSeconds > 48 * 3600) return
-    const id = setInterval(() => {
-      const next = calcTimeLeft(endsAt)
-      setTimeLeft(next)
-      if (!next || next.totalSeconds <= 0) clearInterval(id)
-    }, 1000)
-    return () => clearInterval(id)
-  }, [endsAt])
+  const now = useNow(endsAt)
+  const timeLeft = calcTimeLeft(endsAt, now)
 
   if (!timeLeft || timeLeft.totalSeconds <= 0) return null
 
@@ -144,8 +119,54 @@ function TimeUnit({ value, label, urgent }: { value: number; label: string; urge
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function calcTimeLeft(endsAt: string) {
-  const diff = Math.max(0, new Date(endsAt).getTime() - Date.now())
+const TICK_INTERVAL_MS = 1000
+let sharedNow = Date.now()
+let sharedTimer: ReturnType<typeof setInterval> | null = null
+const subscribers = new Set<() => void>()
+
+function subscribeToNow(onStoreChange: () => void) {
+  subscribers.add(onStoreChange)
+
+  if (!sharedTimer) {
+    sharedTimer = setInterval(() => {
+      sharedNow = Date.now()
+      subscribers.forEach((listener) => listener())
+    }, TICK_INTERVAL_MS)
+  }
+
+  return () => {
+    subscribers.delete(onStoreChange)
+
+    if (subscribers.size === 0 && sharedTimer) {
+      clearInterval(sharedTimer)
+      sharedTimer = null
+    }
+  }
+}
+
+function getNowSnapshot() {
+  return sharedNow
+}
+
+function subscribeToStaticNow() {
+  return () => {}
+}
+
+function useNow(endsAt: string) {
+  const target = new Date(endsAt).getTime()
+  const initial = calcTimeLeft(endsAt)
+  const shouldTick = Boolean(initial && initial.totalSeconds > 0 && initial.totalSeconds <= 48 * 3600)
+  const now = useSyncExternalStore(
+    shouldTick ? subscribeToNow : subscribeToStaticNow,
+    getNowSnapshot,
+    getNowSnapshot
+  )
+
+  return shouldTick ? now : target
+}
+
+function calcTimeLeft(endsAt: string, now = Date.now()) {
+  const diff = Math.max(0, new Date(endsAt).getTime() - now)
   if (diff === 0) return null
   const totalSeconds = Math.floor(diff / 1000)
   return {

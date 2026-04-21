@@ -39,11 +39,11 @@ export function HomeHeroPreview({ slide }: { slide?: HomeHeroSlide }) {
           <div className="order-2 lg:order-1">
             <div className="overflow-hidden rounded-[32px] border border-white/70 bg-white/60 p-5 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl md:p-7">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/90 px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-slate-700">
+                <span className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-stone-200 bg-white/90 px-3 py-2 text-[10px] font-black tracking-[0.08em] text-slate-700 sm:px-4 sm:text-[11px] sm:tracking-[0.22em]">
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,0.12)]" />
                   منتجات مختارة بعناية
                 </span>
-                <span className="inline-flex items-center rounded-full border border-stone-200/80 bg-stone-50/90 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                <span className="inline-flex items-center whitespace-nowrap rounded-full border border-stone-200/80 bg-stone-50/90 px-3 py-2 text-[10px] font-bold tracking-[0.08em] text-slate-500 sm:px-4 sm:text-[11px] sm:tracking-[0.18em]">
                   تبديل واسترجاع سهل
                 </span>
               </div>
@@ -58,13 +58,13 @@ export function HomeHeroPreview({ slide }: { slide?: HomeHeroSlide }) {
               </div>
 
               <div className="mt-6 flex flex-wrap gap-2.5">
-                <Link href="/shop" className="rounded-full border border-stone-200/80 bg-white/90 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-slate-600">
+                <Link href="/shop" className="whitespace-nowrap rounded-full border border-stone-200/80 bg-white/90 px-3 py-2 text-[11px] font-black tracking-[0.08em] text-slate-600 sm:px-4 sm:text-xs sm:tracking-[0.18em]">
                   تسوق الكل
                 </Link>
-                <Link href="#best-sellers" className="rounded-full border border-stone-200/80 bg-white/90 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-slate-600">
+                <Link href="#best-sellers" className="whitespace-nowrap rounded-full border border-stone-200/80 bg-white/90 px-3 py-2 text-[11px] font-black tracking-[0.08em] text-slate-600 sm:px-4 sm:text-xs sm:tracking-[0.18em]">
                   الأكثر مبيعًا
                 </Link>
-                <Link href="#new-arrivals" className="rounded-full border border-stone-200/80 bg-white/90 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-slate-600">
+                <Link href="#new-arrivals" className="whitespace-nowrap rounded-full border border-stone-200/80 bg-white/90 px-3 py-2 text-[11px] font-black tracking-[0.08em] text-slate-600 sm:px-4 sm:text-xs sm:tracking-[0.18em]">
                   وصل حديثًا
                 </Link>
               </div>

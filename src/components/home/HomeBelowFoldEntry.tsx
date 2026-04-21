@@ -1,8 +1,5 @@
-'use client'
-
-import dynamic from 'next/dynamic'
+import { HomeBelowFold } from '@/components/home/HomeBelowFold'
 import type { CatalogItem, Category } from '@/types'
-import { DeferredRender } from '@/components/home/DeferredRender'
 
 type Props = {
   categories: Category[]
@@ -13,18 +10,15 @@ type Props = {
   branchId: number
 }
 
-const HomeBelowFold = dynamic(
-  () => import('@/components/home/HomeBelowFold').then((module) => module.HomeBelowFold),
-  {
-    ssr: false,
-    loading: () => null,
-  }
-)
-
 export function HomeBelowFoldEntry(props: Props) {
   return (
-    <DeferredRender minHeight={900} rootMargin="260px 0px">
+    <div
+      style={{
+        contentVisibility: 'auto',
+        containIntrinsicSize: '900px',
+      }}
+    >
       <HomeBelowFold {...props} />
-    </DeferredRender>
+    </div>
   )
 }
