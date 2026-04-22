@@ -58,37 +58,32 @@ function getImg(path?: string | null) {
   return joinUrl(API_BASE_URL, path) ?? '/placeholder.jpg'
 }
 
+function getMediaMatch(query: string): boolean {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia(query).matches
+}
+
 function usePrefersReducedMotion() {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => getMediaMatch('(prefers-reduced-motion: reduce)'))
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
     const onChange = () => setPrefersReducedMotion(mediaQuery.matches)
-
-    onChange()
     mediaQuery.addEventListener('change', onChange)
-
-    return () => {
-      mediaQuery.removeEventListener('change', onChange)
-    }
+    return () => mediaQuery.removeEventListener('change', onChange)
   }, [])
 
   return prefersReducedMotion
 }
 
 function useIsMobileViewport() {
-  const [isMobileViewport, setIsMobileViewport] = useState(false)
+  const [isMobileViewport, setIsMobileViewport] = useState(() => getMediaMatch('(max-width: 767px)'))
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 767px)')
     const onChange = () => setIsMobileViewport(mediaQuery.matches)
-
-    onChange()
     mediaQuery.addEventListener('change', onChange)
-
-    return () => {
-      mediaQuery.removeEventListener('change', onChange)
-    }
+    return () => mediaQuery.removeEventListener('change', onChange)
   }, [])
 
   return isMobileViewport
@@ -111,7 +106,6 @@ function formatPercent(value?: number) {
 export function PremiumHeroSlider({ slides }: Props) {
   const { t, isRTL, locale } = useLocale()
   const [activeIndex, setActiveIndex] = useState(0)
-  const [progress, setProgress] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
   const [isTouchPaused, setIsTouchPaused] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
@@ -125,9 +119,6 @@ export function PremiumHeroSlider({ slides }: Props) {
     startX: 0,
     dragging: false,
   })
-  const progressValueRef = useRef(0)
-  const renderedProgressRef = useRef(0)
-  const lastFrameTimeRef = useRef<number | null>(null)
   const prefersReducedMotion = usePrefersReducedMotion()
   const isMobileViewport = useIsMobileViewport()
   const currency = getCurrencyLabel(locale)
@@ -163,56 +154,14 @@ export function PremiumHeroSlider({ slides }: Props) {
   }, [])
 
   useEffect(() => {
-    if (slides.length <= 1 || disableAutoplay) {
-      setProgress(0)
-      progressValueRef.current = 0
-      renderedProgressRef.current = 0
-      lastFrameTimeRef.current = null
-      return
-    }
+    if (slides.length <= 1 || disableAutoplay || isPaused) return
 
-    let frameId = 0
+    const timer = window.setTimeout(() => {
+      setActiveIndex((current) => (current + 1) % slides.length)
+    }, AUTOPLAY_MS)
 
-    const animate = (time: number) => {
-      if (lastFrameTimeRef.current == null) {
-        lastFrameTimeRef.current = time
-      }
-
-      const delta = time - lastFrameTimeRef.current
-      lastFrameTimeRef.current = time
-
-      if (!isPaused) {
-        const nextProgress = Math.min(progressValueRef.current + delta / AUTOPLAY_MS, 1)
-        progressValueRef.current = nextProgress
-        if (Math.abs(nextProgress - renderedProgressRef.current) >= 0.015 || nextProgress >= 1) {
-          renderedProgressRef.current = nextProgress
-          setProgress(nextProgress)
-        }
-
-        if (nextProgress >= 1) {
-          progressValueRef.current = 0
-          renderedProgressRef.current = 0
-          setProgress(0)
-          setActiveIndex((current) => (current + 1) % slides.length)
-        }
-      }
-
-      frameId = window.requestAnimationFrame(animate)
-    }
-
-    frameId = window.requestAnimationFrame(animate)
-
-    return () => {
-      window.cancelAnimationFrame(frameId)
-      lastFrameTimeRef.current = null
-    }
-  }, [disableAutoplay, isPaused, slides.length])
-
-  useEffect(() => {
-    progressValueRef.current = 0
-    renderedProgressRef.current = 0
-    setProgress(0)
-  }, [activeIndex])
+    return () => window.clearTimeout(timer)
+  }, [activeIndex, disableAutoplay, isPaused, slides.length])
 
   useEffect(() => {
     return () => {

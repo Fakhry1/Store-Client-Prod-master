@@ -16,7 +16,7 @@ const playfair = localFont({
     { path: '../../public/fonts/playfair-latin-ext.woff2', weight: '400 900', style: 'normal' },
   ],
   variable: '--font-playfair',
-  display: 'swap',
+  display: 'optional',
   preload: false,
 })
 
@@ -25,7 +25,7 @@ const notoKufi = localFont({
     { path: '../../public/fonts/noto-kufi-arabic-main.woff2', weight: '100 900', style: 'normal' },
   ],
   variable: '--font-kufi',
-  display: 'swap',
+  display: 'optional',
   preload: false,
 })
 

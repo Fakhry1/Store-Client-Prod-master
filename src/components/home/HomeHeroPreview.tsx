@@ -12,7 +12,11 @@ function getImg(path?: string | null) {
   return joinUrl(API_BASE_URL, path) ?? '/placeholder.jpg'
 }
 
-export function HomeHeroPreview({ slide }: { slide?: HomeHeroSlide }) {
+export function HomeHeroPreview({
+  slide,
+}: {
+  slide?: HomeHeroSlide
+}) {
   const displaySlide = slide ?? {
     id: 'home-hero-preview',
     href: '/shop',
