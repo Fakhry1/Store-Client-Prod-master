@@ -690,29 +690,39 @@ function ProductPageInner({
                 touchStartX.current = null
                 touchStartY.current = null
               }}>
-              {imgSrc ? (
-                <Image
-                  src={imgSrc}
-                  alt={name}
-                  fill
-                  priority
-                  fetchPriority="high"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  onError={(event) => {
-                    ;(event.target as HTMLImageElement).src = '/placeholder.jpg'
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full flex flex-col items-center
-                  justify-center gap-3 text-slate-200">
-                  <svg className="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.8}
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <p className="text-sm font-medium text-slate-300">{t('No image', '\u0644\u0627 \u062a\u0648\u062c\u062f \u0635\u0648\u0631\u0629')}</p>
-                </div>
-              )}
+
+              <div
+                className="relative w-full aspect-[1/1] min-h-[340px] max-h-[520px] bg-slate-50 overflow-hidden flex items-center justify-center"
+                style={{
+                  // Ensures aspect ratio and minHeight for CLS/LCP
+                  aspectRatio: '1/1',
+                  minHeight: 340,
+                  maxHeight: 520,
+                }}
+              >
+                {imgSrc ? (
+                  <Image
+                    src={imgSrc}
+                    alt={name}
+                    fill
+                    priority
+                    fetchPriority="high"
+                    sizes="(max-width: 768px) 100vw, 520px"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    onError={(event) => {
+                      ;(event.target as HTMLImageElement).src = '/placeholder.jpg'
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-slate-200">
+                    <svg className="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.8}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p className="text-sm font-medium text-slate-300">{t('No image', '\u0644\u0627 \u062a\u0648\u062c\u062f \u0635\u0648\u0631\u0629')}</p>
+                  </div>
+                )}
+              </div>
 
               {/* Discount pill */}
               {hasSavings && (
