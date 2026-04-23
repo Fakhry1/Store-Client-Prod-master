@@ -113,6 +113,7 @@ export function PremiumHeroSlider({ slides }: Props) {
   const [dragOffset, setDragOffset] = useState(0)
   const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({})
   const [userPaused, setUserPaused] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const resumeTimerRef = useRef<number | null>(null)
   const pointerStateRef = useRef<{ id: number | null; startX: number; dragging: boolean }>({
     id: null,
@@ -122,6 +123,10 @@ export function PremiumHeroSlider({ slides }: Props) {
   const prefersReducedMotion = usePrefersReducedMotion()
   const isMobileViewport = useIsMobileViewport()
   const currency = getCurrencyLabel(locale)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const quickLinks = useMemo(
     () => [
@@ -418,7 +423,7 @@ export function PremiumHeroSlider({ slides }: Props) {
                           fill
                           priority={index === 0}
                           loading={index === 0 ? 'eager' : 'lazy'}
-                          fetchPriority={index === 0 ? 'high' : 'auto'}
+                          fetchPriority={index === 0 ? 'high' : 'low'}
                           sizes="(max-width: 1024px) 100vw, 55vw"
                           className="object-cover object-center opacity-85 md:opacity-60"
                           onLoad={() => {
@@ -459,7 +464,7 @@ export function PremiumHeroSlider({ slides }: Props) {
                               {t('Autoplay', 'التشغيل التلقائي')}
                             </div>
                             <div className="mt-2 text-sm font-black">
-                              {isPaused ? t('Paused', 'متوقف') : t('Running', 'يعمل')}
+                              {isClient ? (isPaused ? t('Paused', 'متوقف') : t('Running', 'يعمل')) : ''}
                             </div>
                           </div>
                         </div>
@@ -513,6 +518,7 @@ export function PremiumHeroSlider({ slides }: Props) {
                                   alt={localizedTitle}
                                   fill
                                   loading="lazy"
+                                  fetchPriority="low"
                                   sizes="220px"
                                   className="object-cover"
                                 />

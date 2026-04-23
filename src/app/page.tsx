@@ -1,7 +1,7 @@
 import { serverApiGet } from '@/lib/api/server'
 import { unstable_cache } from 'next/cache'
 import type { CatalogItem, Category, ProductPage, ProductSummary } from '@/types'
-import { HomeHero } from '@/components/home/HomeHero'
+import HomeHeroSliderSection from '@/components/home/HomeHeroSliderSection'
 import { TrustBar } from '@/components/home/HomeStatic'
 import { HomeBelowFoldEntry } from '@/components/home/HomeBelowFoldEntry'
 import { HomeVitals } from '@/components/home/HomeVitals'
@@ -152,7 +152,7 @@ export default async function HomePage() {
     <main className="min-h-screen bg-[#F8F6F2]">
       <HomeVitals />
 
-      <HomeHero
+      <HomeHeroSliderSection
         branchId={branchId}
         heroProducts={heroProducts}
       />

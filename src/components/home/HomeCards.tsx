@@ -49,6 +49,7 @@ export function OfferCard({
             sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 15vw"
             priority={priority}
             loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'low'}
             className="object-cover opacity-92 transition-all duration-500 group-hover:scale-105 group-hover:opacity-100"
             onError={(e) => {
               ;(e.target as HTMLImageElement).src = '/placeholder.jpg'
