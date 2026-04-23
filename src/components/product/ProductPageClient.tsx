@@ -3,7 +3,6 @@
 import { useEffect, useState, useMemo, Suspense, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
-import Link from 'next/link'
 import { catalogApi, productApi, wishlistApi } from '@/lib/api'
 import { useCart } from '@/context/cart'
 import { useAuth } from '@/context/auth'
@@ -11,8 +10,7 @@ import { useLocale } from '@/context/locale'
 import { translateApiError } from '@/lib/errors'
 import { formatSavingsLabel, getCurrencyLabel } from '@/lib/store'
 import { getPublicApiBaseUrl, joinUrl } from '@/lib/url'
-import type { Product, ProductVariant, VariantAttribute, BranchProductAvailabilityItem, ProductSummary } from '@/types'
-import { PriceDisplay } from '@/components/ui/PriceDisplay'
+import type { Product, ProductVariant, VariantAttribute, BranchProductAvailabilityItem } from '@/types'
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Attribute Helpers Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
@@ -202,7 +200,6 @@ function buildStoreImageUrl(path?: string | null): string | null {
 type ProductPageClientProps = {
   initialProduct: Product | null
   initialProductImages: string[]
-  initialRelatedProducts: ProductSummary[]
   initialVariantId?: number
   branchId: number
 }
@@ -246,7 +243,6 @@ function getInitialActiveImageIndex(
 function ProductPageInner({
   initialProduct,
   initialProductImages,
-  initialRelatedProducts,
   initialVariantId,
   branchId: initialBranchId,
 }: ProductPageClientProps) {
@@ -284,7 +280,6 @@ function ProductPageInner({
   const touchStartY   = useRef<number | null>(null)
   const productCacheRef = useRef<Map<number, Product>>(initialProduct ? new Map([[initialProduct.id, initialProduct]]) : new Map())
   const productReqIdRef = useRef(0)
-  const wishlistReqIdRef = useRef(0)
   const branchAvailabilityReqIdRef = useRef(0)
 
   const activeVariants = useMemo(() => product?.variants.filter(v => v.isActive) ?? [], [product])
@@ -384,68 +379,81 @@ function ProductPageInner({
     if (!product?.id) return
 
     const reqId = ++branchAvailabilityReqIdRef.current
+    let cancelled = false
+    const syncAvailabilityAndWishlist = () => {
+      Promise.all([
+        token && selected?.id
+          ? wishlistApi.check(token, selected.id).catch(() => ({ isWishlisted: false }))
+          : Promise.resolve({ isWishlisted: false }),
+        branchId
+          ? catalogApi.getProductAvailability(branchId, product.id).catch(() => [])
+          : Promise.resolve([]),
+      ])
+        .then(([wishlistResult, availabilityItems]) => {
+          if (cancelled || reqId !== branchAvailabilityReqIdRef.current) return
 
-    Promise.all([
-      token && selected?.id
-        ? wishlistApi.check(token, selected.id).catch(() => ({ isWishlisted: false }))
-        : Promise.resolve({ isWishlisted: false }),
-      branchId
-        ? catalogApi.getProductAvailability(branchId, product.id).catch(() => [])
-        : Promise.resolve([]),
-    ])
-      .then(([wishlistResult, availabilityItems]) => {
-        if (reqId !== branchAvailabilityReqIdRef.current) return
+          if (wishlistResult?.isWishlisted !== undefined) {
+            setWishlisted(wishlistResult.isWishlisted)
+          }
 
-        if (wishlistResult?.isWishlisted !== undefined) {
-          setWishlisted(wishlistResult.isWishlisted)
-        }
+          if (!Array.isArray(availabilityItems) || availabilityItems.length === 0) return
 
-        if (!Array.isArray(availabilityItems) || availabilityItems.length === 0) return
+          const availabilityByVariantId = new Map(
+            (availabilityItems as BranchProductAvailabilityItem[]).map((item) => [Number(item.variantId), item] as const)
+          )
 
-        const availabilityByVariantId = new Map(
-          (availabilityItems as BranchProductAvailabilityItem[]).map((item) => [Number(item.variantId), item] as const)
-        )
+          setProduct((currentProduct) => {
+            if (!currentProduct || currentProduct.id !== product.id) return currentProduct
 
-        setProduct((currentProduct) => {
-          if (!currentProduct || currentProduct.id !== product.id) return currentProduct
+            const nextVariants = currentProduct.variants.map((variant) => {
+              const availability = availabilityByVariantId.get(variant.id)
+              if (!availability) return variant
 
-          const nextVariants = currentProduct.variants.map((variant) => {
-            const availability = availabilityByVariantId.get(variant.id)
-            if (!availability) return variant
+              const rawStock = availability.isAvailable ? Number(availability.quantityInStock) : 0
+              const nextStock = Number.isFinite(rawStock) ? Math.max(0, rawStock) : 0
+
+              return {
+                ...variant,
+                quantityInStock: nextStock,
+              }
+            })
+
+            return {
+              ...currentProduct,
+              variants: nextVariants,
+            }
+          })
+
+          setSelected((currentSelected) => {
+            if (!currentSelected) return currentSelected
+
+            const availability = availabilityByVariantId.get(currentSelected.id)
+            if (!availability) return currentSelected
 
             const rawStock = availability.isAvailable ? Number(availability.quantityInStock) : 0
             const nextStock = Number.isFinite(rawStock) ? Math.max(0, rawStock) : 0
 
             return {
-              ...variant,
+              ...currentSelected,
               quantityInStock: nextStock,
             }
           })
-
-          return {
-            ...currentProduct,
-            variants: nextVariants,
-          }
         })
+        .catch(() => {})
+    }
 
-        setSelected((currentSelected) => {
-          if (!currentSelected) return currentSelected
-
-          const availability = availabilityByVariantId.get(currentSelected.id)
-          if (!availability) return currentSelected
-
-          const rawStock = availability.isAvailable ? Number(availability.quantityInStock) : 0
-          const nextStock = Number.isFinite(rawStock) ? Math.max(0, rawStock) : 0
-
-          return {
-            ...currentSelected,
-            quantityInStock: nextStock,
-          }
-        })
-      })
-      .catch(() => {})
+    const hasIdleCallback = typeof window !== 'undefined' && 'requestIdleCallback' in window
+    const handle = hasIdleCallback
+      ? window.requestIdleCallback(syncAvailabilityAndWishlist)
+      : window.setTimeout(syncAvailabilityAndWishlist, 250)
 
     return () => {
+      cancelled = true
+      if (hasIdleCallback && 'cancelIdleCallback' in window) {
+        window.cancelIdleCallback(handle as number)
+      } else {
+        window.clearTimeout(handle)
+      }
       if (reqId === branchAvailabilityReqIdRef.current) {
         branchAvailabilityReqIdRef.current += 1
       }
@@ -1300,110 +1308,6 @@ function ProductPageInner({
           )}
         </div>
       )}
-
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Related Products Ã¢â€â‚¬Ã¢â€â‚¬ */}
-      {product && (
-        <RelatedProducts
-          items={initialRelatedProducts}
-          categoryId={product.categoryId}
-          branchId={branchId}
-          locale={locale}
-          t={t}
-        />
-      )}
-    </div>
-  )
-}
-
-// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Related Products Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
-
-function RelatedProducts({ items, categoryId, locale, t, branchId }: {
-  items: ProductSummary[]
-  categoryId: number
-  locale: string
-  t: (en: string, ar: string) => string
-  branchId: number
-}) {
-  const currencyLabel = getCurrencyLabel(locale)
-  if (items.length === 0) return null
-
-  return (
-    <div className="mx-auto max-w-7xl border-t border-stone-200 px-4 py-12 md:px-6">
-      <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-lg md:text-xl font-black text-slate-900">
-          {t('You might also like', '\u0642\u062f \u064a\u0639\u062c\u0628\u0643 \u0623\u064a\u0636\u0627\u064b')}
-        </h2>
-        <Link href={`/shop?category=${categoryId}&branch=${branchId}`}
-          className="text-xs font-bold text-amber-600 transition-colors hover:text-amber-700">
-          {t('View all', '\u0639\u0631\u0636 \u0627\u0644\u0643\u0644')} &rarr;
-        </Link>
-      </div>
-
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6">
-          {items.map(item => {
-            const name   = locale === 'ar' ? (item.nameAr || item.nameEn) : item.nameEn
-            const brand  = locale === 'ar' ? (item.brandNameAr || item.brandNameEn || item.brand) : (item.brandNameEn || item.brandNameAr || item.brand)
-            const imgSrc = buildStoreImageUrl(item.imagePath)
-            const hasOffer = item.hasActiveOffer && item.minCurrentPrice < item.minPrice
-            const discountPercentage = hasOffer && item.minPrice > 0
-              ? Math.round(((item.minPrice - item.minCurrentPrice) / item.minPrice) * 100)
-              : undefined
-
-            return (
-              <Link
-                key={item.id}
-                href={`/product?id=${item.id}&branch=${branchId}`}
-                className="group bg-white rounded-2xl border border-slate-100 overflow-hidden
-                  hover:border-slate-200 hover:shadow-md transition-all duration-200">
-
-                {/* Image */}
-                <div className="relative aspect-square bg-slate-50 overflow-hidden">
-                  {imgSrc ? (
-                    <Image
-                      src={imgSrc}
-                      alt={name}
-                      fill
-                      sizes="(max-width: 768px) 50vw, (max-width: 1280px) 25vw, 16vw"
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <svg className="w-8 h-8 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                  )}
-                  {hasOffer && (
-                    <span className="absolute top-2 start-2 bg-red-600 text-white
-                      text-[10px] font-black px-1.5 py-0.5 rounded-full">
-                      -{discountPercentage}%
-                    </span>
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="p-2.5">
-                  {brand && (
-                    <p className="text-[9px] font-bold text-amber-600 uppercase tracking-wider truncate mb-0.5">
-                      {brand}
-                    </p>
-                  )}
-                  <p className="text-xs font-bold text-slate-800 line-clamp-2 leading-snug mb-1.5">
-                    {name}
-                  </p>
-                  <PriceDisplay
-                    basePrice={item.minPrice}
-                    currentPrice={item.minCurrentPrice}
-                    hasActiveOffer={item.hasActiveOffer}
-                    discountPercentage={discountPercentage}
-                    size="sm"
-                  />
-                </div>
-              </Link>
-            )
-          })}
-        </div>
     </div>
   )
 }

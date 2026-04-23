@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { unstable_cache } from 'next/cache'
 import ProductPageClient from '@/components/product/ProductPageClient'
+import { RelatedProducts } from '@/components/product/RelatedProducts'
 import { serverApiGet } from '@/lib/api/server'
 import { getSiteUrl, STORE_NAME } from '@/lib/store'
 import type { Product, ProductPage, ProductSummary } from '@/types'
@@ -113,12 +114,20 @@ export default async function ProductPage({ searchParams }: ProductPageProps) {
       .map((image) => image.imagePath) ?? []
 
   return (
-    <ProductPageClient
-      initialProduct={initialProduct}
-      initialProductImages={initialProductImages}
-      initialRelatedProducts={initialRelatedProducts}
-      initialVariantId={initialVariantId}
-      branchId={branchId}
-    />
+    <>
+      <ProductPageClient
+        initialProduct={initialProduct}
+        initialProductImages={initialProductImages}
+        initialVariantId={initialVariantId}
+        branchId={branchId}
+      />
+      {initialProduct && initialRelatedProducts.length > 0 && (
+        <RelatedProducts
+          items={initialRelatedProducts}
+          categoryId={initialProduct.categoryId}
+          branchId={branchId}
+        />
+      )}
+    </>
   )
 }
