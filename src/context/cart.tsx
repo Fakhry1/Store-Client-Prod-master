@@ -30,10 +30,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart]         = useState<Cart | null>(null)
   const [isLoading, setLoading] = useState(true)
   const lastFetchRef            = useRef<number>(0)
+  const cartRef                 = useRef<Cart | null>(null)
 
   const fetchCart = useCallback(async ({ force = false, background = false }: FetchCartOptions = {}) => {
-    if (authLoading) return cart
-    if (!force && Date.now() - lastFetchRef.current < STALE_MS) return cart
+    if (authLoading) return cartRef.current
+    if (!force && Date.now() - lastFetchRef.current < STALE_MS) return cartRef.current
 
     if (!background) {
       setLoading(true)
@@ -48,10 +49,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
         data = await cartApi.getGuest(sessionId)
       }
       lastFetchRef.current = Date.now()
+      cartRef.current = data
       setCart(data)
       return data
     } catch {
       if (!background) {
+        cartRef.current = null
         setCart(null)
       }
       return null
@@ -60,7 +63,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setLoading(false)
       }
     }
-  }, [authLoading, cart, token])
+  }, [authLoading, token])
 
   useEffect(() => {
     void fetchCart()

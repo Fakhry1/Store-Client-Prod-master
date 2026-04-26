@@ -1,5 +1,3 @@
-'use client'
-
 import type { CatalogItem, Category } from '@/types'
 import { HomeCTA, CategoriesSection, OffersHeader, ProductCollectionSection } from '@/components/home/HomeStatic'
 import { OfferCard, FeaturedCard } from '@/components/home/HomeCards'

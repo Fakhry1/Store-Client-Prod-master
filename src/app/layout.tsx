@@ -25,8 +25,8 @@ const notoKufi = localFont({
     { path: '../../public/fonts/noto-kufi-arabic-main.woff2', weight: '100 900', style: 'normal' },
   ],
   variable: '--font-kufi',
-  display: 'optional',
-  preload: false,
+  display: 'swap',
+  preload: true,
 })
 
 const siteUrl = getSiteUrl()
@@ -58,9 +58,9 @@ export const metadata: Metadata = {
     alternateLocale: ['en_US'],
     images: [
       {
-        url: '/inone-logo.svg',
-        width: 360,
-        height: 120,
+        url: '/inone-logo-original.jpg',
+        width: 1200,
+        height: 630,
         alt: STORE_NAME,
       },
     ],
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: STORE_NAME,
     description: getStoreDescription('en'),
-    images: ['/inone-logo.svg'],
+    images: ['/inone-logo-original.jpg'],
   },
   robots: {
     index: true,

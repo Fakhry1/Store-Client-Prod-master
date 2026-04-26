@@ -108,7 +108,7 @@ const nextConfig = {
     unoptimized: isDevelopment,
     dangerouslyAllowLocalIP: isDevelopment,
     formats: ['image/avif', 'image/webp'],
-    qualities: [100, 75],
+    qualities: [85, 75],
     remotePatterns,
   },
 }
