@@ -29,41 +29,35 @@ type OrderReviewSectionProps = {
 }
 
 export default function OrderReviewSection({
-  cart,
-  name,
-  phone,
-  payment,
-  addresses,
-  selectedAddr,
-  promoResult,
-  fulfillment,
-  locale,
-  t,
-  apiUrl,
+  cart, name, phone, payment,
+  addresses, selectedAddr, promoResult,
+  fulfillment, locale, t, apiUrl,
 }: OrderReviewSectionProps) {
   const addr = addresses.find(a => a.id === selectedAddr)
   const isDelivery = fulfillment === 'delivery'
   const items = cart?.items ?? []
-
   const displayPhone = formatInternationalPhoneForDisplay(phone)
   const currencyLabel = getCurrencyLabel(locale)
 
   return (
     <div className="space-y-3">
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3">
+      <div className="rounded-2xl p-4 flex items-center gap-3"
+        style={{ background: 'rgba(255,107,44,0.08)', border: '1px solid rgba(255,107,44,0.2)' }}>
         <span className="text-2xl">👀</span>
         <div>
-          <p className="font-black text-amber-900 text-sm">{t('Review before confirming', 'راجع طلبك قبل التأكيد')}</p>
-          <p className="text-xs text-amber-700 mt-0.5">{t('Last chance to make changes', 'آخر فرصة للتعديل')}</p>
+          <p className="font-black text-sm" style={{ color: 'var(--ink)' }}>{t('Review before confirming', 'راجع طلبك قبل التأكيد')}</p>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--orange)' }}>{t('Last chance to make changes', 'آخر فرصة للتعديل')}</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-100 p-4">
-        <h3 className="font-black text-slate-900 text-sm mb-3">{t('Products', 'المنتجات')} ({items.length})</h3>
+      {/* Products */}
+      <div className="bg-white rounded-2xl border p-4" style={{ borderColor: 'var(--line)' }}>
+        <h3 className="font-black text-sm mb-3" style={{ color: 'var(--ink)' }}>{t('Products', 'المنتجات')} ({items.length})</h3>
         <div className="space-y-3">
           {items.map(item => (
             <div key={item.id} className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-lg bg-slate-50 border border-slate-100 flex-shrink-0 overflow-hidden relative">
+              <div className="w-11 h-11 rounded-lg flex-shrink-0 overflow-hidden relative border"
+                style={{ background: 'var(--paper)', borderColor: 'var(--line)' }}>
                 {item.imagePath && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={joinUrl(apiUrl, item.imagePath) ?? ''} alt=""
@@ -73,53 +67,56 @@ export default function OrderReviewSection({
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-slate-800 truncate">
+                <p className="text-xs font-bold truncate" style={{ color: 'var(--ink)' }}>
                   {locale === 'ar' ? item.productNameAr || item.productNameEn : item.productNameEn}
                 </p>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px]" style={{ color: 'var(--mute)' }}>
                   {locale === 'ar' ? item.variantNameAr || item.variantNameEn : item.variantNameEn}
                   {' · '}{t('Qty', 'الكمية')}: {item.quantity}
                 </p>
               </div>
-              <span className="text-sm font-black text-slate-900 flex-shrink-0">{item.itemTotal.toFixed(2)}</span>
+              <span className="text-sm font-black flex-shrink-0" style={{ color: 'var(--ink)' }}>{item.itemTotal.toFixed(2)}</span>
             </div>
           ))}
           {items.length === 0 && (
-            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm font-bold text-slate-500">
+            <div className="rounded-xl border border-dashed px-4 py-5 text-center text-sm font-bold"
+              style={{ borderColor: 'var(--line)', background: 'var(--paper)', color: 'var(--mute)' }}>
               {t('Cart items are still loading. Please wait a moment.', 'عناصر السلة ما زالت قيد التحميل. انتظر لحظة من فضلك.')}
             </div>
           )}
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-100 p-4">
-        <h3 className="font-black text-slate-900 text-sm mb-3">
+      {/* Fulfillment details */}
+      <div className="bg-white rounded-2xl border p-4" style={{ borderColor: 'var(--line)' }}>
+        <h3 className="font-black text-sm mb-3" style={{ color: 'var(--ink)' }}>
           {isDelivery ? t('Delivery Details', 'تفاصيل التوصيل') : t('Pickup Details', 'تفاصيل الاستلام')}
         </h3>
-        <div className="flex items-center gap-2 text-sm font-bold mb-3 p-3 bg-slate-50 rounded-xl">
+        <div className="flex items-center gap-2 text-sm font-bold mb-3 p-3 rounded-xl" style={{ background: 'var(--paper)' }}>
           <span>{isDelivery ? '🚚' : '🏪'}</span>
-          <span className="text-slate-800">{isDelivery ? t('Delivery', 'توصيل') : t('Pickup', 'استلام')}</span>
+          <span style={{ color: 'var(--ink)' }}>{isDelivery ? t('Delivery', 'توصيل') : t('Pickup', 'استلام')}</span>
         </div>
         {addr && (
-          <div className="p-3 bg-slate-50 rounded-xl">
-            <p className="text-xs text-slate-400 mb-0.5">{t('Address', 'العنوان')}</p>
-            <p className="text-sm font-bold text-slate-800">{addr.label}</p>
-            <p className="text-xs text-slate-500 mt-0.5">{addr.street}, {addr.city}</p>
+          <div className="p-3 rounded-xl" style={{ background: 'var(--paper)' }}>
+            <p className="text-xs mb-0.5" style={{ color: 'var(--mute)' }}>{t('Address', 'العنوان')}</p>
+            <p className="text-sm font-bold" style={{ color: 'var(--ink)' }}>{addr.label}</p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--mute)' }}>{addr.street}, {addr.city}</p>
           </div>
         )}
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-100 p-4">
-        <h3 className="font-black text-slate-900 text-sm mb-3">{t('Contact & Payment', 'التواصل والدفع')}</h3>
+      {/* Contact & Payment */}
+      <div className="bg-white rounded-2xl border p-4" style={{ borderColor: 'var(--line)' }}>
+        <h3 className="font-black text-sm mb-3" style={{ color: 'var(--ink)' }}>{t('Contact & Payment', 'التواصل والدفع')}</h3>
         <div className="grid grid-cols-2 gap-2">
           {[
             { label: t('Name', 'الاسم'), value: name },
             { label: t('Phone', 'الجوال'), value: displayPhone },
             { label: t('Payment', 'الدفع'), value: payment === 1 ? `💵 ${t('Cash', 'كاش')}` : `💳 ${t('Bankak', 'بنكك')}` },
           ].map(row => (
-            <div key={row.label} className="p-3 bg-slate-50 rounded-xl">
-              <p className="text-[11px] text-slate-400 mb-0.5">{row.label}</p>
-              <p className="text-sm font-bold text-slate-800 truncate">{row.value}</p>
+            <div key={row.label} className="p-3 rounded-xl" style={{ background: 'var(--paper)' }}>
+              <p className="text-[11px] mb-0.5" style={{ color: 'var(--mute)' }}>{row.label}</p>
+              <p className="text-sm font-bold truncate" style={{ color: 'var(--ink)' }}>{row.value}</p>
             </div>
           ))}
         </div>

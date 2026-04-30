@@ -34,19 +34,19 @@ export function SortDropdown({ currentSort = 'newest' }: Props) {
       <select
         value={currentSort}
         onChange={e => handleChange(e.target.value)}
-        className="appearance-none ps-8 pe-3 py-2 text-sm border border-slate-200
-          rounded-xl bg-white text-slate-700 font-medium
-          focus:outline-none focus:border-amber-400 cursor-pointer
-          w-[min(52vw,190px)] sm:w-[170px]">
+        className="appearance-none ps-8 pe-3 py-2 text-sm border rounded-xl bg-white font-medium focus:outline-none cursor-pointer w-[min(52vw,190px)] sm:w-[170px]"
+        style={{ borderColor: 'var(--line)', color: 'var(--ink)' }}
+        onFocus={(e) => { e.target.style.borderColor = 'var(--orange)' }}
+        onBlur={(e) => { e.target.style.borderColor = 'var(--line)' }}
+      >
         {SORT_OPTIONS.map(opt => (
           <option key={opt.value} value={opt.value}>
             {locale === 'ar' ? opt.labelAr : opt.labelEn}
           </option>
         ))}
       </select>
-      {/* Sort icon — RTL-aware positioning */}
-      <svg className="absolute start-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
-        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="absolute start-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+        fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--mute)' }}>
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
           d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
       </svg>

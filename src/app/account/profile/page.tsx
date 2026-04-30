@@ -103,8 +103,8 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-stone-50">
-        <span className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-slate-900" />
+      <div className="flex min-h-screen items-center justify-center" style={{ background: 'var(--paper)' }}>
+        <span className="h-8 w-8 animate-spin rounded-full border-2" style={{ borderColor: 'var(--line)', borderTopColor: 'var(--ink)' }} />
       </div>
     )
   }
@@ -188,20 +188,20 @@ export default function ProfilePage() {
   const currencyLabel = getCurrencyLabel(locale)
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#f8f6f2_0%,#ffffff_45%,#f5efe4_100%)] py-6 md:py-10">
+    <div className="min-h-screen py-6 md:py-10" style={{ background: 'var(--paper)' }}>
       <div className="mx-auto max-w-6xl px-4">
         <div className="mb-5">
           <Link
             href="/account"
-            className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-bold text-slate-500 transition-colors hover:text-slate-900"
+            className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold transition-colors" style={{ borderColor: 'var(--line)', color: 'var(--mute)' }}
           >
             {t('Back to account', 'العودة إلى الحساب')}
           </Link>
         </div>
 
         <div className="grid gap-5 lg:grid-cols-[0.92fr_1.08fr]">
-          <section className="overflow-hidden rounded-[34px] border border-stone-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.07)]">
-            <div className="bg-[linear-gradient(135deg,#0f172a_0%,#334155_45%,#f59e0b_140%)] px-6 pb-8 pt-7 text-white">
+          <section className="overflow-hidden rounded-[34px] border bg-white shadow-[0_20px_50px_rgba(15,23,42,0.07)]" style={{ borderColor: 'var(--line)' }}>
+            <div className="px-6 pb-8 pt-7 text-white" style={{ background: 'linear-gradient(135deg, var(--ink), var(--black))' }}>
               <div className="inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.24em] text-white/70">
                 {t('My Profile', 'ملفي الشخصي')}
               </div>
@@ -218,23 +218,23 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 border-b border-stone-200 px-5 py-5">
+            <div className="grid grid-cols-3 gap-3 border-b px-5 py-5" style={{ borderColor: 'var(--line)' }}>
               {[
                 { label: t('Orders', 'الطلبات'), value: summary.total },
                 { label: t('Active', 'النشطة'), value: summary.active },
                 { label: t('Completed', 'المكتملة'), value: summary.completed },
               ].map((item) => (
-                <div key={item.label} className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-center">
-                  <p className="text-xl font-black text-slate-900">{item.value}</p>
-                  <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">{item.label}</p>
+                <div key={item.label} className="rounded-2xl border p-3 text-center" style={{ borderColor: 'var(--line)', background: 'var(--paper)' }}>
+                  <p className="text-xl font-black" style={{ color: 'var(--ink)' }}>{item.value}</p>
+                  <p className="mt-1 text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--mute)' }}>{item.label}</p>
                 </div>
               ))}
             </div>
 
             <div className="px-5 py-5">
               <div className="mb-4 flex items-center justify-between gap-3">
-                <h2 className="text-sm font-black text-slate-900">{t('Recent orders', 'الطلبات الأخيرة')}</h2>
-                <Link href="/orders" className="text-xs font-black text-amber-700 hover:text-amber-800">
+                <h2 className="text-sm font-black" style={{ color: 'var(--ink)' }}>{t('Recent orders', 'الطلبات الأخيرة')}</h2>
+                <Link href="/orders" className="text-xs font-black" style={{ color: 'var(--orange)' }}>
                   {t('Open all', 'عرض الكل')}
                 </Link>
               </div>
@@ -242,12 +242,12 @@ export default function ProfilePage() {
               {ordersLoading ? (
                 <div className="space-y-3">
                   {[1, 2, 3].map((item) => (
-                    <div key={item} className="h-16 animate-pulse rounded-2xl bg-stone-100" />
+                    <div key={item} className="h-16 animate-pulse rounded-2xl" style={{ background: 'var(--paper-2)' }} />
                   ))}
                 </div>
               ) : orders.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 px-4 py-8 text-center">
-                  <p className="text-sm font-medium text-slate-500">{t('No orders yet', 'لا توجد طلبات بعد')}</p>
+                <div className="rounded-2xl border border-dashed px-4 py-8 text-center" style={{ borderColor: 'var(--line)', background: 'var(--paper)' }}>
+                  <p className="text-sm font-medium" style={{ color: 'var(--mute)' }}>{t('No orders yet', 'لا توجد طلبات بعد')}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -259,13 +259,13 @@ export default function ProfilePage() {
                       <Link
                         key={order.id}
                         href="/orders"
-                        className="flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 transition-colors hover:bg-stone-50"
+                        className="flex items-center justify-between gap-3 rounded-2xl border bg-white px-4 py-3 transition-colors" style={{ borderColor: 'var(--line)' }}
                       >
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-black text-slate-900">
+                          <p className="truncate text-sm font-black" style={{ color: 'var(--ink)' }}>
                             {t('Order', 'طلب')} #{order.orderNumber || order.id}
                           </p>
-                          <p className="mt-1 text-xs text-slate-400">
+                          <p className="mt-1 text-xs" style={{ color: 'var(--mute)' }}>
                             {amountDue?.toFixed(2)} {currencyLabel}
                           </p>
                           {walletApplied > 0 && (
@@ -295,10 +295,12 @@ export default function ProfilePage() {
                   key={key}
                   onClick={() => setActiveTab(key)}
                   className={`rounded-full px-4 py-2 text-sm font-black transition-all ${
-                    activeTab === key
-                      ? 'bg-slate-900 text-white'
-                      : 'border border-stone-200 bg-white text-slate-500 hover:text-slate-900'
+                    activeTab === key ? 'text-white' : 'border bg-white'
                   }`}
+                  style={activeTab === key
+                    ? { background: 'var(--ink)' }
+                    : { borderColor: 'var(--line)', color: 'var(--mute)' }
+                  }
                 >
                   {label}
                 </button>
@@ -306,10 +308,10 @@ export default function ProfilePage() {
             </div>
 
             {activeTab === 'profile' ? (
-              <div className="rounded-[34px] border border-stone-200 bg-white p-5 shadow-[0_20px_50px_rgba(15,23,42,0.07)] sm:p-6">
+              <div className="rounded-[34px] border bg-white p-5 shadow-[0_20px_50px_rgba(15,23,42,0.07)] sm:p-6" style={{ borderColor: 'var(--line)' }}>
                 <div className="mb-6">
-                  <h2 className="text-xl font-black text-slate-900">{t('Contact and display details', 'بيانات التواصل والظهور')}</h2>
-                  <p className="mt-2 text-sm leading-7 text-slate-500">
+                  <h2 className="text-xl font-black" style={{ color: 'var(--ink)' }}>{t('Contact and display details', 'بيانات التواصل والظهور')}</h2>
+                  <p className="mt-2 text-sm leading-7" style={{ color: 'var(--mute)' }}>
                     {t(
                       'Your phone number is the required login identifier. Name and email remain optional profile details.',
                       'رقم الهاتف هو وسيلة الدخول الأساسية. الاسم والبريد يظلان بيانات ملف شخصي اختيارية.'
@@ -347,7 +349,7 @@ export default function ProfilePage() {
                   <button
                     onClick={handleSaveProfile}
                     disabled={savingProfile}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3.5 text-sm font-black text-white transition-colors hover:bg-amber-600 disabled:opacity-60"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3.5 text-sm font-black text-white transition-colors disabled:opacity-60" style={{ background: 'var(--ink)' }}
                   >
                     {savingProfile ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : null}
                     {savingProfile ? t('Saving...', 'جارٍ الحفظ...') : t('Save profile', 'حفظ الملف الشخصي')}
@@ -355,10 +357,10 @@ export default function ProfilePage() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-[34px] border border-stone-200 bg-white p-5 shadow-[0_20px_50px_rgba(15,23,42,0.07)] sm:p-6">
+              <div className="rounded-[34px] border bg-white p-5 shadow-[0_20px_50px_rgba(15,23,42,0.07)] sm:p-6" style={{ borderColor: 'var(--line)' }}>
                 <div className="mb-6">
-                  <h2 className="text-xl font-black text-slate-900">{t('Password and session', 'كلمة المرور والجلسة')}</h2>
-                  <p className="mt-2 text-sm leading-7 text-slate-500">
+                  <h2 className="text-xl font-black" style={{ color: 'var(--ink)' }}>{t('Password and session', 'كلمة المرور والجلسة')}</h2>
+                  <p className="mt-2 text-sm leading-7" style={{ color: 'var(--mute)' }}>
                     {t(
                       'Update your password here. Use a strong password since your phone number is now the main sign-in identifier.',
                       'حدّث كلمة المرور من هنا. استخدم كلمة مرور قوية لأن رقم الهاتف أصبح وسيلة الدخول الأساسية.'
@@ -394,7 +396,7 @@ export default function ProfilePage() {
                   <button
                     onClick={handleChangePassword}
                     disabled={savingPassword}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3.5 text-sm font-black text-white transition-colors hover:bg-amber-600 disabled:opacity-60"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3.5 text-sm font-black text-white transition-colors disabled:opacity-60" style={{ background: 'var(--ink)' }}
                   >
                     {savingPassword ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : null}
                     {savingPassword ? t('Updating password...', 'جارٍ تحديث كلمة المرور...') : t('Change password', 'تغيير كلمة المرور')}
@@ -441,12 +443,12 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">{label}</label>
+      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--mute)' }}>{label}</label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20"
+        className="w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition-all placeholder:text-[var(--mute)]" style={{ borderColor: 'var(--line)', color: 'var(--ink)' }}
       />
     </div>
   )
@@ -469,18 +471,18 @@ function PasswordField({
 
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">{label}</label>
+      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--mute)' }}>{label}</label>
       <div className="relative">
         <input
           type={showPasswords ? 'text' : 'password'}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pe-14 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20"
+          className="w-full rounded-2xl border bg-white px-4 py-3 pe-14 text-sm outline-none transition-all placeholder:text-[var(--mute)]" style={{ borderColor: 'var(--line)', color: 'var(--ink)' }}
         />
         <button
           type="button"
           onClick={onToggle}
-          className="absolute inset-y-0 end-3 my-auto h-9 rounded-xl px-2 text-xs font-black text-slate-400 transition-colors hover:text-slate-700"
+          className="absolute inset-y-0 end-3 my-auto h-9 rounded-xl px-2 text-xs font-black transition-colors" style={{ color: 'var(--mute)' }}
         >
           {showPasswords ? t('Hide', 'إخفاء') : t('Show', 'إظهار')}
         </button>
@@ -488,4 +490,9 @@ function PasswordField({
     </div>
   )
 }
+
+
+
+
+
 

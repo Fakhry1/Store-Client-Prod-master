@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { startTransition, useState, useEffect, useCallback, useRef } from 'react'
+import { startTransition, useState, useEffect, useCallback, useRef, memo } from 'react'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
@@ -20,9 +20,9 @@ const AddressModal = dynamic(() => import('@/components/AddressModal'), {
 const CheckoutFormSection = dynamic(() => import('@/components/cart/CheckoutFormSection'), {
   loading: () => (
     <div className="space-y-3">
-      <div className="h-56 animate-pulse rounded-2xl border border-slate-100 bg-white" />
-      <div className="h-64 animate-pulse rounded-2xl border border-slate-100 bg-white" />
-      <div className="h-40 animate-pulse rounded-2xl border border-slate-100 bg-white" />
+      <div className="h-56 animate-pulse rounded-2xl border bg-white" style={{ borderColor: 'var(--line)' }} />
+      <div className="h-64 animate-pulse rounded-2xl border bg-white" style={{ borderColor: 'var(--line)' }} />
+      <div className="h-40 animate-pulse rounded-2xl border bg-white" style={{ borderColor: 'var(--line)' }} />
     </div>
   ),
 })
@@ -30,9 +30,9 @@ const CheckoutFormSection = dynamic(() => import('@/components/cart/CheckoutForm
 const OrderReviewSection = dynamic(() => import('@/components/cart/OrderReviewSection'), {
   loading: () => (
     <div className="space-y-3">
-      <div className="h-20 animate-pulse rounded-2xl border border-slate-100 bg-white" />
-      <div className="h-52 animate-pulse rounded-2xl border border-slate-100 bg-white" />
-      <div className="h-40 animate-pulse rounded-2xl border border-slate-100 bg-white" />
+      <div className="h-20 animate-pulse rounded-2xl border bg-white" style={{ borderColor: 'var(--line)' }} />
+      <div className="h-52 animate-pulse rounded-2xl border bg-white" style={{ borderColor: 'var(--line)' }} />
+      <div className="h-40 animate-pulse rounded-2xl border bg-white" style={{ borderColor: 'var(--line)' }} />
     </div>
   ),
 })
@@ -97,11 +97,12 @@ function Toast({ open, message, tone = 'error', onClose }: {
 
   if (!open) return null
 
-  const bg = tone === 'success' ? 'bg-emerald-600' : tone === 'info' ? 'bg-slate-900' : 'bg-red-600'
+  const bg = tone === 'success' ? 'bg-emerald-600' : tone === 'info' ? '' : 'bg-red-600'
+  const bgStyle = tone === 'info' ? { background: 'var(--ink)' } : undefined
 
   return (
     <div className="fixed inset-x-0 bottom-20 md:bottom-6 z-50 px-4 pointer-events-none">
-      <div className={`mx-auto max-w-sm ${bg} text-white rounded-2xl shadow-2xl pointer-events-auto`}>
+      <div className={`mx-auto max-w-sm ${bg} text-white rounded-2xl shadow-2xl pointer-events-auto`} style={bgStyle}>
         <div className="flex items-center gap-3 px-4 py-3.5">
           <span className="text-base font-black">{tone === 'success' ? '✓' : tone === 'info' ? 'ℹ' : '!'}</span>
           <p className="text-sm font-bold flex-1 leading-snug">{message}</p>
@@ -123,7 +124,7 @@ function BottomSheet({ open, onClose, children }: {
       <button className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="absolute inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+7rem)] max-h-[calc(85vh-7rem)] overflow-y-auto rounded-t-3xl bg-white shadow-2xl md:bottom-0 md:max-h-[85vh]">
         <div className="sticky top-0 bg-white pt-3 pb-2 px-4">
-          <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto" />
+          <div className="w-10 h-1 rounded-full mx-auto" style={{ background: 'var(--line)' }} />
         </div>
         <div className="px-4 pb-8">{children}</div>
       </div>
@@ -152,20 +153,25 @@ function StepIndicator({ step, t }: {
         return (
           <div key={s.key} className="flex items-center">
             <div className="flex flex-col items-center gap-1">
-              <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-black transition-all duration-300
-                ${done   ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200'
-                  : active ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/25'
-                  : 'bg-slate-100 text-slate-400'}`}>
+              <div
+                className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-black transition-all duration-300
+                ${done ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' : ''}`}
+                style={!done ? (active ? { background: 'var(--ink)', color: '#fff', boxShadow: '0 8px 24px rgba(10,31,68,0.25)' } : { background: 'var(--paper)', color: 'var(--mute)' }) : undefined}
+              >
                 {done ? '✓' : s.icon}
               </div>
-              <span className={`text-[10px] font-black tracking-wide hidden sm:block
-                ${active ? 'text-slate-900' : done ? 'text-emerald-600' : 'text-slate-400'}`}>
+              <span
+                className="text-[10px] font-black tracking-wide hidden sm:block"
+                style={{ color: active ? 'var(--ink)' : done ? undefined : 'var(--mute)' }}
+              >
                 {s.label}
               </span>
             </div>
             {i < 2 && (
-              <div className={`w-12 md:w-20 h-0.5 mx-1 transition-all duration-500
-                ${i < currentIdx ? 'bg-emerald-400' : 'bg-slate-200'}`} />
+              <div
+                className={`w-12 md:w-20 h-0.5 mx-1 transition-all duration-500 ${i < currentIdx ? 'bg-emerald-400' : ''}`}
+                style={i < currentIdx ? undefined : { background: 'var(--line)' }}
+              />
             )}
           </div>
         )
@@ -193,8 +199,10 @@ function PromoSection({ promo, setPromo, promoResult, promoLoading, onApply, onR
   const currencyLabel = getCurrencyLabel(locale)
 
   return (
-    <div className={`rounded-2xl border overflow-hidden transition-all duration-300
-      ${applied ? 'border-emerald-200' : 'border-dashed border-slate-200'}`}>
+    <div
+      className={`rounded-2xl border overflow-hidden transition-all duration-300 ${applied ? 'border-emerald-200' : 'border-dashed'}`}
+      style={!applied ? { borderColor: 'var(--line)' } : undefined}
+    >
 
       {/* âœ… FIX: Ø§Ø³ØªØ¨Ø¯Ù„ <button> Ø§Ù„Ø®Ø§Ø±Ø¬ÙŠ Ø¨Ù€ <div> Ù„ØªØ¬Ù†Ø¨ button Ø¯Ø§Ø®Ù„ button */}
       <div
@@ -203,11 +211,12 @@ function PromoSection({ promo, setPromo, promoResult, promoLoading, onApply, onR
         tabIndex={!applied ? 0 : undefined}
         onKeyDown={!applied ? (e) => e.key === 'Enter' && setExpanded(v => !v) : undefined}
         className={`w-full flex items-center gap-3 px-4 py-3.5 transition-colors text-start
-          ${applied ? 'bg-emerald-50' : 'bg-white hover:bg-slate-50 cursor-pointer'}`}
+          ${applied ? 'bg-emerald-50' : 'bg-white cursor-pointer'}`}
       >
         <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors
-          ${applied ? 'bg-emerald-100' : 'bg-slate-100'}`}>
-          <TagIcon className={`w-4 h-4 ${applied ? 'text-emerald-600' : 'text-slate-500'}`} />
+          ${applied ? 'bg-emerald-100' : ''}`}
+          style={!applied ? { background: 'var(--paper)' } : undefined}>
+          <TagIcon className={`w-4 h-4 ${applied ? 'text-emerald-600' : 'text-[var(--mute)]'}`} />
         </div>
 
         <div className="flex-1 min-w-0">
@@ -219,7 +228,7 @@ function PromoSection({ promo, setPromo, promoResult, promoLoading, onApply, onR
               </p>
             </>
           ) : (
-            <p className="text-sm font-bold text-slate-700">{t('Have a promo code?', 'لديك كود خصم؟')}</p>
+            <p className="text-sm font-bold" style={{ color: 'var(--ink)' }}>{t('Have a promo code?', 'لديك كود خصم؟')}</p>
           )}
         </div>
 
@@ -232,8 +241,8 @@ function PromoSection({ promo, setPromo, promoResult, promoLoading, onApply, onR
             {t('Remove', 'حذف')}
           </button>
         ) : (
-          <div className={`w-5 h-5 rounded-full border-2 border-slate-200 flex items-center justify-center transition-transform duration-200 flex-shrink-0 ${expanded ? 'rotate-180' : ''}`}>
-            <svg className="w-2.5 h-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-transform duration-200 flex-shrink-0 ${expanded ? 'rotate-180' : ''}`} style={{ borderColor: 'var(--line)' }}>
+            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--mute)' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
             </svg>
           </div>
@@ -242,23 +251,25 @@ function PromoSection({ promo, setPromo, promoResult, promoLoading, onApply, onR
 
       {/* Input area */}
       {!applied && expanded && (
-        <div className="bg-white px-4 pb-4 pt-3 border-t border-slate-100">
+        <div className="bg-white px-4 pb-4 pt-3 border-t" style={{ borderColor: 'var(--line)' }}>
           <div className="flex gap-2">
-            <div className={`flex-1 flex items-center gap-2 rounded-xl border-2 px-3 transition-all min-w-0
-              ${failed ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-slate-50 focus-within:border-slate-900 focus-within:bg-white'}`}>
+            <div
+              className={`flex-1 flex items-center gap-2 rounded-xl border-2 px-3 transition-all min-w-0 ${failed ? 'border-red-300 bg-red-50' : 'bg-white'}`}
+              style={!failed ? { borderColor: 'var(--line)' } : undefined}
+            >
               <span className="text-base flex-shrink-0">🏷️</span>
               <input
                 value={promo}
                 onChange={e => setPromo(e.target.value.toUpperCase())}
                 onKeyDown={e => e.key === 'Enter' && onApply()}
                 placeholder={t('ENTER CODE', 'أدخل الكود')}
-                className="flex-1 py-3 text-sm font-black outline-none bg-transparent tracking-widest w-full placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-300"
+                className="flex-1 py-3 text-sm font-black outline-none bg-transparent tracking-widest w-full placeholder:font-normal placeholder:tracking-normal placeholder:text-[var(--line)]"
                 autoCapitalize="characters"
                 autoCorrect="off"
                 spellCheck={false}
               />
               {promo && (
-                <button onClick={() => setPromo('')} className="text-slate-300 hover:text-slate-500 transition-colors flex-shrink-0">
+                <button onClick={() => setPromo('')} className="transition-colors flex-shrink-0" style={{ color: 'var(--mute)' }}>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -269,7 +280,8 @@ function PromoSection({ promo, setPromo, promoResult, promoLoading, onApply, onR
             <button
               onClick={onApply}
               disabled={promoLoading || !promo.trim()}
-              className="flex-shrink-0 px-4 py-3 bg-slate-900 text-white text-sm font-black rounded-xl hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.97] flex items-center gap-1.5 whitespace-nowrap"
+              className="flex-shrink-0 px-4 py-3 text-white text-sm font-black rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.97] flex items-center gap-1.5 whitespace-nowrap"
+              style={{ background: 'var(--ink)' }}
             >
               {promoLoading
                 ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -300,20 +312,21 @@ function TermsConsentCard({
   t: (en: string, ar: string) => string
 }) {
   return (
-    <div className="rounded-[28px] border border-stone-200 bg-white p-4 shadow-[0_12px_28px_rgba(15,23,42,0.05)] md:p-5">
+    <div className="rounded-[28px] border bg-white p-4 shadow-[0_12px_28px_rgba(15,23,42,0.05)] md:p-5" style={{ borderColor: 'var(--line)' }}>
       <div className="flex items-start gap-3">
         <label className="mt-0.5 flex cursor-pointer items-start gap-3">
           <input
             type="checkbox"
             checked={agreed}
             onChange={(event) => onToggle(event.target.checked)}
-            className="mt-1 h-4 w-4 rounded border-stone-300 text-slate-900 focus:ring-amber-400"
+            className="mt-1 h-4 w-4 rounded"
+            style={{ accentColor: 'var(--orange)' }}
           />
           <div className="space-y-1.5">
-            <p className="text-sm font-black text-slate-900">
+            <p className="text-sm font-black" style={{ color: 'var(--ink)' }}>
               {t('I agree to the Terms & Conditions', 'أوافق على الشروط والأحكام')}
             </p>
-            <p className="text-xs leading-6 text-slate-500">
+            <p className="text-xs leading-6" style={{ color: 'var(--mute)' }}>
               {t(
                 'This includes order eligibility, cancellation, replacement, return, wallet, delivery, and promo usage policies.',
                 'يشمل ذلك سياسات الطلبات والإلغاء والاستبدال والاسترجاع والمحفظة والتوصيل واستخدام العروض.'
@@ -321,7 +334,8 @@ function TermsConsentCard({
             </p>
             <Link
               href={TERMS_ROUTE}
-              className="inline-flex items-center gap-1 text-xs font-black text-amber-700 transition-colors hover:text-amber-600"
+              className="inline-flex items-center gap-1 text-xs font-black transition-colors"
+              style={{ color: 'var(--orange)' }}
             >
               {t('Read full Terms & Conditions', 'قراءة الشروط والأحكام كاملة')}
               <ChevronRight className="h-3.5 w-3.5" />
@@ -361,9 +375,9 @@ function OrderSummaryCard({
   const currencyLabel = getCurrencyLabel(locale)
 
   return (
-    <div className="overflow-hidden rounded-[32px] border border-stone-200 bg-white shadow-[0_18px_38px_rgba(15,23,42,0.06)]">
-      <div className="border-b border-stone-200 bg-[#faf7f1] px-5 pb-4 pt-5">
-        <h3 className="font-black text-slate-900 text-base">{t('Order Summary', 'ملخص الطلب')}</h3>
+    <div className="overflow-hidden rounded-[32px] border bg-white shadow-[0_18px_38px_rgba(15,23,42,0.06)]" style={{ borderColor: 'var(--line)' }}>
+      <div className="border-b px-5 pb-4 pt-5" style={{ borderColor: 'var(--line)', background: 'var(--paper)' }}>
+        <h3 className="font-black text-base" style={{ color: 'var(--ink)' }}>{t('Order Summary', 'ملخص الطلب')}</h3>
       </div>
 
       <div className="space-y-4 px-5 py-4">
@@ -372,12 +386,12 @@ function OrderSummaryCard({
           <div className="space-y-2.5">
             {cart.items.slice(0, 3).map(item => (
               <div key={item.id} className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-lg bg-slate-50 flex-shrink-0 overflow-hidden relative border border-slate-100">
+                <div className="w-9 h-9 rounded-lg flex-shrink-0 overflow-hidden relative border" style={{ background: 'var(--paper)', borderColor: 'var(--line)' }}>
                   {item.imagePath ? (
                     <Image src={joinUrl(API_URL, item.imagePath) || '/placeholder.jpg'}
                       alt="" fill className="object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-200">
+                    <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--line)' }}>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
                           d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -386,18 +400,18 @@ function OrderSummaryCard({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-slate-700 truncate">
+                  <p className="text-xs font-bold truncate" style={{ color: 'var(--ink)' }}>
                     {locale === 'ar' ? item.productNameAr || item.productNameEn : item.productNameEn}
                   </p>
-                  <p className="text-[10px] text-slate-400">×{item.quantity}</p>
+                  <p className="text-[10px]" style={{ color: 'var(--mute)' }}>×{item.quantity}</p>
                 </div>
-                <span className="text-xs font-black text-slate-800 flex-shrink-0">
+                <span className="text-xs font-black flex-shrink-0" style={{ color: 'var(--ink)' }}>
                   {item.itemTotal.toFixed(2)}
                 </span>
               </div>
             ))}
             {cart.items.length > 3 && (
-              <p className="text-[11px] text-slate-400 text-center font-medium">
+              <p className="text-[11px] text-center font-medium" style={{ color: 'var(--mute)' }}>
                 +{cart.items.length - 3} {t('more', 'منتجات أخرى')}
               </p>
             )}
@@ -416,8 +430,8 @@ function OrderSummaryCard({
         {/* Totals */}
         <div className="space-y-2.5 text-sm">
           <div className="flex justify-between">
-            <span className="text-slate-500">{t('Subtotal', 'المجموع الفرعي')}</span>
-            <span className="font-semibold text-slate-800">{subtotal.toFixed(2)} {currencyLabel}</span>
+            <span style={{ color: 'var(--mute)' }}>{t('Subtotal', 'المجموع الفرعي')}</span>
+            <span className="font-semibold" style={{ color: 'var(--ink)' }}>{subtotal.toFixed(2)} {currencyLabel}</span>
           </div>
           {discount > 0 && (
             <div className="flex justify-between font-black text-emerald-600">
@@ -429,13 +443,13 @@ function OrderSummaryCard({
             </div>
           )}
           <div className="flex justify-between">
-            <span className="text-slate-500">{t('VAT 15%', 'ضريبة 15%')}</span>
-            <span className="font-semibold text-slate-800">{vat.toFixed(2)} {currencyLabel}</span>
+            <span style={{ color: 'var(--mute)' }}>{t('VAT 15%', 'ضريبة 15%')}</span>
+            <span className="font-semibold" style={{ color: 'var(--ink)' }}>{vat.toFixed(2)} {currencyLabel}</span>
           </div>
           {deliveryFee > 0 && (
             <div className="flex justify-between">
-              <span className="text-slate-500">{t('Delivery', 'توصيل')}</span>
-              <span className="font-semibold text-slate-800">{deliveryFee.toFixed(2)} {currencyLabel}</span>
+              <span style={{ color: 'var(--mute)' }}>{t('Delivery', 'توصيل')}</span>
+              <span className="font-semibold" style={{ color: 'var(--ink)' }}>{deliveryFee.toFixed(2)} {currencyLabel}</span>
             </div>
           )}
           {(walletBalance > 0 || walletLoading) && (
@@ -465,9 +479,9 @@ function OrderSummaryCard({
                     <span>{t('Applied from wallet', 'المستخدم من المحفظة')}</span>
                     <span>−{walletApplied.toFixed(2)} {currencyLabel}</span>
                   </div>
-                  <div className="flex justify-between text-slate-600">
+                  <div className="flex justify-between" style={{ color: 'var(--mute)' }}>
                     <span>{t('Remaining due', 'المتبقي للدفع')}</span>
-                    <span className="font-black text-slate-900">{amountDue.toFixed(2)} {currencyLabel}</span>
+                    <span className="font-black" style={{ color: 'var(--ink)' }}>{amountDue.toFixed(2)} {currencyLabel}</span>
                   </div>
                 </div>
               )}
@@ -476,13 +490,13 @@ function OrderSummaryCard({
         </div>
 
         {/* Total */}
-        <div className="pt-3 border-t border-slate-100 flex items-baseline justify-between">
-          <span className="font-black text-slate-900">{t('Total', 'الإجمالي')}</span>
+        <div className="pt-3 border-t flex items-baseline justify-between" style={{ borderColor: 'var(--line)' }}>
+          <span className="font-black" style={{ color: 'var(--ink)' }}>{t('Total', 'الإجمالي')}</span>
           <div className="text-end">
-            <span className="text-2xl font-black text-slate-900">{amountDue.toFixed(2)}</span>
-            <span className="text-sm text-slate-400 ms-1">{currencyLabel}</span>
+            <span className="text-2xl font-black" style={{ color: 'var(--ink)' }}>{amountDue.toFixed(2)}</span>
+            <span className="text-sm ms-1" style={{ color: 'var(--mute)' }}>{currencyLabel}</span>
             {useWalletBalance && walletApplied > 0 && (
-              <p className="mt-1 text-[11px] font-bold text-slate-400">
+              <p className="mt-1 text-[11px] font-bold" style={{ color: 'var(--mute)' }}>
                 {t('Gross total', 'الإجمالي قبل المحفظة')}: {finalTotal.toFixed(2)} {currencyLabel}
               </p>
             )}
@@ -509,10 +523,8 @@ function OrderSummaryCard({
           disabled={!canProceed || placing}
           className={`w-full rounded-2xl py-4 text-sm font-black transition-all duration-300
             flex items-center justify-center gap-2 active:scale-[0.98]
-            ${step === 'review'
-              ? 'bg-amber-500 hover:bg-amber-400 text-white shadow-lg shadow-amber-500/30'
-              : 'bg-slate-900 hover:bg-amber-500 text-white shadow-lg shadow-slate-900/20'
-            } disabled:opacity-40 disabled:cursor-not-allowed`}
+            disabled:opacity-40 disabled:cursor-not-allowed`}
+          style={{ background: step === 'review' ? 'var(--orange)' : 'var(--ink)', color: '#fff', boxShadow: '0 8px 24px rgba(10,31,68,0.2)' }}
         >
           {placing ? (
             <>
@@ -528,7 +540,7 @@ function OrderSummaryCard({
           )}
         </button>
 
-        <p className="text-[10px] text-slate-400 text-center">
+        <p className="text-[10px] text-center" style={{ color: 'var(--mute)' }}>
           🔒 {t('Secure & encrypted checkout', 'دفع آمن ومشفر')}
         </p>
       </div>
@@ -538,8 +550,8 @@ function OrderSummaryCard({
 
 // â”€â”€â”€ Cart Item Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-function CartItemRow({ item, onUpdate, onRemove, locale, t }: {
-  item: CartItem; onUpdate: (qty: number) => Promise<void>; onRemove: () => Promise<void>
+const CartItemRow = memo(function CartItemRow({ item, onUpdate, onRemove, locale, t }: {
+  item: CartItem; onUpdate: (id: number, qty: number) => Promise<void>; onRemove: (id: number) => Promise<void>
   locale: string; t: (en: string, ar: string) => string
 }) {
   const [removing,   setRemoving]   = useState(false)
@@ -555,20 +567,21 @@ function CartItemRow({ item, onUpdate, onRemove, locale, t }: {
   async function handleRemove() {
     if (removing) return
     setRemoving(true)
-    try { await onRemove() } finally { setRemoving(false) }
+    try { await onRemove(item.id) } finally { setRemoving(false) }
   }
 
   async function safeUpdate(qty: number) {
     if (busyQty) return
     setBusyQty(true)
-    try { await onUpdate(qty) } finally { setBusyQty(false) }
+    try { await onUpdate(item.id, qty) } finally { setBusyQty(false) }
   }
 
   return (
     <>
-      <div className={`bg-white rounded-2xl border overflow-hidden transition-all duration-300
-        ${removing ? 'opacity-30 scale-[0.97] pointer-events-none' : ''}
-        ${isOut ? 'border-red-200' : 'border-slate-100'}`}>
+      <div
+        className={`bg-white rounded-2xl border overflow-hidden transition-all duration-300 ${removing ? 'opacity-30 scale-[0.97] pointer-events-none' : ''} ${isOut ? 'border-red-200' : ''}`}
+        style={!isOut ? { borderColor: 'var(--line)' } : undefined}
+      >
 
         {isOut && (
           <div className="px-3 py-2 bg-red-50 border-b border-red-100 flex items-center gap-2">
@@ -581,12 +594,12 @@ function CartItemRow({ item, onUpdate, onRemove, locale, t }: {
 
         <div className="p-3 flex gap-3">
           {/* Image */}
-          <div className="relative w-[68px] h-[68px] flex-shrink-0 rounded-xl overflow-hidden bg-slate-50 border border-slate-100">
+          <div className="relative w-[68px] h-[68px] flex-shrink-0 rounded-xl overflow-hidden border" style={{ background: 'var(--paper)', borderColor: 'var(--line)' }}>
             {imgSrc ? (
               <Image src={imgSrc} alt={productName ?? ''} fill sizes="68px"
                 className="object-cover" onError={() => setImgError(true)} />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-200">
+              <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--line)' }}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -598,10 +611,11 @@ function CartItemRow({ item, onUpdate, onRemove, locale, t }: {
           {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-1">
-              <h4 className="font-bold text-slate-900 text-sm leading-snug line-clamp-2 flex-1">{productName}</h4>
+              <h4 className="font-bold text-sm leading-snug line-clamp-2 flex-1" style={{ color: 'var(--ink)' }}>{productName}</h4>
               <button
                 onClick={() => setSheetOpen(true)}
-                className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all"
+                className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl hover:text-red-500 hover:bg-red-50 transition-all"
+                style={{ color: 'var(--mute)' }}
                 aria-label={t('Remove', 'حذف')}
               >
                 <TrashIcon className="w-4 h-4" />
@@ -609,39 +623,41 @@ function CartItemRow({ item, onUpdate, onRemove, locale, t }: {
             </div>
 
             {variantName && (
-              <p className="text-[11px] text-slate-400 mt-0.5 truncate">{variantName}</p>
+              <p className="text-[11px] mt-0.5 truncate" style={{ color: 'var(--mute)' }}>{variantName}</p>
             )}
 
             <div className="flex items-center justify-between mt-2">
               {/* Price */}
               <div className="flex items-baseline gap-1.5 min-w-0">
-                <span className="text-sm font-black text-slate-900 truncate">
+                <span className="text-sm font-black truncate" style={{ color: 'var(--ink)' }}>
                   {item.itemTotal.toFixed(2)}
-                  <span className="text-[11px] font-normal text-slate-400 ms-0.5">{getCurrencyLabel(locale)}</span>
+                  <span className="text-[11px] font-normal ms-0.5" style={{ color: 'var(--mute)' }}>{getCurrencyLabel(locale)}</span>
                 </span>
                 {item.hasActiveOffer && (
-                  <span className="text-[11px] text-slate-400 line-through hidden xs:inline">
+                  <span className="text-[11px] line-through hidden xs:inline" style={{ color: 'var(--mute)' }}>
                     {(item.basePrice * item.quantity).toFixed(2)}
                   </span>
                 )}
               </div>
 
               {/* Qty Stepper */}
-              <div className="flex items-center bg-slate-50 rounded-xl border border-slate-200 overflow-hidden flex-shrink-0">
+              <div className="flex items-center rounded-xl border overflow-hidden flex-shrink-0" style={{ background: 'var(--paper)', borderColor: 'var(--line)' }}>
                 <button
                   onClick={() => item.quantity > 1 ? safeUpdate(item.quantity - 1) : undefined}
                   disabled={item.quantity <= 1 || busyQty}
-                  className="w-9 h-9 flex items-center justify-center text-base font-black text-slate-500 active:bg-slate-200 transition-colors disabled:opacity-30"
+                  className="w-9 h-9 flex items-center justify-center text-base font-black transition-colors disabled:opacity-30"
+                  style={{ color: 'var(--mute)' }}
                 >−</button>
-                <span className="w-8 text-center text-sm font-black text-slate-900 border-x border-slate-200">
+                <span className="w-8 text-center text-sm font-black border-x" style={{ color: 'var(--ink)', borderColor: 'var(--line)' }}>
                   {busyQty
-                    ? <span className="inline-block w-3 h-3 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+                    ? <span className="inline-block w-3 h-3 border-2 border-t-2 rounded-full animate-spin" style={{ borderColor: 'var(--line)', borderTopColor: 'var(--ink)' }} />
                     : item.quantity}
                 </span>
                 <button
                   onClick={() => safeUpdate(Math.min(item.stockQuantity, 10, item.quantity + 1))}
                   disabled={item.quantity >= Math.min(item.stockQuantity, 10) || busyQty}
-                  className="w-9 h-9 flex items-center justify-center text-base font-black text-slate-500 active:bg-slate-200 transition-colors disabled:opacity-30"
+                  className="w-9 h-9 flex items-center justify-center text-base font-black transition-colors disabled:opacity-30"
+                  style={{ color: 'var(--mute)' }}
                 >+</button>
               </div>
             </div>
@@ -655,14 +671,15 @@ function CartItemRow({ item, onUpdate, onRemove, locale, t }: {
           <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-4">
             <TrashIcon className="w-6 h-6 text-red-600" />
           </div>
-          <h3 className="text-base font-black text-slate-900 mb-1">{t('Remove item?', 'حذف المنتج؟')}</h3>
-          <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-            <span className="font-bold text-slate-700">{productName}</span>
+          <h3 className="text-base font-black mb-1" style={{ color: 'var(--ink)' }}>{t('Remove item?', 'حذف المنتج؟')}</h3>
+          <p className="text-sm mb-6 leading-relaxed" style={{ color: 'var(--mute)' }}>
+            <span className="font-bold" style={{ color: 'var(--ink)' }}>{productName}</span>
             <br />{t('will be removed from your cart.', 'سيتم حذفه من سلتك.')}
           </p>
           <div className="grid grid-cols-2 gap-3">
             <button onClick={() => setSheetOpen(false)}
-              className="py-3.5 bg-slate-100 text-slate-700 font-black rounded-2xl active:scale-[0.98]">
+              className="py-3.5 font-black rounded-2xl active:scale-[0.98]"
+              style={{ background: 'var(--paper)', color: 'var(--ink)' }}>
               {t('Cancel', 'إلغاء')}
             </button>
             <button onClick={() => { handleRemove(); setSheetOpen(false) }}
@@ -674,7 +691,7 @@ function CartItemRow({ item, onUpdate, onRemove, locale, t }: {
       </BottomSheet>
     </>
   )
-}
+})
 
 // â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -803,9 +820,19 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
     void loadWallet()
   }, [token])
 
-  function showToast(msg: string, tone: 'error' | 'success' | 'info' = 'error') {
+  const showToast = useCallback((msg: string, tone: 'error' | 'success' | 'info' = 'error') => {
     setToastMsg(msg); setToastTone(tone); setToastOpen(true)
-  }
+  }, [])
+
+  const handleRemoveItem = useCallback(async (id: number) => {
+    await removeItem(id)
+    showToast(t('Removed from cart', 'تم الحذف من السلة'), 'success')
+  }, [removeItem, showToast, t])
+
+  const handleUpdateItem = useCallback(async (id: number, qty: number) => {
+    try { await updateItem(id, qty) }
+    catch (e: any) { showToast(e?.message || t('Failed', 'فشل'), 'error'); throw e }
+  }, [updateItem, showToast, t])
 
   async function handleApplyPromo() {
     if (!promo.trim() || !cart) return
@@ -912,18 +939,18 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
 
     if (isLoading && !cart) {
       return (
-        <div className="min-h-screen bg-[#f8f6f2] pb-28 md:pb-0">
+        <div className="min-h-screen pb-28 md:pb-0" style={{ background: 'var(--paper)' }}>
           <div className="mx-auto max-w-6xl px-4 py-5 md:px-6 md:py-10 space-y-5">
-            <div className="h-20 animate-pulse rounded-[32px] border border-stone-200 bg-white/88" />
-            <div className="h-14 animate-pulse rounded-2xl bg-slate-100" />
+            <div className="h-20 animate-pulse rounded-[32px] border bg-white" style={{ borderColor: 'var(--line)' }} />
+            <div className="h-14 animate-pulse rounded-2xl" style={{ background: 'var(--paper-2)' }} />
             <div className="grid gap-5 lg:grid-cols-5">
               <div className="space-y-3 lg:col-span-3">
-                <div className="h-32 animate-pulse rounded-[30px] border border-stone-200 bg-white" />
-                <div className="h-24 animate-pulse rounded-2xl border border-slate-100 bg-white" />
-                <div className="h-24 animate-pulse rounded-2xl border border-slate-100 bg-white" />
-                <div className="h-24 animate-pulse rounded-2xl border border-slate-100 bg-white" />
+                <div className="h-32 animate-pulse rounded-[30px] border bg-white" style={{ borderColor: 'var(--line)' }} />
+                <div className="h-24 animate-pulse rounded-2xl border bg-white" style={{ borderColor: 'var(--line)' }} />
+                <div className="h-24 animate-pulse rounded-2xl border bg-white" style={{ borderColor: 'var(--line)' }} />
+                <div className="h-24 animate-pulse rounded-2xl border bg-white" style={{ borderColor: 'var(--line)' }} />
               </div>
-              <div className="h-[460px] animate-pulse rounded-[32px] border border-stone-200 bg-white lg:col-span-2" />
+              <div className="h-[460px] animate-pulse rounded-[32px] border bg-white lg:col-span-2" style={{ borderColor: 'var(--line)' }} />
             </div>
           </div>
         </div>
@@ -933,19 +960,20 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
     // â”€â”€ Empty state â”€â”€
   if (!isLoading && (!cart || cart.items.length === 0)) {
     return (
-      <div className="min-h-[80svh] bg-[#f8f6f2] px-6 text-center">
+      <div className="min-h-[80svh] px-6 text-center" style={{ background: 'var(--paper)' }}>
         <div className="mx-auto flex min-h-[80svh] max-w-md flex-col items-center justify-center">
-        <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-[32px] border border-stone-200 bg-white shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
-          <svg className="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-[32px] border bg-white shadow-[0_18px_38px_rgba(15,23,42,0.05)]" style={{ borderColor: 'var(--line)' }}>
+          <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--line)' }}>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
           </svg>
         </div>
-        <h2 className="text-2xl font-black text-slate-900 mb-2">{t('Your cart is empty', 'سلتك فارغة')}</h2>
-        <p className="mb-8 max-w-xs text-sm leading-7 text-slate-500">
+        <h2 className="text-2xl font-black mb-2" style={{ color: 'var(--ink)' }}>{t('Your cart is empty', 'سلتك فارغة')}</h2>
+        <p className="mb-8 max-w-xs text-sm leading-7" style={{ color: 'var(--mute)' }}>
           {t("Haven't added anything yet", 'لم تضف أي منتجات بعد')}
         </p>
         <Link href="/shop"
-          className="rounded-2xl bg-slate-900 px-8 py-4 font-black text-white shadow-lg shadow-slate-900/20 transition-colors hover:bg-amber-500">
+          className="rounded-2xl px-8 py-4 font-black text-white shadow-lg transition-colors"
+          style={{ background: 'var(--ink)' }}>
           {t('Start Shopping', 'تسوق الآن')}
         </Link>
         </div>
@@ -954,25 +982,26 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f6f2] pb-28 md:pb-0">
+    <div className="min-h-screen pb-28 md:pb-0" style={{ background: 'var(--paper)' }}>
       <div className="mx-auto max-w-6xl px-4 py-5 md:px-6 md:py-10">
 
         {/* Header */}
-        <div className="mb-5 flex items-center justify-between rounded-[32px] border border-stone-200 bg-white/88 p-4 shadow-[0_16px_34px_rgba(15,23,42,0.04)] backdrop-blur md:p-5">
+        <div className="mb-5 flex items-center justify-between rounded-[32px] border bg-white/88 p-4 shadow-[0_16px_34px_rgba(15,23,42,0.04)] backdrop-blur md:p-5" style={{ borderColor: 'var(--line)' }}>
           <div>
-            <h1 className="text-xl md:text-3xl font-black text-slate-900">
+            <h1 className="text-xl md:text-3xl font-black" style={{ color: 'var(--ink)' }}>
               {step === 'cart' ? t('Shopping Cart', 'سلة التسوق')
                 : step === 'checkout' ? t('Checkout', 'إتمام الطلب')
                 : t('Review Order', 'مراجعة الطلب')}
             </h1>
             {step === 'cart' && cart && (
-              <p className="mt-0.5 text-sm text-slate-400">{cart.items.length} {t('items', 'منتج')}</p>
+              <p className="mt-0.5 text-sm" style={{ color: 'var(--mute)' }}>{cart.items.length} {t('items', 'منتج')}</p>
             )}
           </div>
 
           {step !== 'cart' && (
             <button onClick={() => setStep(step === 'review' ? 'checkout' : 'cart')}
-              className="flex items-center gap-1.5 rounded-xl border border-stone-200 bg-[#faf7f1] px-3 py-2 text-sm font-bold text-slate-500 transition-colors hover:text-slate-900">
+              className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-bold transition-colors"
+              style={{ borderColor: 'var(--line)', background: 'var(--paper)', color: 'var(--mute)' }}>
               <svg className={`w-4 h-4 ${isRTL ? '' : 'rotate-180'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
               </svg>
@@ -1001,8 +1030,8 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
             {step === 'cart' ? (
               <>
                 {/* Fulfillment */}
-                <div className="rounded-[30px] border border-stone-200 bg-white p-4 shadow-[0_16px_34px_rgba(15,23,42,0.05)]">
-                  <p className="mb-3 text-xs font-black uppercase tracking-wider text-slate-400">
+                <div className="rounded-[30px] border bg-white p-4 shadow-[0_16px_34px_rgba(15,23,42,0.05)]" style={{ borderColor: 'var(--line)' }}>
+                  <p className="mb-3 text-xs font-black uppercase tracking-wider" style={{ color: 'var(--mute)' }}>
                     {t('Fulfillment', 'طريقة الاستلام')}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
@@ -1011,14 +1040,14 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
                       { id: 'delivery' as const, icon: '🚚', label: t('Delivery', 'توصيل'), sub: `${DELIVERY_FEE} ${getCurrencyLabel(locale as string)} ${t('flat', 'ثابت')}` },
                     ].map(opt => (
                       <label key={opt.id}
-                        className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all
-                          ${fulfillment === opt.id ? 'border-slate-900 bg-slate-50' : 'border-slate-200 hover:border-slate-300'}`}>
+                        className="flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all"
+                        style={fulfillment === opt.id ? { borderColor: 'var(--ink)', background: 'var(--paper)' } : { borderColor: 'var(--line)' }}>
                         <input type="radio" checked={fulfillment === opt.id}
-                          onChange={() => setFulfillment(opt.id)} className="accent-slate-900" />
+                          onChange={() => setFulfillment(opt.id)} style={{ accentColor: 'var(--ink)' }} />
                         <div>
                           <p className="text-lg leading-none">{opt.icon}</p>
-                          <p className="text-sm font-black text-slate-800">{opt.label}</p>
-                          <p className="text-[10px] text-slate-400 mt-0.5">{opt.sub}</p>
+                          <p className="text-sm font-black" style={{ color: 'var(--ink)' }}>{opt.label}</p>
+                          <p className="text-[10px] mt-0.5" style={{ color: 'var(--mute)' }}>{opt.sub}</p>
                         </div>
                       </label>
                     ))}
@@ -1028,21 +1057,15 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
                 {/* Items */}
                 {isLoading
                   ? Array.from({ length: 3 }).map((_, i) => (
-                      <div key={i} className="h-24 bg-white rounded-2xl animate-pulse border border-slate-100" />
+                      <div key={i} className="h-24 bg-white rounded-2xl animate-pulse border" style={{ borderColor: 'var(--line)' }} />
                     ))
                   : (cart?.items ?? []).map(item => (
                       <CartItemRow
                         key={item.id} item={item}
                         locale={locale as string}
                         t={t as (en: string, ar: string) => string}
-                        onRemove={async () => {
-                          await removeItem(item.id)
-                          showToast(t('Removed from cart', 'تم الحذف من السلة'), 'success')
-                        }}
-                        onUpdate={async qty => {
-                          try { await updateItem(item.id, qty) }
-                          catch (e: any) { showToast(e?.message || t('Failed', 'فشل'), 'error'); throw e }
-                        }}
+                        onRemove={handleRemoveItem}
+                        onUpdate={handleUpdateItem}
                       />
                     ))
                 }
@@ -1098,7 +1121,7 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
 
       {cart && cart.items.length > 0 && (
         <div className="lg:hidden fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+3.75rem)] z-40 px-4">
-          <div className="mx-auto max-w-3xl rounded-[28px] border border-slate-200 bg-white/95 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.16)] backdrop-blur">
+          <div className="mx-auto max-w-3xl rounded-[28px] border bg-white/95 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.16)] backdrop-blur" style={{ borderColor: 'var(--line)' }}>
             {step === 'review' && !agreedToTerms && (
               <p className="mb-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] font-black text-amber-900">
                 {t('Accept the Terms & Conditions to enable order confirmation.', 'وافق على الشروط والأحكام لتفعيل تأكيد الطلب.')}
@@ -1106,14 +1129,14 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
             )}
             <div className="flex items-center gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-bold text-slate-400">
+                <p className="text-[11px] font-bold" style={{ color: 'var(--mute)' }}>
                   {step === 'cart'
                     ? t('Cart total', 'إجمالي السلة')
                     : step === 'checkout'
                       ? t('Ready to review', 'جاهز للمراجعة')
                       : t('Final total', 'الإجمالي النهائي')}
                 </p>
-                <p className="truncate text-sm font-black text-slate-900">
+                <p className="truncate text-sm font-black" style={{ color: 'var(--ink)' }}>
                   {amountDue.toFixed(2)} {getCurrencyLabel(locale as string)}
                 </p>
               </div>
@@ -1121,11 +1144,8 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
                 type="button"
                 onClick={handleProceed}
                 disabled={mobileCtaDisabled}
-                className={`min-w-[148px] rounded-2xl px-4 py-3 text-sm font-black transition-all ${
-                  mobileCtaDisabled
-                    ? 'bg-slate-200 text-slate-400'
-                    : 'bg-slate-900 text-white shadow-lg shadow-slate-900/20 active:scale-[0.98]'
-                }`}
+                className="min-w-[148px] rounded-2xl px-4 py-3 text-sm font-black transition-all active:scale-[0.98]"
+                style={mobileCtaDisabled ? { background: 'var(--line)', color: 'var(--mute)' } : { background: 'var(--ink)', color: '#fff', boxShadow: '0 8px 24px rgba(10,31,68,0.2)' }}
               >
                 {placing ? t('Processing...', 'جارٍ التنفيذ...') : mobileCtaLabel}
               </button>

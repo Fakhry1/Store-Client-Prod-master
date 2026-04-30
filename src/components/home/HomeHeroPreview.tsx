@@ -33,7 +33,7 @@ export function HomeHeroPreview({
   const hasDiscount = displaySlide.hasActiveOffer && displaySlide.basePrice > displaySlide.currentPrice
 
   return (
-    <section className="relative isolate overflow-hidden border-b border-stone-200 bg-[linear-gradient(180deg,#fffdf9_0%,#f7f9fc_100%)]">
+    <section className="relative isolate overflow-hidden border-b bg-[linear-gradient(180deg,#fffdf9_0%,#f7f9fc_100%)]" style={{ borderColor: 'var(--line)' }}>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.10),transparent_22%),radial-gradient(circle_at_top_right,rgba(249,115,22,0.10),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.45),rgba(255,255,255,0.88))]" />
       <div className="absolute -left-12 top-16 hidden h-64 w-64 rounded-full bg-sky-300/15 blur-3xl md:block" aria-hidden="true" />
       <div className="absolute -right-10 top-24 hidden h-72 w-72 rounded-full bg-orange-300/20 blur-3xl md:block" aria-hidden="true" />
@@ -43,11 +43,11 @@ export function HomeHeroPreview({
           <div className="order-2 lg:order-1">
             <div className="overflow-hidden rounded-[32px] border border-white/70 bg-white/60 p-5 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl md:p-7">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-stone-200 bg-white/90 px-3 py-2 text-[10px] font-black tracking-[0.08em] text-slate-700 sm:px-4 sm:text-[11px] sm:tracking-[0.22em]">
+                <span className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border bg-white/90 px-3 py-2 text-[10px] font-black tracking-[0.08em] sm:px-4 sm:text-[11px] sm:tracking-[0.22em]" style={{ borderColor: 'var(--line)', color: 'var(--ink)' }}>
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,0.12)]" />
                   منتجات مختارة بعناية
                 </span>
-                <span className="inline-flex items-center whitespace-nowrap rounded-full border border-stone-200/80 bg-stone-50/90 px-3 py-2 text-[10px] font-bold tracking-[0.08em] text-slate-500 sm:px-4 sm:text-[11px] sm:tracking-[0.18em]">
+                <span className="inline-flex items-center whitespace-nowrap rounded-full border bg-white/80 px-3 py-2 text-[10px] font-bold tracking-[0.08em] sm:px-4 sm:text-[11px] sm:tracking-[0.18em]" style={{ borderColor: 'var(--line)', color: 'var(--mute)' }}>
                   تبديل واسترجاع سهل
                 </span>
               </div>
@@ -62,13 +62,13 @@ export function HomeHeroPreview({
               </div>
 
               <div className="mt-6 flex flex-wrap gap-2.5">
-                <Link href="/shop" className="whitespace-nowrap rounded-full border border-stone-200/80 bg-white/90 px-3 py-2 text-[11px] font-black tracking-[0.08em] text-slate-600 sm:px-4 sm:text-xs sm:tracking-[0.18em]">
+                <Link href="/shop" className="whitespace-nowrap rounded-full border bg-white/90 px-3 py-2 text-[11px] font-black tracking-[0.08em] sm:px-4 sm:text-xs sm:tracking-[0.18em]" style={{ borderColor: 'var(--line)', color: 'var(--mute)' }}>
                   تسوق الكل
                 </Link>
-                <Link href="#best-sellers" className="whitespace-nowrap rounded-full border border-stone-200/80 bg-white/90 px-3 py-2 text-[11px] font-black tracking-[0.08em] text-slate-600 sm:px-4 sm:text-xs sm:tracking-[0.18em]">
+                <Link href="#best-sellers" className="whitespace-nowrap rounded-full border bg-white/90 px-3 py-2 text-[11px] font-black tracking-[0.08em] sm:px-4 sm:text-xs sm:tracking-[0.18em]" style={{ borderColor: 'var(--line)', color: 'var(--mute)' }}>
                   الأكثر مبيعًا
                 </Link>
-                <Link href="#new-arrivals" className="whitespace-nowrap rounded-full border border-stone-200/80 bg-white/90 px-3 py-2 text-[11px] font-black tracking-[0.08em] text-slate-600 sm:px-4 sm:text-xs sm:tracking-[0.18em]">
+                <Link href="#new-arrivals" className="whitespace-nowrap rounded-full border bg-white/90 px-3 py-2 text-[11px] font-black tracking-[0.08em] sm:px-4 sm:text-xs sm:tracking-[0.18em]" style={{ borderColor: 'var(--line)', color: 'var(--mute)' }}>
                   وصل حديثًا
                 </Link>
               </div>
@@ -132,7 +132,7 @@ export function HomeHeroPreview({
                                   <span className="ms-1.5 text-[11px] font-semibold text-[#f1e3c8]/90 sm:text-xs">{currency}</span>
                                 </div>
                                 {hasDiscount ? (
-                                  <div className="text-xs font-semibold text-stone-300/50 line-through sm:text-sm">
+                                  <div className="text-xs font-semibold line-through sm:text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
                                     {displaySlide.basePrice.toFixed(0)} {currency}
                                   </div>
                                 ) : null}

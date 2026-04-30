@@ -24,7 +24,7 @@ function InputField({ label, value, onChange, placeholder, type = 'text', dir }:
 }) {
   return (
     <div>
-      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+      <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: 'var(--mute)' }}>
         {label}
       </label>
       <input
@@ -33,10 +33,7 @@ function InputField({ label, value, onChange, placeholder, type = 'text', dir }:
         placeholder={placeholder}
         type={type}
         dir={dir}
-        className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl
-          bg-stone-50 focus:bg-white
-          focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400
-          transition-all placeholder:text-slate-400"
+        className="w-full px-3.5 py-2.5 text-sm border rounded-xl transition-all placeholder:text-[var(--mute)]" style={{ borderColor: 'var(--line)', background: 'var(--paper)', color: 'var(--ink)' }}
       />
     </div>
   )
@@ -235,22 +232,22 @@ export default function AddressesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f6f2] py-6 md:py-8">
+    <div className="min-h-screen py-6 md:py-8" style={{ background: 'var(--paper)' }}>
       <div className="max-w-xl mx-auto px-4">
-        <div className="mb-6 flex items-center justify-between rounded-[32px] border border-stone-200 bg-white/90 p-4 shadow-[0_16px_34px_rgba(15,23,42,0.04)] backdrop-blur md:p-5">
+        <div className="mb-6 flex items-center justify-between rounded-[32px] border bg-white/90 p-4 shadow-[0_16px_34px_rgba(15,23,42,0.04)] backdrop-blur md:p-5" style={{ borderColor: 'var(--line)' }}>
           <div className="flex items-center gap-3">
             <Link
               href="/account"
-              className="rounded-xl border border-stone-200 bg-[#faf7f1] p-2 transition-all hover:bg-stone-100"
+              className="rounded-xl border p-2 transition-all" style={{ borderColor: 'var(--line)', background: 'var(--paper)' }}
             >
-              <svg className="w-5 h-5 text-slate-600 flip-rtl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 flip-rtl" style={{ color: 'var(--ink)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </Link>
             <div>
-              <h1 className="text-xl font-black text-slate-900">{t('My Addresses', 'عناويني')}</h1>
+              <h1 className="text-xl font-black" style={{ color: 'var(--ink)' }}>{t('My Addresses', 'عناويني')}</h1>
               {addresses.length > 0 && (
-                <p className="text-sm text-slate-500">
+                <p className="text-sm" style={{ color: 'var(--mute)' }}>
                   {addresses.length} {t('saved addresses', 'عنوان محفوظ')}
                 </p>
               )}
@@ -259,7 +256,7 @@ export default function AddressesPage() {
 
           <button
             onClick={openAdd}
-            className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(15,23,42,0.16)] transition-all hover:-translate-y-0.5 hover:bg-slate-800"
+            className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(15,23,42,0.16)] transition-all hover:-translate-y-0.5" style={{ background: 'var(--ink)' }}
           >
             <span className="text-lg leading-none">+</span>
             {t('Add', 'إضافة')}
@@ -269,22 +266,22 @@ export default function AddressesPage() {
         {loading ? (
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="animate-pulse rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm">
-                <div className="mb-3 h-5 w-32 rounded bg-stone-200" />
-                <div className="mb-2 h-4 w-full rounded bg-stone-100" />
-                <div className="h-4 w-2/3 rounded bg-stone-100" />
+              <div key={i} className="animate-pulse rounded-[28px] border bg-white p-5 shadow-sm" style={{ borderColor: 'var(--line)' }}>
+                <div className="mb-3 h-5 w-32 rounded" style={{ background: 'var(--line)' }} />
+                <div className="mb-2 h-4 w-full rounded" style={{ background: 'var(--paper-2)' }} />
+                <div className="h-4 w-2/3 rounded" style={{ background: 'var(--paper-2)' }} />
               </div>
             ))}
           </div>
         ) : addresses.length === 0 ? (
-          <div className="rounded-[32px] border border-dashed border-stone-300 bg-white/80 p-10 text-center shadow-[0_18px_32px_rgba(15,23,42,0.04)]">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-3xl">
+          <div className="rounded-[32px] border border-dashed bg-white/80 p-10 text-center shadow-[0_18px_32px_rgba(15,23,42,0.04)]" style={{ borderColor: 'var(--line)' }}>
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-3xl" style={{ background: 'rgba(255,107,44,0.12)' }}>
               📍
             </div>
-            <h2 className="mb-2 text-lg font-black text-slate-900">
+            <h2 className="mb-2 text-lg font-black" style={{ color: 'var(--ink)' }}>
               {t('No saved addresses yet', 'لا توجد عناوين محفوظة بعد')}
             </h2>
-            <p className="mx-auto mb-6 max-w-sm text-sm leading-6 text-slate-500">
+            <p className="mx-auto mb-6 max-w-sm text-sm leading-6" style={{ color: 'var(--mute)' }}>
               {t(
                 'Save your delivery addresses to speed up checkout and track your orders more easily.',
                 'احفظ عناوين التوصيل لتسريع إتمام الطلب ومتابعة طلباتك بسهولة.'
@@ -292,7 +289,7 @@ export default function AddressesPage() {
             </p>
             <button
               onClick={openAdd}
-              className="rounded-2xl bg-amber-500 px-5 py-3 text-sm font-bold text-white shadow-[0_16px_28px_rgba(245,158,11,0.28)] transition-all hover:-translate-y-0.5 hover:bg-amber-600"
+              className="rounded-2xl px-5 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5" style={{ background: 'var(--orange)' }}
             >
               {t('Add your first address', 'أضف أول عنوان')}
             </button>
@@ -300,24 +297,24 @@ export default function AddressesPage() {
         ) : (
           <div className="space-y-4">
             {addresses.map((addr) => (
-              <div key={addr.id} className="rounded-[30px] border border-stone-200 bg-white p-5 shadow-[0_16px_30px_rgba(15,23,42,0.05)]">
+              <div key={addr.id} className="rounded-[30px] border bg-white p-5 shadow-[0_16px_30px_rgba(15,23,42,0.05)]" style={{ borderColor: 'var(--line)' }}>
                 <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-base font-black text-slate-900">{addr.label}</h3>
+                      <h3 className="text-base font-black" style={{ color: 'var(--ink)' }}>{addr.label}</h3>
                       {addr.isDefault && (
-                        <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold text-emerald-700">
+                        <span className="rounded-full px-2.5 py-1 text-[11px] font-bold text-emerald-700 bg-emerald-100">
                           {t('Default', 'افتراضي')}
                         </span>
                       )}
                     </div>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                    <p className="mt-2 text-sm leading-6" style={{ color: 'var(--mute)' }}>
                       {[addr.street, addr.district, addr.city].filter(Boolean).join(', ')}
                     </p>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm" style={{ color: 'var(--mute)' }}>
                       {t('Sudan', 'السودان')}
                     </p>
-                    <p className="mt-2 text-sm font-semibold text-slate-700">{addr.phoneNumber}</p>
+                    <p className="mt-2 text-sm font-semibold" style={{ color: 'var(--ink)' }}>{addr.phoneNumber}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
@@ -331,7 +328,7 @@ export default function AddressesPage() {
                     )}
                     <button
                       onClick={() => openEdit(addr)}
-                      className="rounded-xl border border-stone-200 bg-[#faf7f1] px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:bg-stone-100"
+                      className="rounded-xl border px-3 py-2 text-xs font-bold transition-colors" style={{ borderColor: 'var(--line)', background: 'var(--paper)', color: 'var(--ink)' }}
                     >
                       {t('Edit', 'تعديل')}
                     </button>
@@ -350,14 +347,14 @@ export default function AddressesPage() {
         )}
 
         {showForm && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-0 md:items-center md:p-4">
-            <div className="w-full max-w-xl rounded-t-[32px] border border-stone-200 bg-white p-5 shadow-[0_30px_60px_rgba(15,23,42,0.18)] md:rounded-[32px] md:p-6">
+          <div className="fixed inset-0 z-50 flex items-end justify-center p-0 md:items-center md:p-4" style={{ background: 'rgba(10,31,68,0.55)' }}>
+            <div className="w-full max-w-xl rounded-t-[32px] border bg-white p-5 shadow-[0_30px_60px_rgba(15,23,42,0.18)] md:rounded-[32px] md:p-6" style={{ borderColor: 'var(--line)' }}>
               <div className="mb-5 flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-black text-slate-900">
+                  <h2 className="text-lg font-black" style={{ color: 'var(--ink)' }}>
                     {editId ? t('Edit Address', 'تعديل العنوان') : t('Add Address', 'إضافة عنوان')}
                   </h2>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm" style={{ color: 'var(--mute)' }}>
                     {t(
                       'Keep your address accurate for smoother delivery.',
                       'احرص على صحة العنوان لتجربة توصيل أسهل.'
@@ -366,7 +363,7 @@ export default function AddressesPage() {
                 </div>
                 <button
                   onClick={closeForm}
-                  className="rounded-xl border border-stone-200 bg-[#faf7f1] p-2 text-slate-600 transition-colors hover:bg-stone-100"
+                  className="rounded-xl border p-2 transition-colors" style={{ borderColor: 'var(--line)', background: 'var(--paper)', color: 'var(--ink)' }}
                 >
                   ✕
                 </button>
@@ -419,12 +416,12 @@ export default function AddressesPage() {
                   />
                 </div>
 
-                <label className="md:col-span-2 flex items-center gap-3 rounded-2xl border border-stone-200 bg-[#faf7f1] px-4 py-3 text-sm font-semibold text-slate-700">
+                <label className="md:col-span-2 flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold" style={{ borderColor: 'var(--line)', background: 'var(--paper)', color: 'var(--ink)' }}>
                   <input
                     type="checkbox"
                     checked={form.isDefault}
                     onChange={(e) => set('isDefault', e.target.checked)}
-                    className="h-4 w-4 rounded border-stone-300 text-amber-500 focus:ring-amber-400"
+                    className="h-4 w-4 rounded" style={{ accentColor: 'var(--orange)' }}
                   />
                   {t('Make this my default address', 'اجعل هذا عنواني الافتراضي')}
                 </label>
@@ -433,14 +430,14 @@ export default function AddressesPage() {
               <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <button
                   onClick={closeForm}
-                  className="rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition-colors hover:bg-stone-50"
+                  className="rounded-2xl border bg-white px-4 py-3 text-sm font-bold transition-colors" style={{ borderColor: 'var(--line)', color: 'var(--ink)' }}
                 >
                   {t('Cancel', 'إلغاء')}
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white shadow-[0_14px_26px_rgba(15,23,42,0.16)] transition-all hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-[0_14px_26px_rgba(15,23,42,0.16)] transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60" style={{ background: 'var(--ink)' }}
                 >
                   {saving
                     ? t('Saving...', 'جارٍ الحفظ...')
@@ -456,3 +453,6 @@ export default function AddressesPage() {
     </div>
   )
 }
+
+
+

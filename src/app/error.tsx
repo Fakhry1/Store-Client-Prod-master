@@ -24,7 +24,8 @@ export default function GlobalError({
     <div className="min-h-[80vh] flex flex-col items-center justify-center px-4 text-center">
       <div className="relative mb-8">
         <span
-          className="font-display text-[120px] font-black leading-none text-slate-100 select-none md:text-[160px]"
+          className="font-display text-[120px] font-black leading-none select-none md:text-[160px]"
+          style={{ color: 'var(--paper-2)' }}
         >
           500
         </span>
@@ -42,10 +43,10 @@ export default function GlobalError({
         </div>
       </div>
 
-      <h1 className="text-2xl md:text-3xl font-black text-slate-900 mb-2">
+      <h1 className="text-2xl md:text-3xl font-black mb-2" style={{ color: 'var(--ink)' }}>
         {t('Something went wrong', 'حدث خطأ غير متوقع')}
       </h1>
-      <p className="text-slate-500 text-sm max-w-sm mb-8 leading-relaxed">
+      <p className="text-sm max-w-sm mb-8 leading-relaxed" style={{ color: 'var(--mute)' }}>
         {t(
           'We are sorry for this issue. Please try again in a moment.',
           'نعتذر عن هذا الخطأ. يرجى المحاولة مرة أخرى بعد قليل.'
@@ -62,19 +63,22 @@ export default function GlobalError({
       <div className="flex flex-col sm:flex-row gap-3">
         <button
           onClick={reset}
-          className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-amber-600 transition-colors text-sm"
+          className="px-8 py-3 text-white font-bold rounded-xl transition-colors text-sm"
+          style={{ background: 'var(--ink)' }}
         >
           {t('Try again', 'إعادة المحاولة')}
         </button>
         <button
           onClick={() => router.back()}
-          className="px-8 py-3 border border-slate-200 text-slate-600 font-bold rounded-xl hover:border-slate-400 transition-colors text-sm"
+          className="px-8 py-3 border font-bold rounded-xl transition-colors text-sm"
+          style={{ borderColor: 'var(--line)', color: 'var(--mute)' }}
         >
           {t('Previous page', 'الصفحة السابقة')}
         </button>
         <a
           href="/shop"
-          className="px-8 py-3 border border-slate-200 text-slate-600 font-bold rounded-xl hover:border-slate-400 transition-colors text-sm"
+          className="px-8 py-3 border font-bold rounded-xl transition-colors text-sm"
+          style={{ borderColor: 'var(--line)', color: 'var(--mute)' }}
         >
           {t('Back to shop', 'العودة للمتجر')}
         </a>

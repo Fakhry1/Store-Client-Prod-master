@@ -24,15 +24,6 @@ const CATEGORY_ICONS: Record<string, string> = {
   default: '✦',
 }
 
-const CARD_GRADIENTS = [
-  'from-rose-50 to-white border-rose-100',
-  'from-amber-50 to-white border-amber-100',
-  'from-sky-50 to-white border-sky-100',
-  'from-emerald-50 to-white border-emerald-100',
-  'from-violet-50 to-white border-violet-100',
-  'from-orange-50 to-white border-orange-100',
-]
-
 function buildCategoryUrl(catId: number | undefined, branch: number): string {
   const qs = new URLSearchParams()
   qs.set('branch', String(branch))
@@ -54,8 +45,8 @@ export function ShopHeader({
 
   if (search) {
     return (
-      <section className="relative overflow-hidden border-b border-stone-200 bg-[#0b1220] px-4 py-7 text-white md:px-6 md:py-12">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.16),transparent_30%),radial-gradient(circle_at_top_right,rgba(34,197,94,0.12),transparent_28%),radial-gradient(circle_at_bottom,rgba(249,115,22,0.14),transparent_34%)]" />
+      <section className="relative overflow-hidden border-b px-4 py-7 text-white md:px-6 md:py-12" style={{ background: 'var(--ink)', borderColor: 'rgba(255,255,255,0.08)' }}>
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at top left, rgba(255,107,44,0.14), transparent 30%), radial-gradient(circle at top right, rgba(232,201,155,0.10), transparent 28%)' }} />
         <div className="relative mx-auto flex max-w-7xl items-center gap-4">
           <Link
             href="/shop"
@@ -67,15 +58,13 @@ export function ShopHeader({
             </svg>
           </Link>
           <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-sky-300">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--champagne)' }}>
               {t('Search results', 'نتائج البحث')}
             </p>
-            <h1
-              className="font-display text-xl font-black md:text-4xl"
-            >
+            <h1 className="font-display text-xl font-black md:text-4xl">
               &quot;{search}&quot;
             </h1>
-            <p className="mt-2 text-sm text-white/82">
+            <p className="mt-2 text-sm" style={{ color: 'rgba(255,255,255,0.75)' }}>
               {totalCount > 0
                 ? `${totalCount} ${t('products found', 'منتج مطابق')}`
                 : t('No results found', 'لا توجد نتائج')}
@@ -87,26 +76,23 @@ export function ShopHeader({
   }
 
   return (
-    <section className="relative overflow-hidden border-b border-stone-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] text-slate-900">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.07),transparent_24%),radial-gradient(circle_at_top_right,rgba(249,115,22,0.08),transparent_24%)]" />
-      <div className="absolute -start-20 top-16 h-56 w-56 rounded-full bg-sky-400/10 blur-3xl" />
-      <div className="absolute end-0 top-10 h-64 w-64 rounded-full bg-orange-300/10 blur-3xl" />
+    <section className="relative overflow-hidden border-b" style={{ background: 'var(--paper)', borderColor: 'var(--line)' }}>
+      <div className="absolute -start-20 top-16 h-56 w-56 rounded-full blur-3xl" style={{ background: 'rgba(232,201,155,0.15)' }} />
+      <div className="absolute end-0 top-10 h-64 w-64 rounded-full blur-3xl" style={{ background: 'rgba(255,107,44,0.08)' }} />
 
       <div className="relative px-4 py-7 md:px-6 md:py-12">
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="max-w-2xl">
-              <p className="mb-3 text-xs font-bold uppercase tracking-[0.24em] text-sky-600">
+              <p className="mb-3 text-xs font-bold uppercase tracking-[0.24em]" style={{ color: 'var(--orange)' }}>
                 {t('Curated store browse', 'تصفح منسق للمتجر')}
               </p>
-              <h1
-                className="font-display text-2xl font-black leading-none md:text-5xl"
-              >
+              <h1 className="font-display text-2xl font-black leading-none md:text-5xl" style={{ color: 'var(--ink)' }}>
                 {selectedCat
                   ? (isAr ? activeCategory?.nameAr : activeCategory?.nameEn) ?? t('Collection', 'التشكيلة')
                   : t('Our Collection', 'تشكيلتنا')}
               </h1>
-              <p className="mt-2 max-w-lg text-sm leading-6 text-slate-600">
+              <p className="mt-2 max-w-lg text-sm leading-6" style={{ color: 'var(--mute)' }}>
                 {selectedCat
                   ? t(
                       'Browse cleaner, faster listings inside this category with a mobile-first layout.',
@@ -119,20 +105,20 @@ export function ShopHeader({
               </p>
 
               <div className="mt-4 flex flex-wrap gap-2.5">
-                <div className="rounded-2xl border border-stone-200 bg-white px-3.5 py-2.5 shadow-sm">
-                  <p className="text-xl font-black text-slate-900">{totalCount}</p>
-                  <p className="text-xs font-medium text-slate-500">{t('Available products', 'منتجات متاحة')}</p>
+                <div className="rounded-2xl border bg-white px-3.5 py-2.5 shadow-sm" style={{ borderColor: 'var(--line)' }}>
+                  <p className="text-xl font-black" style={{ color: 'var(--ink)' }}>{totalCount}</p>
+                  <p className="text-xs font-medium" style={{ color: 'var(--mute)' }}>{t('Available products', 'منتجات متاحة')}</p>
                 </div>
-                <div className="rounded-2xl border border-stone-200 bg-white px-3.5 py-2.5 shadow-sm">
-                  <p className="text-xl font-black text-slate-900">{Math.max(categories.length, 1)}</p>
-                  <p className="text-xs font-medium text-slate-500">{t('Categories', 'تصنيفات')}</p>
+                <div className="rounded-2xl border bg-white px-3.5 py-2.5 shadow-sm" style={{ borderColor: 'var(--line)' }}>
+                  <p className="text-xl font-black" style={{ color: 'var(--ink)' }}>{Math.max(categories.length, 1)}</p>
+                  <p className="text-xs font-medium" style={{ color: 'var(--mute)' }}>{t('Categories', 'تصنيفات')}</p>
                 </div>
               </div>
             </div>
 
             {activeBranches.length > 1 && (
-              <div className="max-w-full rounded-[28px] border border-stone-200 bg-white p-3 shadow-sm">
-                <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
+              <div className="max-w-full rounded-[28px] border bg-white p-3 shadow-sm" style={{ borderColor: 'var(--line)' }}>
+                <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--mute)' }}>
                   {t('Store branch', 'فرع المتجر')}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -141,11 +127,10 @@ export function ShopHeader({
                       key={branch.id}
                       href={buildCategoryUrl(selectedCat, branch.id)}
                       prefetch={false}
-                      className={`rounded-full px-4 py-2 text-xs font-black transition-all ${
-                        branch.id === selectedBranch
-                          ? 'bg-orange-500 text-white shadow-[0_10px_28px_rgba(249,115,22,0.22)]'
-                          : 'bg-stone-50 text-slate-700 hover:bg-orange-50 hover:text-orange-600'
-                      }`}
+                      className="rounded-full px-4 py-2 text-xs font-black transition-all"
+                      style={branch.id === selectedBranch
+                        ? { background: 'var(--orange)', color: '#fff', boxShadow: '0 10px 28px rgba(255,107,44,0.22)' }
+                        : { background: 'var(--paper)', color: 'var(--mute)' }}
                     >
                       {branch.name}
                     </Link>
@@ -164,44 +149,41 @@ export function ShopHeader({
               <Link
                 href={buildCategoryUrl(undefined, selectedBranch)}
                 prefetch={false}
-                className={`group relative min-w-[124px] flex-shrink-0 snap-start overflow-hidden rounded-[28px] border px-4 py-4 transition-all duration-300 ${
-                  !selectedCat
-                    ? 'border-orange-200 bg-orange-500 text-white shadow-[0_14px_36px_rgba(249,115,22,0.22)]'
-                    : 'border-stone-200 bg-white text-slate-700 shadow-sm hover:border-orange-200 hover:bg-orange-50'
-                }`}
+                className="group relative min-w-[124px] flex-shrink-0 snap-start overflow-hidden rounded-[28px] border px-4 py-4 transition-all duration-300"
+                style={!selectedCat
+                  ? { borderColor: 'rgba(255,107,44,0.30)', background: 'var(--orange)', color: '#fff', boxShadow: '0 14px 36px rgba(255,107,44,0.22)' }
+                  : { borderColor: 'var(--line)', background: '#fff', color: 'var(--ink)' }}
               >
                 <div className="flex flex-col items-center gap-2 text-center">
                   <span className="text-2xl">✦</span>
                   <p className="text-xs font-black">{t('All', 'الكل')}</p>
-                  <p className={`text-[10px] font-bold ${!selectedCat ? 'text-white/90' : 'text-slate-600'}`}>
+                  <p className="text-[10px] font-bold" style={{ color: !selectedCat ? 'rgba(255,255,255,0.85)' : 'var(--mute)' }}>
                     {totalCount}
                   </p>
                 </div>
               </Link>
 
-              {categories.map((category, index) => {
+              {categories.map((category) => {
                 const isActive = category.id === selectedCat
                 const icon = CATEGORY_ICONS[category.nameEn] ?? CATEGORY_ICONS.default
-                const gradient = CARD_GRADIENTS[index % CARD_GRADIENTS.length]
 
                 return (
                   <Link
                     key={category.id}
                     href={buildCategoryUrl(category.id, selectedBranch)}
                     prefetch={false}
-                    className={`group relative min-w-[132px] flex-shrink-0 snap-start overflow-hidden rounded-[28px] border bg-gradient-to-br px-4 py-4 transition-all duration-300 ${
-                      isActive
-                        ? `${gradient} ring-2 ring-sky-300 shadow-[0_16px_40px_rgba(15,23,42,0.12)]`
-                        : `${gradient} hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(15,23,42,0.08)]`
-                    }`}
+                    className="group relative min-w-[132px] flex-shrink-0 snap-start overflow-hidden rounded-[28px] border bg-white px-4 py-4 transition-all duration-300 hover:-translate-y-1"
+                    style={isActive
+                      ? { borderColor: 'var(--orange)', boxShadow: '0 16px 40px rgba(255,107,44,0.14)', outline: '2px solid rgba(255,107,44,0.25)', outlineOffset: '1px' }
+                      : { borderColor: 'var(--line)', boxShadow: '0 4px 12px rgba(10,31,68,0.04)' }}
                   >
-                    {isActive && <span className="absolute end-3 top-3 h-2 w-2 rounded-full bg-orange-400" />}
+                    {isActive && <span className="absolute end-3 top-3 h-2 w-2 rounded-full" style={{ background: 'var(--orange)' }} />}
                     <div className="flex flex-col items-center gap-2 text-center">
                       <span className="text-2xl transition-transform duration-300 group-hover:scale-110">{icon}</span>
-                      <p className="text-xs font-black leading-5 text-slate-900">
+                      <p className="text-xs font-black leading-5" style={{ color: 'var(--ink)' }}>
                         {isAr ? category.nameAr : category.nameEn}
                       </p>
-                      <p className="text-[10px] font-bold text-slate-500">
+                      <p className="text-[10px] font-bold" style={{ color: isActive ? 'var(--orange)' : 'var(--mute)' }}>
                         {isActive ? t('Selected', 'محدد') : t('Explore', 'استكشف')}
                       </p>
                     </div>

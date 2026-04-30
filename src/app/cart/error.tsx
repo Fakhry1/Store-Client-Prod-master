@@ -31,10 +31,10 @@ export default function CartError({
           />
         </svg>
       </div>
-      <h2 className="text-xl font-black text-slate-900 mb-2">
+      <h2 className="text-xl font-black mb-2" style={{ color: 'var(--ink)' }}>
         {t('Cart error', 'خطأ في السلة')}
       </h2>
-      <p className="text-sm text-slate-500 mb-6 max-w-xs">
+      <p className="text-sm mb-6 max-w-xs" style={{ color: 'var(--mute)' }}>
         {t(
           'Something went wrong while loading your cart. Your data is safe and you can try again.',
           'حدث خطأ أثناء تحميل سلة التسوق. بياناتك محفوظة ويمكنك المحاولة مجددًا.'
@@ -48,13 +48,15 @@ export default function CartError({
       <div className="flex gap-3">
         <button
           onClick={reset}
-          className="px-6 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-amber-600 transition-colors"
+          className="px-6 py-2.5 text-white text-sm font-bold rounded-xl transition-colors"
+          style={{ background: 'var(--ink)' }}
         >
           {t('Try again', 'إعادة المحاولة')}
         </button>
         <Link
           href="/shop"
-          className="px-6 py-2.5 border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:border-slate-400 transition-colors"
+          className="px-6 py-2.5 border text-sm font-bold rounded-xl transition-colors"
+          style={{ borderColor: 'var(--line)', color: 'var(--mute)' }}
         >
           {t('Browse shop', 'تصفح المتجر')}
         </Link>

@@ -60,7 +60,7 @@ export function PhoneNumberField({
 
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--mute)' }}>
         {label} {required && <span className="text-rose-500">*</span>}
       </label>
 
@@ -69,10 +69,13 @@ export function PhoneNumberField({
         className={`flex items-stretch overflow-hidden rounded-2xl border bg-white transition-all ${
           error
             ? 'border-rose-300 ring-2 ring-rose-100'
-            : 'border-slate-200 focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-500/20'
+            : 'focus-within:ring-2'
         }`}
+        style={!error ? {
+          borderColor: 'var(--line)',
+        } : undefined}
       >
-        <div className="relative w-[5.25rem] border-slate-200 bg-stone-50/80 sm:w-[5.75rem]">
+        <div className="relative w-[5.25rem] sm:w-[5.75rem]" style={{ background: 'var(--paper)', borderColor: 'var(--line)' }}>
           <select
             value={countryIso}
             onChange={(e) => handleCountryChange(e.target.value)}
@@ -86,7 +89,7 @@ export function PhoneNumberField({
             ))}
           </select>
           <div className="pointer-events-none absolute inset-0 flex items-center px-2.5 py-3">
-            <span className="text-sm font-black text-slate-700" dir="ltr">
+            <span className="text-sm font-black" style={{ color: 'var(--ink)' }} dir="ltr">
               {selectedCountry.dialCode}
             </span>
           </div>
@@ -101,16 +104,18 @@ export function PhoneNumberField({
           onChange={(e) => handleNumberChange(e.target.value)}
           placeholder={selectedCountry.placeholder}
           maxLength={inputMaxLength}
-          className="w-full min-w-0 bg-white px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+          className="w-full min-w-0 bg-white px-4 py-3 text-sm outline-none placeholder:text-[var(--mute)]"
+          style={{ color: 'var(--ink)' }}
         />
       </div>
 
       {showMetaRow && (
         <div className="mt-1.5 flex items-center justify-between gap-3">
-          <p className={`text-xs ${error ? 'text-rose-500' : 'text-slate-400'}`}>
+          <p className={`text-xs ${error ? 'text-rose-500' : ''}`}
+            style={error ? undefined : { color: 'var(--mute)' }}>
             {error || hint || t('International format will be saved automatically', 'سيتم حفظ الرقم بصيغة دولية تلقائيًا')}
           </p>
-          <span className="shrink-0 text-xs font-bold text-slate-400" dir="ltr">
+          <span className="shrink-0 text-xs font-bold" style={{ color: 'var(--mute)' }} dir="ltr">
             {selectedCountry.dialCode}
           </span>
         </div>

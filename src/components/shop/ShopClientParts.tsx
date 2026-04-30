@@ -24,10 +24,10 @@ export function ProductCount({ total, page }: { total: number; page: number }) {
   const { t } = useLocale()
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-sm font-black text-slate-900">{total}</span>
-      <span className="text-sm text-slate-400">{t('products', 'منتج')}</span>
+      <span className="text-sm font-black" style={{ color: 'var(--ink)' }}>{total}</span>
+      <span className="text-sm" style={{ color: 'var(--mute)' }}>{t('products', 'منتج')}</span>
       {page > 1 && (
-        <span className="text-xs text-slate-400 font-medium">
+        <span className="text-xs font-medium" style={{ color: 'var(--mute)' }}>
           · {t('Page', 'صفحة')} {page}
         </span>
       )}
@@ -47,9 +47,8 @@ export function ActiveFilterChip({
   const label = locale === 'ar' ? labelAr : labelEn
   return (
     <Link href={href} prefetch={false}
-      className="flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-800
-        border border-amber-200 rounded-full text-xs font-bold hover:bg-red-50
-        hover:text-red-700 hover:border-red-200 transition-all">
+      className="flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold transition-all hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+      style={{ background: 'rgba(255,107,44,0.08)', color: 'var(--orange)', borderColor: 'rgba(255,107,44,0.20)' }}>
       {label}
       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
@@ -66,25 +65,24 @@ export function EmptyState({ search }: { search?: string }) {
   const { t } = useLocale()
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center px-4">
-      <div className="w-20 h-20 rounded-3xl bg-white border border-slate-100 shadow-sm
-        flex items-center justify-center mb-5">
-        <svg className="w-9 h-9 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="w-20 h-20 rounded-3xl border bg-white shadow-sm flex items-center justify-center mb-5" style={{ borderColor: 'var(--line)' }}>
+        <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--line)' }}>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0" />
         </svg>
       </div>
-      <h3 className="text-lg font-black text-slate-800 mb-1">
+      <h3 className="text-lg font-black mb-1" style={{ color: 'var(--ink)' }}>
         {t('No products found', 'لا توجد منتجات')}
       </h3>
-      <p className="text-slate-500 text-sm mb-6 max-w-xs leading-relaxed">
+      <p className="text-sm mb-6 max-w-xs leading-relaxed" style={{ color: 'var(--mute)' }}>
         {search
           ? `${t('No results for', 'لا نتائج لـ')} "${search}" — ${t('try a different word', 'جرّب كلمة مختلفة')}`
           : t('No products match the selected filters', 'لا توجد منتجات تطابق الفلاتر المختارة')
         }
       </p>
       <Link href="/shop" prefetch={false}
-        className="px-7 py-3 bg-slate-900 text-white text-sm font-black
-          rounded-2xl hover:bg-amber-500 transition-colors">
+        className="px-7 py-3 text-white text-sm font-black rounded-2xl transition-colors"
+        style={{ background: 'var(--ink)' }}>
         {t('Clear filters', 'مسح الفلاتر')}
       </Link>
     </div>
@@ -101,7 +99,7 @@ export function SidebarSectionTitle({
 }) {
   const { locale } = useLocale()
   return (
-    <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-2 px-1">
+    <h3 className="text-xs font-black uppercase tracking-wider mb-2 px-1" style={{ color: 'var(--mute)' }}>
       {locale === 'ar' ? titleAr : titleEn}
     </h3>
   )

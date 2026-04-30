@@ -104,24 +104,24 @@ export function FacetsSidebar({ facets, currentQuery }: Props) {
   ].reduce((sum, value) => sum + value, 0)
 
   return (
-    <aside className="flex w-full flex-col gap-4 rounded-[30px] border border-stone-200 bg-white p-4 shadow-[0_16px_34px_rgba(15,23,42,0.05)]">
+    <aside className="flex w-full flex-col gap-4 rounded-[30px] border bg-white p-4" style={{ borderColor: 'var(--line)', boxShadow: '0 16px 34px rgba(10,31,68,0.05)' }}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#f4efe4] text-slate-900">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ background: 'rgba(255,107,44,0.10)', color: 'var(--orange)' }}>
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
               </svg>
             </span>
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">{t('Refine browse', 'تحسين التصفح')}</p>
-              <p className="text-sm font-black text-slate-900">{t('Filters', 'الفلاتر')}</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em]" style={{ color: 'var(--orange)' }}>{t('Refine browse', 'تحسين التصفح')}</p>
+              <p className="text-sm font-black" style={{ color: 'var(--ink)' }}>{t('Filters', 'الفلاتر')}</p>
             </div>
           </div>
         </div>
 
         {filterCount > 0 && (
-          <span className="rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-black text-white">{filterCount}</span>
+          <span className="rounded-full px-2.5 py-1 text-[11px] font-black text-white" style={{ background: 'var(--ink)' }}>{filterCount}</span>
         )}
       </div>
 
@@ -189,10 +189,10 @@ export function FacetsSidebar({ facets, currentQuery }: Props) {
                       key={optionKey}
                       onClick={() => toggleAttrOption(attribute.attributeId, option.optionId)}
                       title={colorLabel}
-                      className={`relative h-9 w-9 rounded-full border-2 transition-all ${
-                        active ? 'scale-110 border-slate-900 shadow-md' : 'border-stone-200 hover:border-stone-400'
-                      }`}
-                      style={{ backgroundColor: option.colorHex ?? '#ccc' }}
+                      className="relative h-9 w-9 rounded-full border-2 transition-all"
+                      style={active
+                        ? { transform: 'scale(1.1)', borderColor: 'var(--ink)', boxShadow: '0 4px 12px rgba(10,31,68,0.18)', backgroundColor: option.colorHex ?? '#ccc' }
+                        : { borderColor: 'var(--line)', backgroundColor: option.colorHex ?? '#ccc' }}
                     >
                       {active && (
                         <span className="absolute inset-0 flex items-center justify-center">
@@ -247,35 +247,36 @@ const FilterButton = memo(function FilterButton({
   return (
     <button
       onClick={onClick}
-      className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-right transition-all duration-150 group ${
-        active
-          ? 'bg-slate-900 text-white shadow-[0_10px_22px_rgba(15,23,42,0.12)]'
-          : 'bg-[#faf7f1] text-slate-700 hover:bg-stone-100'
-      }`}
+      className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-right transition-all duration-150"
+      style={active
+        ? { background: 'var(--ink)', color: '#fff', boxShadow: '0 10px 22px rgba(10,31,68,0.14)' }
+        : { background: 'var(--paper)', color: 'var(--ink)' }}
     >
       {checkbox ? (
         <div
-          className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-all ${
-            active ? 'border-amber-300 bg-amber-300' : 'border-stone-300 bg-white'
-          }`}
+          className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-all"
+          style={active
+            ? { borderColor: 'var(--orange)', background: 'var(--orange)' }
+            : { borderColor: 'var(--line)', background: '#fff' }}
         >
           {active && (
-            <svg className="h-2.5 w-2.5 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-2.5 w-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
             </svg>
           )}
         </div>
       ) : (
-        <div className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${active ? 'bg-amber-300' : 'bg-stone-300'}`} />
+        <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full" style={{ background: active ? 'var(--champagne)' : 'var(--line)' }} />
       )}
 
       <span className="flex-1 truncate text-right font-semibold">{label}</span>
 
       {count !== undefined && (
         <span
-          className={`rounded-full px-1.5 py-0.5 text-[11px] font-bold ${
-            active ? 'bg-white/18 text-white' : 'bg-white text-slate-400'
-          }`}
+          className="rounded-full px-1.5 py-0.5 text-[11px] font-bold"
+          style={active
+            ? { background: 'rgba(255,255,255,0.15)', color: '#fff' }
+            : { background: '#fff', color: 'var(--mute)' }}
         >
           {count}
         </span>
@@ -296,17 +297,18 @@ const FacetSection = memo(function FacetSection({
   const [open, setOpen] = useState(true)
 
   return (
-    <section className="rounded-[26px] border border-stone-200 bg-[#fcfbf8] p-3">
+    <section className="rounded-[26px] border p-3" style={{ borderColor: 'var(--line)', background: 'var(--paper)' }}>
       <button onClick={() => setOpen((value) => !value)} className="flex w-full items-center justify-between gap-3 px-1 py-1.5">
         <div className="text-right">
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-600">{eyebrow}</p>
-          <p className="mt-1 text-sm font-black text-slate-900">{title}</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em]" style={{ color: 'var(--orange)' }}>{eyebrow}</p>
+          <p className="mt-1 text-sm font-black" style={{ color: 'var(--ink)' }}>{title}</p>
         </div>
         <svg
-          className={`h-4 w-4 flex-shrink-0 text-slate-400 transition-transform duration-200 ${open ? '' : 'rotate-180'}`}
+          className={`h-4 w-4 flex-shrink-0 transition-transform duration-200 ${open ? '' : 'rotate-180'}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          style={{ color: 'var(--mute)' }}
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
         </svg>
@@ -351,11 +353,11 @@ function PriceRangeFilter({
   return (
     <div className="flex flex-col gap-3 px-1">
       {isActive && (
-        <div className="flex items-center justify-between rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs">
-          <span className="font-bold text-amber-700">
+        <div className="flex items-center justify-between rounded-2xl border px-3 py-2 text-xs" style={{ borderColor: 'rgba(255,107,44,0.20)', background: 'rgba(255,107,44,0.08)' }}>
+          <span className="font-bold" style={{ color: 'var(--orange)' }}>
             {currentMin ?? min} - {currentMax ?? max}
           </span>
-          <span className="font-black text-amber-600">{currency}</span>
+          <span className="font-black" style={{ color: 'var(--orange)' }}>{currency}</span>
         </div>
       )}
 
@@ -366,22 +368,29 @@ function PriceRangeFilter({
           value={minVal}
           onChange={(event) => setMinVal(event.target.value)}
           onKeyDown={(event) => event.key === 'Enter' && handleApply()}
-          className="w-full rounded-2xl border border-stone-200 bg-white px-3 py-2.5 text-center text-sm font-bold outline-none transition-all focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
+          className="w-full rounded-2xl border bg-white px-3 py-2.5 text-center text-sm font-bold outline-none transition-all"
+          style={{ borderColor: 'var(--line)', color: 'var(--ink)' }}
+          onFocus={(e) => { e.target.style.borderColor = 'var(--orange)'; e.target.style.boxShadow = '0 0 0 2px rgba(255,107,44,0.12)' }}
+          onBlur={(e) => { e.target.style.borderColor = 'var(--line)'; e.target.style.boxShadow = 'none' }}
         />
-        <span className="text-stone-300">-</span>
+        <span style={{ color: 'var(--line)' }}>-</span>
         <input
           type="number"
           placeholder={`${max}`}
           value={maxVal}
           onChange={(event) => setMaxVal(event.target.value)}
           onKeyDown={(event) => event.key === 'Enter' && handleApply()}
-          className="w-full rounded-2xl border border-stone-200 bg-white px-3 py-2.5 text-center text-sm font-bold outline-none transition-all focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
+          className="w-full rounded-2xl border bg-white px-3 py-2.5 text-center text-sm font-bold outline-none transition-all"
+          style={{ borderColor: 'var(--line)', color: 'var(--ink)' }}
+          onFocus={(e) => { e.target.style.borderColor = 'var(--orange)'; e.target.style.boxShadow = '0 0 0 2px rgba(255,107,44,0.12)' }}
+          onBlur={(e) => { e.target.style.borderColor = 'var(--line)'; e.target.style.boxShadow = 'none' }}
         />
       </div>
 
       <button
         onClick={handleApply}
-        className="rounded-2xl bg-slate-900 px-4 py-3 text-xs font-black text-white transition-all hover:bg-amber-500 active:scale-[0.98]"
+        className="rounded-2xl px-4 py-3 text-xs font-black text-white transition-all active:scale-[0.98]"
+        style={{ background: 'var(--ink)' }}
       >
         {t('Apply', 'تطبيق')}
       </button>

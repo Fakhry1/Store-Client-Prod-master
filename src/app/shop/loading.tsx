@@ -4,10 +4,10 @@
 
 export default function ShopLoading() {
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen" style={{ background: 'var(--paper)' }}>
 
       {/* ── Hero Skeleton ── */}
-      <div className="bg-slate-900 px-4 pt-8 pb-5">
+      <div className="px-4 pt-8 pb-5" style={{ background: 'var(--ink)' }}>
         <div className="max-w-7xl mx-auto space-y-3">
           <div className="h-3 w-24 rounded-full bg-white/10 animate-pulse" />
           <div className="h-10 w-56 rounded-xl bg-white/10 animate-pulse" />
@@ -36,17 +36,17 @@ export default function ShopLoading() {
           {/* Section headers + items */}
           {[4, 3, 5].map((count, s) => (
             <div key={s}>
-              <div className="h-2.5 w-16 rounded-full bg-slate-200 animate-pulse mb-3" />
+              <div className="h-2.5 w-16 rounded-full animate-pulse mb-3" style={{ background: 'var(--paper-2)' }} />
               <div className="flex flex-col gap-1.5">
                 {Array.from({ length: count }).map((_, i) => (
                   <div
                     key={i}
-                    className="h-9 rounded-xl bg-slate-100 animate-pulse"
-                    style={{ animationDelay: `${(s * 4 + i) * 50}ms` }}
+                    className="h-9 rounded-xl animate-pulse"
+                    style={{ background: 'var(--paper)', animationDelay: `${(s * 4 + i) * 50}ms` }}
                   />
                 ))}
               </div>
-              <div className="h-px bg-slate-100 mt-3" />
+              <div className="h-px mt-3" style={{ background: 'var(--line)' }} />
             </div>
           ))}
         </aside>
@@ -59,8 +59,9 @@ export default function ShopLoading() {
             {Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
-                className="flex-shrink-0 h-9 rounded-full bg-slate-200 animate-pulse"
+                className="flex-shrink-0 h-9 rounded-full animate-pulse"
                 style={{
+                  background: 'var(--paper-2)',
                   width: `${[56, 72, 80, 64, 72][i]}px`,
                   animationDelay: `${i * 60}ms`,
                 }}
@@ -71,10 +72,10 @@ export default function ShopLoading() {
           {/* Toolbar skeleton */}
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
-              <div className="lg:hidden h-10 w-24 rounded-xl bg-slate-200 animate-pulse" />
-              <div className="h-4 w-16 rounded-full bg-slate-200 animate-pulse" />
+              <div className="lg:hidden h-10 w-24 rounded-xl animate-pulse" style={{ background: 'var(--paper-2)' }} />
+              <div className="h-4 w-16 rounded-full animate-pulse" style={{ background: 'var(--paper-2)' }} />
             </div>
-            <div className="h-9 w-28 rounded-xl bg-slate-200 animate-pulse" />
+            <div className="h-9 w-28 rounded-xl animate-pulse" style={{ background: 'var(--paper-2)' }} />
           </div>
 
           {/* Product Grid Skeleton */}
@@ -94,33 +95,33 @@ export default function ShopLoading() {
 function ProductCardSkeleton({ delay }: { delay: number }) {
   return (
     <div
-      className="rounded-2xl overflow-hidden bg-white border border-slate-100 shadow-sm"
-      style={{ animationDelay: `${delay}ms` }}
+      className="rounded-2xl overflow-hidden bg-white border shadow-sm"
+      style={{ borderColor: 'var(--line)', animationDelay: `${delay}ms` }}
     >
       {/* Image placeholder */}
       <div
-        className="aspect-[4/5] bg-slate-100 animate-pulse"
-        style={{ animationDelay: `${delay}ms` }}
+        className="aspect-[4/5] animate-pulse"
+        style={{ background: 'var(--paper)', animationDelay: `${delay}ms` }}
       />
 
       {/* Text placeholders */}
       <div className="p-3 space-y-2">
         <div
-          className="h-3.5 rounded-full bg-slate-100 animate-pulse w-4/5"
-          style={{ animationDelay: `${delay + 30}ms` }}
+          className="h-3.5 rounded-full animate-pulse w-4/5"
+          style={{ background: 'var(--paper)', animationDelay: `${delay + 30}ms` }}
         />
         <div
-          className="h-3 rounded-full bg-slate-100 animate-pulse w-3/5"
-          style={{ animationDelay: `${delay + 60}ms` }}
+          className="h-3 rounded-full animate-pulse w-3/5"
+          style={{ background: 'var(--paper)', animationDelay: `${delay + 60}ms` }}
         />
         <div className="flex items-center justify-between pt-1">
           <div
-            className="h-4 rounded-full bg-slate-200 animate-pulse w-16"
-            style={{ animationDelay: `${delay + 90}ms` }}
+            className="h-4 rounded-full animate-pulse w-16"
+            style={{ background: 'var(--paper-2)', animationDelay: `${delay + 90}ms` }}
           />
           <div
-            className="h-7 w-7 rounded-full bg-slate-100 animate-pulse"
-            style={{ animationDelay: `${delay + 120}ms` }}
+            className="h-7 w-7 rounded-full animate-pulse"
+            style={{ background: 'var(--paper)', animationDelay: `${delay + 120}ms` }}
           />
         </div>
       </div>

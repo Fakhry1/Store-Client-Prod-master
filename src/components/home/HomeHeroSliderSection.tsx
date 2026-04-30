@@ -6,8 +6,8 @@ export default function HomeHeroSliderSection({ branchId, heroProducts }: { bran
     <section>
       <Suspense fallback={
         <div
-          className="relative overflow-hidden border-b border-stone-200 bg-[linear-gradient(180deg,#fffdf9_0%,#f7f9fc_100%)]"
-          style={{ minHeight: 520 }}
+          className="relative overflow-hidden border-b bg-[linear-gradient(180deg,#fffdf9_0%,#f7f9fc_100%)]"
+          style={{ minHeight: 520, borderColor: 'var(--line)' }}
           aria-hidden="true"
         />
       }>

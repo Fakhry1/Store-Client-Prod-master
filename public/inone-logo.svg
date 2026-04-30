@@ -1,68 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 260" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="title desc">
-  <title id="title">INONE</title>
-  <desc id="desc">INONE wordmark optimized for clear rendering at small sizes</desc>
-  <defs>
-    <linearGradient id="logoBlue" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#2c8cff" />
-      <stop offset="100%" stop-color="#173ebf" />
-    </linearGradient>
-    <linearGradient id="logoOrange" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#ffb326" />
-      <stop offset="100%" stop-color="#f06b0f" />
-    </linearGradient>
-    <linearGradient id="logoInk" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#232733" />
-      <stop offset="100%" stop-color="#111420" />
-    </linearGradient>
-  </defs>
-
-  <g transform="translate(38,30)">
-    <text
-      x="0"
-      y="166"
-      font-size="136"
-      font-family="Arial Black, Arial, sans-serif"
-      font-style="italic"
-      letter-spacing="1"
-      fill="url(#logoBlue)"
-    >IN</text>
-
-    <g id="brand-o" transform="translate(198,2) scale(1.06)">
-      <ellipse
-        cx="76"
-        cy="72"
-        rx="52"
-        ry="62"
-        transform="rotate(20 76 72)"
-        fill="none"
-        stroke="url(#logoInk)"
-        stroke-width="15"
-      />
-      <path
-        d="M34 114 A64 76 20 0 1 24 62"
-        fill="none"
-        stroke="url(#logoOrange)"
-        stroke-width="15"
-        stroke-linecap="round"
-      />
-      <path
-        d="M120 32 A64 76 20 0 1 127 90"
-        fill="none"
-        stroke="url(#logoBlue)"
-        stroke-width="15"
-        stroke-linecap="round"
-      />
-      <ellipse cx="76" cy="72" rx="28" ry="42" transform="rotate(20 76 72)" fill="#f3f4f6" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 200" role="img" aria-labelledby="inone-title">
+  <title id="inone-title">INONE</title>
+  <g font-family="'Space Grotesk','Trebuchet MS',system-ui,sans-serif" font-weight="600" font-size="180" letter-spacing="-8">
+    <text x="0"  y="160" fill="#0A1F44">I</text>
+    <text x="60" y="160" fill="#0A1F44">N</text>
+    <g transform="translate(330,100)">
+      <circle r="78" fill="none" stroke="#0A1F44" stroke-width="22"/>
+      <circle r="78" fill="none" stroke="#FF6B2C" stroke-width="22"
+              stroke-dasharray="60 1000" stroke-dashoffset="-150" transform="rotate(-90)"/>
+      <circle r="10" fill="#FF6B2C"/>
     </g>
-
-    <text
-      x="352"
-      y="166"
-      font-size="136"
-      font-family="Arial Black, Arial, sans-serif"
-      font-style="italic"
-      letter-spacing="1"
-      fill="url(#logoInk)"
-    >NE</text>
+    <text x="430" y="160" fill="#0A1F44">N</text>
+    <text x="560" y="160" fill="#0A1F44">E</text>
   </g>
 </svg>

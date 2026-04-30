@@ -3,12 +3,11 @@
 
 export default function HomeLoading() {
   return (
-    <main className="min-h-screen bg-[#F8F6F2]">
+    <main className="min-h-screen" style={{ background: 'var(--paper)' }}>
 
       {/* ── Hero Skeleton ── */}
-      <div className="relative min-h-[90vh] flex items-center bg-slate-900">
-        {/* gradient يحاكي الـ overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/20" />
+      <div className="relative min-h-[90vh] flex items-center" style={{ background: 'var(--black)' }}>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/75 to-black/20" />
         <div className="relative max-w-7xl mx-auto px-6 py-24 w-full">
           <div className="max-w-lg space-y-5">
             {/* Eyebrow pill */}
@@ -16,7 +15,7 @@ export default function HomeLoading() {
             {/* Headline */}
             <div className="space-y-2">
               <div className="h-10 w-64 rounded-xl bg-white/10 animate-pulse" />
-              <div className="h-10 w-48 rounded-xl bg-amber-500/20 animate-pulse" />
+              <div className="h-10 w-48 rounded-xl animate-pulse" style={{ background: 'rgba(255,107,44,0.2)' }} />
             </div>
             {/* Subtitle */}
             <div className="space-y-2">
@@ -25,7 +24,7 @@ export default function HomeLoading() {
             </div>
             {/* Buttons */}
             <div className="flex gap-3 pt-2">
-              <div className="h-12 w-36 rounded-xl bg-amber-500/30 animate-pulse" />
+              <div className="h-12 w-36 rounded-xl animate-pulse" style={{ background: 'rgba(255,107,44,0.3)' }} />
               <div className="h-12 w-36 rounded-xl bg-white/10 animate-pulse" />
             </div>
             {/* Stats */}
@@ -42,15 +41,15 @@ export default function HomeLoading() {
       </div>
 
       {/* ── Trust Bar Skeleton ── */}
-      <div className="bg-white border-y border-slate-100">
+      <div className="bg-white border-y" style={{ borderColor: 'var(--line)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-slate-100 rounded-xl overflow-hidden">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-px rounded-xl overflow-hidden" style={{ background: 'var(--line)' }}>
             {[0, 1, 2, 3].map(i => (
               <div key={i} className="bg-white px-6 py-4 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-slate-100 animate-pulse flex-shrink-0" />
+                <div className="w-8 h-8 rounded-lg animate-pulse flex-shrink-0" style={{ background: 'var(--paper)' }} />
                 <div className="space-y-1.5">
-                  <div className="h-3.5 w-24 rounded-full bg-slate-100 animate-pulse" />
-                  <div className="h-3 w-16 rounded-full bg-slate-100 animate-pulse" />
+                  <div className="h-3.5 w-24 rounded-full animate-pulse" style={{ background: 'var(--paper)' }} />
+                  <div className="h-3 w-16 rounded-full animate-pulse" style={{ background: 'var(--paper)' }} />
                 </div>
               </div>
             ))}
@@ -64,19 +63,18 @@ export default function HomeLoading() {
           {/* Section header */}
           <div className="flex items-end justify-between mb-8">
             <div className="space-y-2">
-              <div className="h-3 w-20 rounded-full bg-amber-200 animate-pulse" />
-              <div className="h-9 w-40 rounded-xl bg-slate-200 animate-pulse" />
+              <div className="h-3 w-20 rounded-full animate-pulse" style={{ background: 'rgba(255,107,44,0.2)' }} />
+              <div className="h-9 w-40 rounded-xl animate-pulse" style={{ background: 'var(--paper-2)' }} />
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="flex flex-col items-center gap-2.5 p-4 rounded-2xl
-                  bg-slate-100 border border-slate-100 animate-pulse"
-                style={{ animationDelay: `${i * 60}ms` }}>
-                <div className="w-8 h-8 rounded-lg bg-slate-200" />
-                <div className="h-3 w-16 rounded-full bg-slate-200" />
+                className="flex flex-col items-center gap-2.5 p-4 rounded-2xl border animate-pulse"
+                style={{ background: 'var(--paper)', borderColor: 'var(--line)', animationDelay: `${i * 60}ms` }}>
+                <div className="w-8 h-8 rounded-lg" style={{ background: 'var(--paper-2)' }} />
+                <div className="h-3 w-16 rounded-full" style={{ background: 'var(--paper-2)' }} />
               </div>
             ))}
           </div>
@@ -89,7 +87,7 @@ export default function HomeLoading() {
           {/* Header */}
           <div className="flex items-end justify-between mb-8">
             <div className="space-y-2">
-              <div className="h-3 w-24 rounded-full bg-amber-500/30 animate-pulse" />
+              <div className="h-3 w-24 rounded-full animate-pulse" style={{ background: 'rgba(255,107,44,0.3)' }} />
               <div className="h-9 w-52 rounded-xl bg-white/10 animate-pulse" />
             </div>
           </div>
@@ -102,7 +100,7 @@ export default function HomeLoading() {
                 <div className="aspect-square bg-white/5" />
                 <div className="p-3 space-y-2">
                   <div className="h-3 w-4/5 rounded-full bg-white/10" />
-                  <div className="h-3.5 w-3/5 rounded-full bg-amber-500/20" />
+                  <div className="h-3.5 w-3/5 rounded-full" style={{ background: 'rgba(255,107,44,0.2)' }} />
                 </div>
               </div>
             ))}
@@ -115,23 +113,23 @@ export default function HomeLoading() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-end justify-between mb-8">
             <div className="space-y-2">
-              <div className="h-3 w-20 rounded-full bg-amber-200 animate-pulse" />
-              <div className="h-9 w-44 rounded-xl bg-slate-200 animate-pulse" />
+              <div className="h-3 w-20 rounded-full animate-pulse" style={{ background: 'rgba(255,107,44,0.2)' }} />
+              <div className="h-9 w-44 rounded-xl animate-pulse" style={{ background: 'var(--paper-2)' }} />
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="rounded-2xl bg-white border border-slate-100 overflow-hidden animate-pulse"
-                style={{ animationDelay: `${i * 40}ms` }}>
-                <div className="aspect-square bg-slate-100" />
+                className="rounded-2xl bg-white border overflow-hidden animate-pulse"
+                style={{ borderColor: 'var(--line)', animationDelay: `${i * 40}ms` }}>
+                <div className="aspect-square" style={{ background: 'var(--paper)' }} />
                 <div className="p-3 space-y-2">
-                  <div className="h-3.5 w-4/5 rounded-full bg-slate-100" />
-                  <div className="h-3 w-3/5 rounded-full bg-slate-100" />
+                  <div className="h-3.5 w-4/5 rounded-full" style={{ background: 'var(--paper)' }} />
+                  <div className="h-3 w-3/5 rounded-full" style={{ background: 'var(--paper)' }} />
                   <div className="flex items-center justify-between pt-1">
-                    <div className="h-4 w-16 rounded-full bg-slate-200" />
-                    <div className="w-7 h-7 rounded-xl bg-slate-100" />
+                    <div className="h-4 w-16 rounded-full" style={{ background: 'var(--paper-2)' }} />
+                    <div className="w-7 h-7 rounded-xl" style={{ background: 'var(--paper)' }} />
                   </div>
                 </div>
               </div>

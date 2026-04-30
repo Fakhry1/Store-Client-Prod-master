@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react'
 
 type ToastType = 'success' | 'error' | 'info'
 
@@ -38,10 +38,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     error:   '✕',
     info:    'ℹ',
   }
-  const COLORS: Record<ToastType, string> = {
-    success: 'bg-green-500',
-    error:   'bg-red-500',
-    info:    'bg-slate-700',
+  const ICON_STYLE: Record<ToastType, React.CSSProperties> = {
+    success: { background: '#22c55e' },
+    error:   { background: '#ef4444' },
+    info:    { background: 'var(--ink)' },
   }
 
   return (
@@ -57,12 +57,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div key={toast.id}
             className={`${toast.leaving ? 'toast-out' : 'toast-in'}
               flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg
-              bg-white border border-slate-100 pointer-events-auto`}>
-            <span className={`w-6 h-6 rounded-full ${COLORS[toast.type]}
-              text-white text-xs font-bold flex items-center justify-center flex-shrink-0`}>
+              bg-white border pointer-events-auto`}
+            style={{ borderColor: 'var(--line)' }}>
+            <span className="w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center flex-shrink-0"
+              style={ICON_STYLE[toast.type]}>
               {ICONS[toast.type]}
             </span>
-            <p className="text-sm font-semibold text-slate-800 leading-snug">{toast.message}</p>
+            <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--ink)' }}>{toast.message}</p>
           </div>
         ))}
       </div>

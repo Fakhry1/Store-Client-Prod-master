@@ -154,18 +154,18 @@ export default function TermsPage() {
   const isArabic = locale === 'ar'
 
   return (
-    <div className="min-h-screen bg-[#f8f6f2]">
+    <div className="min-h-screen" style={{ background: 'var(--paper)' }}>
       <div className="mx-auto max-w-5xl px-4 py-6 md:px-6 md:py-10">
-        <div className="rounded-[32px] border border-stone-200 bg-white p-5 shadow-[0_18px_38px_rgba(15,23,42,0.05)] md:p-8">
-          <div className="flex flex-col gap-4 border-b border-stone-200 pb-6 md:flex-row md:items-end md:justify-between">
+        <div className="rounded-[32px] border bg-white p-5 shadow-[0_18px_38px_rgba(15,23,42,0.05)] md:p-8" style={{ borderColor: 'var(--line)' }}>
+          <div className="flex flex-col gap-4 border-b pb-6 md:flex-row md:items-end md:justify-between" style={{ borderColor: 'var(--line)' }}>
             <div className="space-y-2">
               <span className="inline-flex w-fit rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.24em] text-amber-700">
                 {t('Terms & Conditions', 'الشروط والأحكام')}
               </span>
-              <h1 className="text-2xl font-black leading-tight text-slate-900 md:text-4xl">
+              <h1 className="text-2xl font-black leading-tight md:text-4xl" style={{ color: 'var(--ink)' }}>
                 {t('Please review these terms before placing your order.', 'يرجى مراجعة هذه الشروط قبل إتمام طلبك.')}
               </h1>
-              <p className="max-w-3xl text-sm leading-7 text-slate-500 md:text-[15px]">
+              <p className="max-w-3xl text-sm leading-7 md:text-[15px]" style={{ color: 'var(--mute)' }}>
                 {t(
                   'These terms explain how orders, cancellations, replacements, returns, wallet balance, delivery, and promotions are handled in the store.',
                   'توضح هذه الشروط كيفية التعامل مع الطلبات والإلغاء والاستبدال والاسترجاع ورصيد المحفظة والتوصيل والعروض داخل المتجر.'
@@ -175,15 +175,16 @@ export default function TermsPage() {
 
             <Link
               href="/cart?step=review"
-              className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-amber-500"
+              className="inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-black text-white transition-colors"
+              style={{ background: 'var(--ink)' }}
             >
               {t('Back to Checkout', 'العودة لإتمام الطلب')}
             </Link>
           </div>
 
           <div className="mt-6 grid gap-4 md:grid-cols-[240px_minmax(0,1fr)] md:gap-6">
-            <aside className="rounded-[28px] border border-stone-200 bg-[#faf7f1] p-4 md:sticky md:top-24 md:h-fit">
-              <p className="mb-3 text-xs font-black uppercase tracking-[0.24em] text-slate-400">
+            <aside className="rounded-[28px] border p-4 md:sticky md:top-24 md:h-fit" style={{ borderColor: 'var(--line)', background: 'var(--paper)' }}>
+              <p className="mb-3 text-xs font-black uppercase tracking-[0.24em]" style={{ color: 'var(--mute)' }}>
                 {t('Quick Navigation', 'تنقل سريع')}
               </p>
               <div className="flex flex-wrap gap-2 md:flex-col">
@@ -191,7 +192,8 @@ export default function TermsPage() {
                   <a
                     key={section.id}
                     href={`#${section.id}`}
-                    className="rounded-full border border-stone-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:border-amber-300 hover:text-amber-700 md:rounded-2xl md:px-4 md:py-3 md:text-sm"
+                    className="rounded-full border bg-white px-3 py-2 text-xs font-bold transition-colors hover:border-[var(--orange)] hover:text-[var(--orange)] md:rounded-2xl md:px-4 md:py-3 md:text-sm"
+                    style={{ borderColor: 'var(--line)', color: 'var(--mute)' }}
                   >
                     {isArabic ? section.titleAr : section.titleEn}
                   </a>
@@ -208,16 +210,18 @@ export default function TermsPage() {
                   <section
                     key={section.id}
                     id={section.id}
-                    className="scroll-mt-24 rounded-[28px] border border-stone-200 bg-white p-5 shadow-[0_14px_32px_rgba(15,23,42,0.04)] md:p-6"
+                    className="scroll-mt-24 rounded-[28px] border bg-white p-5 shadow-[0_14px_32px_rgba(15,23,42,0.04)] md:p-6"
+                    style={{ borderColor: 'var(--line)' }}
                   >
-                    <h2 className="text-lg font-black text-slate-900 md:text-xl">{title}</h2>
+                    <h2 className="text-lg font-black md:text-xl" style={{ color: 'var(--ink)' }}>{title}</h2>
                     <div className="mt-4 space-y-3">
                       {points.map((point, index) => (
                         <div key={`${section.id}-${index}`} className="flex items-start gap-3">
-                          <span className="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-900 text-[11px] font-black text-white">
+                          <span className="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-black text-white"
+                            style={{ background: 'var(--ink)' }}>
                             {index + 1}
                           </span>
-                          <p className="text-sm leading-7 text-slate-600 md:text-[15px]">{point}</p>
+                          <p className="text-sm leading-7 md:text-[15px]" style={{ color: 'var(--mute)' }}>{point}</p>
                         </div>
                       ))}
                     </div>
@@ -231,3 +235,4 @@ export default function TermsPage() {
     </div>
   )
 }
+

@@ -48,17 +48,25 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#f8f6f2_0%,#ffffff_55%,#f5efe4_100%)] px-4 py-10 md:py-16">
+    <div className="min-h-screen px-4 py-10 md:py-16" style={{ background: 'var(--paper)' }}>
       <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-stretch">
-        <section className="hidden overflow-hidden rounded-[36px] border border-stone-200 bg-slate-900 text-white shadow-[0_24px_70px_rgba(15,23,42,0.18)] lg:flex lg:flex-col lg:justify-between">
+
+        {/* ── Left panel – trust signals ── */}
+        <section
+          className="hidden overflow-hidden rounded-[36px] text-white shadow-card-lg lg:flex lg:flex-col lg:justify-between"
+          style={{ background: 'var(--ink)' }}
+        >
           <div className="p-8">
-            <span className="inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-black uppercase tracking-[0.25em] text-white/70">
+            <span
+              className="inline-flex rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.25em]"
+              style={{ background: 'rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.70)', border: '1px solid rgba(255,255,255,0.15)' }}
+            >
               {t('Customer Access', 'دخول العملاء')}
             </span>
             <h1 className="mt-5 max-w-md text-4xl font-black leading-tight">
               {t('Your account starts with your phone number.', 'حسابك يبدأ من رقم هاتفك.')}
             </h1>
-            <p className="mt-4 max-w-lg text-sm leading-7 text-white/70">
+            <p className="mt-4 max-w-lg text-sm leading-7" style={{ color: 'rgba(255,255,255,0.70)' }}>
               {t(
                 'Use your phone number to sign in, follow your orders, and continue checkout from any device.',
                 'استخدم رقم الهاتف لتسجيل الدخول ومتابعة الطلبات وإكمال الشراء من أي جهاز.'
@@ -66,41 +74,36 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <div className="grid gap-3 border-t border-white/10 bg-white/5 p-8">
+          <div
+            className="grid gap-3 border-t p-8"
+            style={{ borderColor: 'rgba(255,255,255,0.10)', background: 'rgba(255,255,255,0.05)' }}
+          >
             {[
-              {
-                en: 'Phone-first access',
-                ar: 'دخول برقم الهاتف',
-                subEn: 'No email is required to sign in.',
-                subAr: 'لا تحتاج بريدًا إلكترونيًا لتسجيل الدخول.',
-              },
-              {
-                en: 'Secure session',
-                ar: 'جلسة آمنة',
-                subEn: 'Your account stays synced with your cart and wishlist.',
-                subAr: 'حسابك يبقى متزامنًا مع السلة والمفضلة.',
-              },
-              {
-                en: 'Mobile ready',
-                ar: 'مصمم للموبايل',
-                subEn: 'Fast and comfortable on smaller screens.',
-                subAr: 'سريع ومريح على الشاشات الصغيرة.',
-              },
+              { en: 'Phone-first access', ar: 'دخول برقم الهاتف', subEn: 'No email is required to sign in.', subAr: 'لا تحتاج بريدًا إلكترونيًا لتسجيل الدخول.' },
+              { en: 'Secure session', ar: 'جلسة آمنة', subEn: 'Your account stays synced with your cart and wishlist.', subAr: 'حسابك يبقى متزامنًا مع السلة والمفضلة.' },
+              { en: 'Mobile ready', ar: 'مصمم للموبايل', subEn: 'Fast and comfortable on smaller screens.', subAr: 'سريع ومريح على الشاشات الصغيرة.' },
             ].map((item) => (
-              <div key={item.en} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div key={item.en} className="rounded-2xl border p-4" style={{ borderColor: 'rgba(255,255,255,0.10)', background: 'rgba(255,255,255,0.05)' }}>
                 <p className="text-sm font-black">{t(item.en, item.ar)}</p>
-                <p className="mt-1 text-xs leading-6 text-white/65">{t(item.subEn, item.subAr)}</p>
+                <p className="mt-1 text-xs leading-6" style={{ color: 'rgba(255,255,255,0.65)' }}>{t(item.subEn, item.subAr)}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="rounded-[32px] border border-stone-200 bg-white p-5 shadow-[0_20px_45px_rgba(15,23,42,0.08)] sm:p-7 md:p-8">
+        {/* ── Right panel – form ── */}
+        <section
+          className="rounded-[32px] border bg-white p-5 shadow-card-lg sm:p-7 md:p-8"
+          style={{ borderColor: 'var(--line)' }}
+        >
           <div className="mb-7">
-            <span className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.24em] text-amber-700">
+            <span
+              className="inline-flex rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.24em]"
+              style={{ background: 'rgba(255,107,44,0.10)', color: 'var(--orange)' }}
+            >
               {t('Welcome Back', 'أهلًا بعودتك')}
             </span>
-            <h2 className="mt-4 text-2xl font-black text-slate-900 md:text-3xl">
+            <h2 className="mt-4 text-2xl font-black md:text-3xl" style={{ color: 'var(--ink)' }}>
               {t('Sign in with your phone', 'سجّل الدخول برقم هاتفك')}
             </h2>
           </div>
@@ -115,10 +118,7 @@ export default function LoginPage() {
             <PhoneNumberField
               label={t('Phone Number', 'رقم الهاتف')}
               value={phoneNumber}
-              onChange={(value) => {
-                setPhoneNumber(value)
-                if (phoneError) setPhoneError('')
-              }}
+              onChange={(value) => { setPhoneNumber(value); if (phoneError) setPhoneError('') }}
               required
               error={phoneError}
               showMetaRow={false}
@@ -126,17 +126,14 @@ export default function LoginPage() {
 
             <div>
               <div className="mb-1.5 flex items-center justify-between gap-3">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                <label className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--mute)' }}>
                   {t('Password', 'كلمة المرور')}
                 </label>
-                <Link
-                  href="/auth/forgot-password"
-                  className="text-xs font-bold text-amber-600 transition-colors hover:text-amber-700"
-                >
+                <Link href="/auth/forgot-password" className="text-xs font-bold transition-colors hover:opacity-75"
+                  style={{ color: 'var(--orange)' }}>
                   {t('Forgot password?', 'نسيت كلمة المرور؟')}
                 </Link>
               </div>
-
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -144,12 +141,16 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
                   placeholder={t('Enter your password', 'أدخل كلمة المرور')}
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pe-12 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20"
+                  className="w-full rounded-2xl border bg-white px-4 py-3 pe-12 text-sm outline-none transition-all placeholder:text-[var(--mute)]"
+                  style={{ borderColor: 'var(--line)', color: 'var(--ink)' }}
+                  onFocus={(e) => { e.target.style.borderColor = 'var(--orange)'; e.target.style.boxShadow = '0 0 0 3px rgba(255,107,44,0.12)' }}
+                  onBlur={(e) => { e.target.style.borderColor = 'var(--line)'; e.target.style.boxShadow = 'none' }}
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword((value) => !value)}
-                  className="absolute inset-y-0 end-3 my-auto h-9 rounded-xl px-2 text-xs font-black text-slate-400 transition-colors hover:text-slate-700"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute inset-y-0 end-3 my-auto h-9 rounded-xl px-2 text-xs font-black transition-colors hover:opacity-70"
+                  style={{ color: 'var(--mute)' }}
                 >
                   {showPassword ? t('Hide', 'إخفاء') : t('Show', 'إظهار')}
                 </button>
@@ -159,20 +160,20 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3.5 text-sm font-black text-white transition-all hover:bg-amber-600 disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3.5 text-sm font-black text-white transition-all hover:opacity-90 disabled:opacity-60"
+              style={{ background: loading ? 'var(--ink)' : 'var(--orange)' }}
             >
-              {loading ? (
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              ) : null}
+              {loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />}
               {loading ? t('Signing in...', 'جارٍ تسجيل الدخول...') : t('Sign In', 'تسجيل الدخول')}
             </button>
           </form>
 
-          <div className="mt-6 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-slate-500">
+          <div className="mt-6 rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'var(--line)', background: 'var(--paper)', color: 'var(--mute)' }}>
             {t("Don't have an account yet?", 'ليس لديك حساب بعد؟')}{' '}
             <Link
               href={`/auth/register${redirect !== '/shop' ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}
-              className="font-black text-amber-700 hover:text-amber-800"
+              className="font-black transition-colors hover:opacity-75"
+              style={{ color: 'var(--ink)' }}
             >
               {t('Create one now', 'أنشئ حسابًا الآن')}
             </Link>
@@ -182,4 +183,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

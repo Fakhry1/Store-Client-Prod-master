@@ -115,27 +115,27 @@ export default function WishlistPage() {
   const availableCount = items.filter(i => i.isAvailableInAnyBranch).length
 
   return (
-    <div className="min-h-screen bg-[#f8f6f2] py-6 md:py-8">
+    <div className="min-h-screen py-6 md:py-8" style={{ background: 'var(--paper)' }}>
       <div className="max-w-3xl mx-auto px-4">
 
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between rounded-[32px] border border-stone-200 bg-white/90 p-4 shadow-[0_16px_34px_rgba(15,23,42,0.04)] backdrop-blur md:p-5">
+        <div className="mb-6 flex items-center justify-between rounded-[32px] border bg-white/90 p-4 shadow-[0_16px_34px_rgba(15,23,42,0.04)] backdrop-blur md:p-5" style={{ borderColor: 'var(--line)' }}>
           <div className="flex items-center gap-3">
             <button onClick={() => router.back()}
-              className="rounded-xl border border-stone-200 bg-[#faf7f1] p-2 transition-colors hover:bg-stone-100">
-              <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              className="rounded-xl border p-2 transition-colors" style={{ borderColor: 'var(--line)', background: 'var(--paper)' }}>
+              <svg className="w-5 h-5" style={{ color: 'var(--ink)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <div>
-              <h1 className="text-xl md:text-2xl font-black text-slate-900">
+              <h1 className="text-xl md:text-2xl font-black" style={{ color: 'var(--ink)' }}>
                 {t('Wishlist', 'المفضلة')}
               </h1>
               {!loading && items.length > 0 && (
-                <p className="mt-0.5 text-xs text-slate-400">
+                <p className="mt-0.5 text-xs" style={{ color: 'var(--mute)' }}>
                   {items.length} {t('items', 'منتج')}
                   {availableCount < items.length && (
-                    <span className="text-amber-500 ms-2">
+                    <span className="ms-2" style={{ color: 'var(--orange)' }}>
                       · {items.length - availableCount} {t('out of stock', 'نفد مخزونه')}
                     </span>
                   )}
@@ -176,7 +176,7 @@ export default function WishlistPage() {
                 }
               }}
               disabled={bulkAdding}
-              className="flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-2 text-xs font-black text-white transition-colors hover:bg-amber-600 disabled:opacity-60">
+              className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-black text-white transition-colors disabled:opacity-60" style={{ background: 'var(--ink)' }}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -190,28 +190,27 @@ export default function WishlistPage() {
         {loading || authLoading ? (
           <div className="grid sm:grid-cols-2 gap-3">
             {[1,2,3,4].map(i => (
-              <div key={i} className="h-36 bg-white rounded-2xl border border-slate-100 animate-pulse" />
+              <div key={i} className="h-36 bg-white rounded-2xl border animate-pulse" style={{ borderColor: 'var(--line)' }} />
             ))}
           </div>
 
         /* Empty */
         ) : items.length === 0 ? (
-          <div className="rounded-[32px] border border-stone-200 bg-white py-24 text-center shadow-[0_16px_34px_rgba(15,23,42,0.04)]">
-            <div className="mx-auto mb-5 flex h-20 w-20 items-center
-              justify-center rounded-[26px] bg-[#faf7f1]">
-              <svg className="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="rounded-[32px] border bg-white py-24 text-center shadow-[0_16px_34px_rgba(15,23,42,0.04)]" style={{ borderColor: 'var(--line)' }}>
+            <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-[26px]" style={{ background: 'var(--paper)' }}>
+              <svg className="w-10 h-10" style={{ color: 'var(--line)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                   d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
             </div>
-            <h3 className="font-black text-slate-700 mb-2 text-lg">
+            <h3 className="font-black mb-2 text-lg" style={{ color: 'var(--ink)' }}>
               {t('Wishlist is empty', 'المفضلة فارغة')}
             </h3>
-            <p className="text-sm text-slate-400 mb-6">
+            <p className="text-sm mb-6" style={{ color: 'var(--mute)' }}>
               {t('Save products you love to buy them later', 'احفظ المنتجات التي أعجبتك لتشتريها لاحقاً')}
             </p>
             <Link href="/shop"
-              className="inline-block rounded-xl bg-slate-900 px-8 py-3 text-sm font-black text-white transition-colors hover:bg-amber-600">
+              className="inline-block rounded-xl px-8 py-3 text-sm font-black text-white transition-colors" style={{ background: 'var(--ink)' }}>
               {t('Browse Collection', 'تصفح المتجر')}
             </Link>
           </div>
@@ -231,22 +230,21 @@ export default function WishlistPage() {
 
               return (
                 <div key={item.id}
-                  className={`overflow-hidden rounded-[30px] border border-stone-200 bg-white
-                    shadow-[0_16px_34px_rgba(15,23,42,0.04)] transition-all duration-300
+                  className={`overflow-hidden rounded-[30px] border bg-white shadow-[0_16px_34px_rgba(15,23,42,0.04)] transition-all duration-300" style={{ borderColor: 'var(--line)' }}
                     ${isExiting ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
 
                   <div className="flex gap-3 p-3.5">
                     {/* Image — links to product */}
                     <Link
                       href={`/product?id=${item.productId}&variant=${item.productVariantId}`}
-                      className="group relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-2xl bg-[#f7f4ee]">
+                      className="group relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-2xl" style={{ background: 'var(--paper)' }}>
                       {imgSrc ? (
                         <Image src={imgSrc} alt={name} fill className="object-cover
                           group-hover:scale-105 transition-transform duration-300"
                           onError={(e) => { (e.target as HTMLImageElement).style.display='none' }} />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <svg className="w-7 h-7 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-7 h-7" style={{ color: 'var(--line)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
                               d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
@@ -255,8 +253,7 @@ export default function WishlistPage() {
                       {/* Out of stock badge on image */}
                       {!item.isAvailableInAnyBranch && (
                         <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-                          <span className="text-[10px] font-black text-slate-500 bg-white
-                            px-2 py-0.5 rounded-full border border-slate-200">
+                          <span className="text-[10px] font-black bg-white px-2 py-0.5 rounded-full border" style={{ color: 'var(--mute)', borderColor: 'var(--line)' }}>
                             {t('Out of stock', 'نفد')}
                           </span>
                         </div>
@@ -267,18 +264,17 @@ export default function WishlistPage() {
                     <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
                       <div>
                         {item.brand && (
-                          <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-0.5">
+                          <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: 'var(--orange)' }}>
                             {item.brand}
                           </p>
                         )}
                         <Link href={`/product?id=${item.productId}&variant=${item.productVariantId}`}>
-                          <h3 className="text-sm font-bold text-slate-900 line-clamp-2
-                            hover:text-amber-600 transition-colors leading-snug">
+                          <h3 className="text-sm font-bold line-clamp-2 transition-colors leading-snug" style={{ color: 'var(--ink)' }}>
                             {name}
                           </h3>
                         </Link>
                         {variantName && (
-                          <p className="text-[11px] text-slate-400 mt-0.5">{variantName}</p>
+                          <p className="text-[11px] mt-0.5" style={{ color: 'var(--mute)' }}>{variantName}</p>
                         )}
                         <div className="mt-1.5">
                           <PriceDisplay
@@ -297,14 +293,9 @@ export default function WishlistPage() {
                         <button
                           onClick={() => handleAddToCart(item)}
                           disabled={adding === item.productVariantId || !item.isAvailableInAnyBranch}
-                          className={`flex-1 rounded-xl py-2 text-xs font-bold transition-all
-                            flex items-center justify-center gap-1
-                            ${!item.isAvailableInAnyBranch
-                              ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                              : adding === item.productVariantId
-                                ? 'bg-slate-200 text-slate-500'
-                                : 'bg-slate-900 text-white hover:bg-amber-600'
-                            }`}>
+                          className="flex-1 rounded-xl py-2 text-xs font-bold transition-all flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed text-white"
+                          style={{ background: !item.isAvailableInAnyBranch ? 'var(--line)' : 'var(--ink)' }}
+                        >
                           {adding === item.productVariantId ? (
                             <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                           ) : (
@@ -318,7 +309,7 @@ export default function WishlistPage() {
                             onClick={() => handleMoveToCart(item)}
                             disabled={adding === item.productVariantId}
                             title={t('Move to cart', 'انقل للسلة')}
-                            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-600">
+                            className="rounded-lg p-1.5 transition-colors" style={{ color: 'var(--mute)' }}>
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                 d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -331,10 +322,9 @@ export default function WishlistPage() {
                           onClick={() => handleRemove(item.productVariantId)}
                           disabled={removing === item.productVariantId}
                           title={t('Remove', 'حذف')}
-                          className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-red-50 hover:text-red-500">
+                          className="rounded-lg p-1.5 transition-colors hover:text-red-500" style={{ color: 'var(--line)' }}>
                           {removing === item.productVariantId ? (
-                            <span className="w-4 h-4 border-2 border-slate-200 border-t-red-400
-                              rounded-full animate-spin block" />
+                            <span className="w-4 h-4 border-2 border-t-red-400 rounded-full animate-spin block" style={{ borderColor: 'var(--line)', borderTopColor: '#dc2626' }} />
                           ) : (
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -354,3 +344,7 @@ export default function WishlistPage() {
     </div>
   )
 }
+
+
+
+

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
+import { Space_Grotesk } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/context/auth'
 import { CartProvider } from '@/context/cart'
@@ -27,6 +28,13 @@ const notoKufi = localFont({
   variable: '--font-kufi',
   display: 'swap',
   preload: true,
+})
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['600'],
+  variable: '--font-space-grotesk',
+  display: 'swap',
 })
 
 const siteUrl = getSiteUrl()
@@ -99,10 +107,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html
       lang="ar"
       dir="rtl"
-      className={`${playfair.variable} ${notoKufi.variable}`}
+      className={`${playfair.variable} ${notoKufi.variable} ${spaceGrotesk.variable}`}
       suppressHydrationWarning
     >
-      <body className="bg-transparent font-kufi antialiased text-slate-900" suppressHydrationWarning>
+      <body className="bg-transparent font-kufi antialiased" style={{ color: 'var(--ink)' }} suppressHydrationWarning>
         {imageOrigin && (
           <>
             <link rel="preconnect" href={imageOrigin} />

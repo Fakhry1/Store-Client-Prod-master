@@ -8,28 +8,11 @@ import { useLocale } from '@/context/locale'
 import { translateApiError } from '@/lib/errors'
 import { getPhoneValidationMessage } from '@/lib/phone'
 
-function getResetPasswordValidationError(
-  newPassword: string,
-  confirmPassword: string,
-  t: (en: string, ar: string) => string
-) {
-  const trimmedPassword = newPassword.trim()
-
-  if (!trimmedPassword || !confirmPassword.trim()) {
-    return t('Please enter and confirm your new password', 'يرجى إدخال وتأكيد كلمة المرور الجديدة')
-  }
-
-  if (trimmedPassword.length < 8) {
-    return t(
-      'Password must be at least 8 characters long.',
-      'كلمة المرور يجب أن تكون 8 أحرف على الأقل.'
-    )
-  }
-
-  if (trimmedPassword !== confirmPassword.trim()) {
-    return t('Passwords do not match', 'كلمتا المرور غير متطابقتين')
-  }
-
+function getResetPasswordValidationError(newPassword: string, confirmPassword: string, t: (en: string, ar: string) => string) {
+  const trimmed = newPassword.trim()
+  if (!trimmed || !confirmPassword.trim()) return t('Please enter and confirm your new password', 'يرجى إدخال وتأكيد كلمة المرور الجديدة')
+  if (trimmed.length < 8) return t('Password must be at least 8 characters long.', 'كلمة المرور يجب أن تكون 8 أحرف على الأقل.')
+  if (trimmed !== confirmPassword.trim()) return t('Passwords do not match', 'كلمتا المرور غير متطابقتين')
   return ''
 }
 
@@ -59,45 +42,30 @@ export default function ForgotPasswordPage() {
       setLoading(true)
       try {
         await authApi.forgotPassword(email)
-        setSentMessage(
-          t(
-            `We sent a password reset link to ${email}`,
-            `أرسلنا رابط إعادة التعيين إلى ${email}`
-          )
-        )
+        setSentMessage(t(`We sent a password reset link to ${email}`, `أرسلنا رابط إعادة التعيين إلى ${email}`))
         setSent(true)
       } catch (err: any) {
         setError(translateApiError(err.message || 'Something went wrong', t))
-      } finally {
-        setLoading(false)
-      }
+      } finally { setLoading(false) }
       return
     }
 
     if (step === 'request') {
-      const normalizedPhone = phoneNumber.trim()
-      const nextPhoneError = getPhoneValidationMessage(normalizedPhone, t)
+      const nextPhoneError = getPhoneValidationMessage(phoneNumber.trim(), t)
       setPhoneError(nextPhoneError)
       if (nextPhoneError) return
-
       setLoading(true)
       try {
-        await authApi.requestPasswordResetOtp(normalizedPhone)
+        await authApi.requestPasswordResetOtp(phoneNumber.trim())
         setStep('verify')
       } catch (err: any) {
         setError(translateApiError(err.message || 'Something went wrong', t))
-      } finally {
-        setLoading(false)
-      }
+      } finally { setLoading(false) }
       return
     }
 
     if (step === 'verify') {
-      if (!otp.trim()) {
-        setError(t('OTP code is required', 'رمز التحقق مطلوب'))
-        return
-      }
-
+      if (!otp.trim()) { setError(t('OTP code is required', 'رمز التحقق مطلوب')); return }
       setLoading(true)
       try {
         const result = await authApi.verifyPasswordResetOtp(phoneNumber.trim(), otp.trim())
@@ -105,38 +73,20 @@ export default function ForgotPasswordPage() {
         setStep('reset')
       } catch (err: any) {
         setError(translateApiError(err.message || 'Invalid OTP code', t))
-      } finally {
-        setLoading(false)
-      }
+      } finally { setLoading(false) }
       return
     }
 
-    const resetPasswordError = getResetPasswordValidationError(newPassword, confirmPassword, t)
-    if (resetPasswordError) {
-      setError(resetPasswordError)
-      return
-    }
-
+    const resetError = getResetPasswordValidationError(newPassword, confirmPassword, t)
+    if (resetError) { setError(resetError); return }
     setLoading(true)
     try {
-      await authApi.resetPasswordWithOtp({
-        phoneNumber: phoneNumber.trim(),
-        resetToken,
-        newPassword,
-        confirmPassword,
-      })
-      setSentMessage(
-        t(
-          'Your password has been reset successfully. You can now sign in with your new password.',
-          'تمت إعادة تعيين كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة.'
-        )
-      )
+      await authApi.resetPasswordWithOtp({ phoneNumber: phoneNumber.trim(), resetToken, newPassword, confirmPassword })
+      setSentMessage(t('Your password has been reset successfully. You can now sign in with your new password.', 'تمت إعادة تعيين كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة.'))
       setSent(true)
     } catch (err: any) {
       setError(translateApiError(err.message || 'Something went wrong', t))
-    } finally {
-      setLoading(false)
-    }
+    } finally { setLoading(false) }
   }
 
   async function handleResendOtp() {
@@ -144,119 +94,92 @@ export default function ForgotPasswordPage() {
     const nextPhoneError = getPhoneValidationMessage(phoneNumber, t)
     setPhoneError(nextPhoneError)
     if (nextPhoneError) return
-
     setLoading(true)
-    try {
-      await authApi.requestPasswordResetOtp(phoneNumber.trim())
-    } catch (err: any) {
-      setError(translateApiError(err.message || 'Something went wrong', t))
-    } finally {
-      setLoading(false)
-    }
+    try { await authApi.requestPasswordResetOtp(phoneNumber.trim()) }
+    catch (err: any) { setError(translateApiError(err.message || 'Something went wrong', t)) }
+    finally { setLoading(false) }
   }
 
   function switchMode(nextMode: 'phone' | 'email') {
-    setMode(nextMode)
-    setError('')
-    setSent(false)
-    setStep('request')
-    setOtp('')
-    setResetToken('')
-    setNewPassword('')
-    setConfirmPassword('')
-    setSentMessage('')
-    setPhoneError('')
-
-    // Keep each flow isolated so backend receives only relevant fields.
-    if (nextMode === 'phone') {
-      setEmail('')
-    } else {
-      setPhoneNumber('')
-    }
+    setMode(nextMode); setError(''); setSent(false); setStep('request')
+    setOtp(''); setResetToken(''); setNewPassword(''); setConfirmPassword('')
+    setSentMessage(''); setPhoneError('')
+    if (nextMode === 'phone') setEmail(''); else setPhoneNumber('')
   }
 
+  const ctaLabel = mode === 'email'
+    ? t('Send Reset Link', 'إرسال رابط الاستعادة')
+    : step === 'request' ? t('Send OTP', 'إرسال OTP')
+    : step === 'verify' ? t('Verify OTP', 'تحقق من OTP')
+    : t('Reset Password', 'إعادة تعيين كلمة المرور')
+
   return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4 py-16">
+    <div className="flex min-h-screen items-center justify-center px-4 py-16" style={{ background: 'var(--paper)' }}>
       <div className="w-full max-w-sm">
-        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
+        <div className="rounded-3xl border bg-white p-7 shadow-card-lg" style={{ borderColor: 'var(--line)' }}>
 
           {sent ? (
-            /* Success state */
-            <div className="text-center py-4">
-              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center
-                justify-center mx-auto mb-5">
-                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            /* ── Success ── */
+            <div className="py-4 text-center">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full"
+                style={{ background: 'rgba(34,197,94,0.12)' }}>
+                <svg className="h-8 w-8" fill="none" stroke="#22c55e" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h2 className="text-xl font-black text-slate-900 mb-2">
+              <h2 className="mb-2 text-xl font-black" style={{ color: 'var(--ink)' }}>
                 {t('Done!', 'تم التنفيذ!')}
               </h2>
-              <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-                {sentMessage}
-              </p>
-              <Link href="/auth/login"
-                className="block w-full py-3 bg-slate-900 text-white font-bold
-                  rounded-xl text-center hover:bg-amber-600 transition-colors text-sm">
+              <p className="mb-6 text-sm leading-relaxed" style={{ color: 'var(--mute)' }}>{sentMessage}</p>
+              <Link
+                href="/auth/login"
+                className="block w-full rounded-xl py-3 text-center text-sm font-black text-white transition-colors hover:opacity-90"
+                style={{ background: 'var(--ink)' }}
+              >
                 {t('Back to Sign In', 'العودة لتسجيل الدخول')}
               </Link>
             </div>
           ) : (
-            /* Form state */
+            /* ── Form ── */
             <>
-              <div className="text-center mb-7">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center
-                  justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="mb-7 text-center">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl"
+                  style={{ background: 'rgba(255,107,44,0.10)' }}>
+                  <svg className="h-6 w-6" fill="none" stroke="var(--orange)" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                       d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                   </svg>
                 </div>
-                <h1 className="text-xl font-black text-slate-900 mb-1">
+                <h1 className="mb-1 text-xl font-black" style={{ color: 'var(--ink)' }}>
                   {t('Forgot Password?', 'نسيت كلمة المرور؟')}
                 </h1>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm" style={{ color: 'var(--mute)' }}>
                   {mode === 'phone'
-                    ? t(
-                        'Reset using your phone number and OTP.',
-                        'أعد التعيين باستخدام رقم الهاتف ورمز OTP.'
-                      )
-                    : t(
-                        'Enter your email and we\'ll send you a reset link.',
-                        'أدخل بريدك وسنرسل لك رابط الاستعادة.'
-                      )}
+                    ? t('Reset using your phone number and OTP.', 'أعد التعيين باستخدام رقم الهاتف ورمز OTP.')
+                    : t("Enter your email and we'll send you a reset link.", 'أدخل بريدك وسنرسل لك رابط الاستعادة.')}
                 </p>
               </div>
 
-              <div className="mb-5 grid grid-cols-2 gap-2 rounded-xl bg-stone-100 p-1">
-                <button
-                  type="button"
-                  onClick={() => switchMode('phone')}
-                  className={`rounded-lg px-3 py-2 text-xs font-black transition ${
-                    mode === 'phone'
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  {t('Phone (OTP)', 'الجوال (OTP)')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => switchMode('email')}
-                  className={`rounded-lg px-3 py-2 text-xs font-black transition ${
-                    mode === 'email'
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  {t('Email link', 'رابط البريد')}
-                </button>
+              {/* Mode tabs */}
+              <div className="mb-5 grid grid-cols-2 gap-2 rounded-xl p-1" style={{ background: 'var(--paper-2)' }}>
+                {(['phone', 'email'] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => switchMode(m)}
+                    className="rounded-lg px-3 py-2 text-xs font-black transition-all"
+                    style={mode === m
+                      ? { background: '#fff', color: 'var(--ink)', boxShadow: '0 1px 4px rgba(10,31,68,0.10)' }
+                      : { color: 'var(--mute)' }}
+                  >
+                    {m === 'phone' ? t('Phone (OTP)', 'الجوال (OTP)') : t('Email link', 'رابط البريد')}
+                  </button>
+                ))}
               </div>
 
               {error && (
-                <div className="mb-5 px-4 py-3 bg-red-50 border border-red-200
-                  text-red-600 text-sm rounded-xl text-center">
+                <div className="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-center text-sm text-rose-600">
                   {error}
                 </div>
               )}
@@ -264,8 +187,7 @@ export default function ForgotPasswordPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {mode === 'email' ? (
                   <div>
-                    <label className="block text-xs font-bold text-slate-500
-                      uppercase tracking-wider mb-1.5">
+                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--mute)' }}>
                       {t('Email', 'البريد الإلكتروني')}
                     </label>
                     <input
@@ -274,28 +196,28 @@ export default function ForgotPasswordPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       placeholder="you@email.com"
-                      className="w-full px-4 py-3 text-sm border border-slate-200 rounded-xl
-                        focus:outline-none focus:ring-2 focus:ring-amber-500/30
-                        focus:border-amber-400 transition"
+                      className="w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-all"
+                      style={{ borderColor: 'var(--line)', color: 'var(--ink)' }}
+                      onFocus={(e) => { e.target.style.borderColor = 'var(--orange)'; e.target.style.boxShadow = '0 0 0 3px rgba(255,107,44,0.12)' }}
+                      onBlur={(e) => { e.target.style.borderColor = 'var(--line)'; e.target.style.boxShadow = 'none' }}
                     />
                   </div>
                 ) : (
                   <>
-                    <PhoneNumberField
-                      label={t('Phone Number', 'رقم الهاتف')}
-                      value={phoneNumber}
-                      onChange={(value) => {
-                        setPhoneNumber(value)
-                        if (phoneError) setPhoneError('')
-                      }}
-                      required
-                      error={phoneError}
-                      showMetaRow={false}
-                    />
+                    {step === 'request' && (
+                      <PhoneNumberField
+                        label={t('Phone Number', 'رقم الهاتف')}
+                        value={phoneNumber}
+                        onChange={(value) => { setPhoneNumber(value); if (phoneError) setPhoneError('') }}
+                        required
+                        error={phoneError}
+                        showMetaRow={false}
+                      />
+                    )}
 
                     {step === 'verify' && (
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--mute)' }}>
                           {t('OTP Code', 'رمز التحقق OTP')}
                         </label>
                         <input
@@ -305,15 +227,12 @@ export default function ForgotPasswordPage() {
                           onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                           required
                           placeholder="123456"
-                          className="w-full px-4 py-3 text-sm border border-slate-200 rounded-xl
-                            focus:outline-none focus:ring-2 focus:ring-amber-500/30
-                            focus:border-amber-400 transition"
+                          className="w-full rounded-xl border bg-white px-4 py-3 text-center text-lg font-black tracking-[0.3em] outline-none transition-all"
+                          style={{ borderColor: 'var(--line)', color: 'var(--ink)' }}
+                          onFocus={(e) => { e.target.style.borderColor = 'var(--orange)'; e.target.style.boxShadow = '0 0 0 3px rgba(255,107,44,0.12)' }}
+                          onBlur={(e) => { e.target.style.borderColor = 'var(--line)'; e.target.style.boxShadow = 'none' }}
                         />
-                        <button
-                          type="button"
-                          onClick={handleResendOtp}
-                          className="mt-2 text-xs font-bold text-amber-700 hover:text-amber-800"
-                        >
+                        <button type="button" onClick={handleResendOtp} className="mt-2 text-xs font-bold transition-colors hover:opacity-70" style={{ color: 'var(--orange)' }}>
                           {t('Resend OTP', 'إعادة إرسال OTP')}
                         </button>
                       </div>
@@ -321,70 +240,46 @@ export default function ForgotPasswordPage() {
 
                     {step === 'reset' && (
                       <>
-                        <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                          {t(
-                            'Password requirements: at least 8 characters.',
-                            'شروط كلمة المرور: 8 أحرف على الأقل.'
-                          )}
+                        <p className="rounded-xl border px-3 py-2 text-xs" style={{ borderColor: 'rgba(255,107,44,0.20)', background: 'rgba(255,107,44,0.06)', color: 'var(--ink)' }}>
+                          {t('Password requirements: at least 8 characters.', 'شروط كلمة المرور: 8 أحرف على الأقل.')}
                         </p>
-
-                        <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                            {t('New Password', 'كلمة المرور الجديدة')}
-                          </label>
-                          <input
-                            type="password"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            required
-                            autoComplete="new-password"
-                            className="w-full px-4 py-3 text-sm border border-slate-200 rounded-xl
-                              focus:outline-none focus:ring-2 focus:ring-amber-500/30
-                              focus:border-amber-400 transition"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                            {t('Confirm Password', 'تأكيد كلمة المرور')}
-                          </label>
-                          <input
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                            autoComplete="new-password"
-                            className="w-full px-4 py-3 text-sm border border-slate-200 rounded-xl
-                              focus:outline-none focus:ring-2 focus:ring-amber-500/30
-                              focus:border-amber-400 transition"
-                          />
-                        </div>
+                        {[
+                          { label: t('New Password', 'كلمة المرور الجديدة'), value: newPassword, set: setNewPassword },
+                          { label: t('Confirm Password', 'تأكيد كلمة المرور'), value: confirmPassword, set: setConfirmPassword },
+                        ].map(({ label, value, set }) => (
+                          <div key={label}>
+                            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--mute)' }}>{label}</label>
+                            <input
+                              type="password"
+                              value={value}
+                              onChange={(e) => set(e.target.value)}
+                              required
+                              autoComplete="new-password"
+                              className="w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-all"
+                              style={{ borderColor: 'var(--line)', color: 'var(--ink)' }}
+                              onFocus={(e) => { e.target.style.borderColor = 'var(--orange)'; e.target.style.boxShadow = '0 0 0 3px rgba(255,107,44,0.12)' }}
+                              onBlur={(e) => { e.target.style.borderColor = 'var(--line)'; e.target.style.boxShadow = 'none' }}
+                            />
+                          </div>
+                        ))}
                       </>
                     )}
                   </>
                 )}
 
-                <button type="submit" disabled={loading}
-                  className="w-full py-3.5 bg-slate-900 text-white font-black rounded-xl
-                    hover:bg-amber-600 transition-colors disabled:opacity-60 text-sm
-                    flex items-center justify-center gap-2">
-                  {loading
-                    ? <span className="w-4 h-4 border-2 border-white/30 border-t-white
-                        rounded-full animate-spin" />
-                    : mode === 'email'
-                      ? t('Send Reset Link', 'إرسال رابط الاستعادة')
-                      : step === 'request'
-                        ? t('Send OTP', 'إرسال OTP')
-                        : step === 'verify'
-                          ? t('Verify OTP', 'تحقق من OTP')
-                          : t('Reset Password', 'إعادة تعيين كلمة المرور')
-                  }
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-black text-white transition-colors disabled:opacity-60"
+                  style={{ background: 'var(--orange)' }}
+                >
+                  {loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />}
+                  {loading ? t('Please wait...', 'يرجى الانتظار...') : ctaLabel}
                 </button>
               </form>
 
-              <p className="text-center text-sm text-slate-500 mt-5">
-                <Link href="/auth/login"
-                  className="text-amber-600 font-bold hover:text-amber-700">
+              <p className="mt-5 text-center text-sm" style={{ color: 'var(--mute)' }}>
+                <Link href="/auth/login" className="font-bold transition-colors hover:opacity-75" style={{ color: 'var(--orange)' }}>
                   ← {t('Back to Sign In', 'العودة لتسجيل الدخول')}
                 </Link>
               </p>
@@ -395,4 +290,3 @@ export default function ForgotPasswordPage() {
     </div>
   )
 }
-

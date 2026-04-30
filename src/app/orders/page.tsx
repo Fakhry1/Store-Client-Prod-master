@@ -11,7 +11,7 @@ import type { CustomerWalletDetails, DeliveryStatus, Order } from '@/types'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STATUS: Record<number, { en: string; ar: string; color: string; dot: string }> = {
-  0: { en: 'Pending Review',   ar: 'قيد المراجعة',    color: 'bg-slate-100 text-slate-600 border-slate-200',  dot: 'bg-slate-400'  },
+  0: { en: 'Pending Review',   ar: 'قيد المراجعة',    color: 'bg-[var(--paper-2)] text-[var(--mute)] border-[var(--line)]',  dot: 'bg-[var(--mute)]'  },
   1: { en: 'Confirmed',        ar: 'تم التأكيد',      color: 'bg-blue-50 text-blue-700 border-blue-200',      dot: 'bg-blue-500'   },
   2: { en: 'Preparing',        ar: 'قيد التجهيز',     color: 'bg-amber-50 text-amber-700 border-amber-200',   dot: 'bg-amber-500'  },
   3: { en: 'Ready for Pickup', ar: 'جاهز للاستلام',   color: 'bg-teal-50 text-teal-700 border-teal-200',      dot: 'bg-teal-500'   },
@@ -31,7 +31,7 @@ const FILTER_TABS = [
 ]
 
 const DELIVERY_STATUS_UI: Record<DeliveryStatus, { en: string; ar: string; color: string }> = {
-  0: { en: 'Assigned', ar: 'تم الإسناد', color: 'bg-slate-100 text-slate-700 border-slate-200' },
+  0: { en: 'Assigned', ar: 'تم الإسناد', color: 'bg-[var(--paper-2)] text-[var(--mute)] border-[var(--line)]' },
   1: { en: 'In Delivery', ar: 'قيد التوصيل', color: 'bg-blue-50 text-blue-700 border-blue-200' },
   2: { en: 'Delivered', ar: 'تم التسليم', color: 'bg-green-50 text-green-700 border-green-200' },
   3: { en: 'Delivery Cancelled', ar: 'تم إلغاء التوصيل', color: 'bg-red-50 text-red-600 border-red-200' },
@@ -255,7 +255,7 @@ export default function OrdersPage() {
   if (loading || authLoading) return (
     <div className="max-w-2xl mx-auto px-4 py-10 space-y-3">
       {[1,2,3].map(i => (
-        <div key={i} className="h-24 bg-slate-100 rounded-2xl animate-pulse" />
+        <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ background: 'var(--paper-2)' }} />
       ))}
     </div>
   )
@@ -307,23 +307,23 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f6f2] py-6 md:py-8">
+    <div className="min-h-screen py-6 md:py-8" style={{ background: 'var(--paper)' }}>
       <div className="max-w-2xl mx-auto px-4">
 
         {/* Header */}
-        <div className="mb-6 flex items-center gap-3 rounded-[32px] border border-stone-200 bg-white/90 p-4 shadow-[0_16px_34px_rgba(15,23,42,0.04)] backdrop-blur md:p-5">
+        <div className="mb-6 flex items-center gap-3 rounded-[32px] border bg-white/90 p-4 shadow-[0_16px_34px_rgba(15,23,42,0.04)] backdrop-blur md:p-5" style={{ borderColor: 'var(--line)' }}>
           <Link href="/account"
-            className="rounded-xl border border-stone-200 bg-[#faf7f1] p-2 transition-all hover:bg-stone-100 md:hidden">
-            <svg className="w-5 h-5 text-slate-600 flip-rtl" fill="none"
+            className="rounded-xl border p-2 transition-all md:hidden" style={{ borderColor: 'var(--line)', background: 'var(--paper)' }}>
+            <svg className="w-5 h-5 flip-rtl" style={{ color: 'var(--ink)' }} fill="none"
               stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
           <div>
-            <h1 className="text-2xl font-black text-slate-900">{t('My Orders', 'طلباتي')}</h1>
+            <h1 className="text-2xl font-black" style={{ color: 'var(--ink)' }}>{t('My Orders', 'طلباتي')}</h1>
             {orders.length > 0 && (
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs mt-0.5" style={{ color: 'var(--mute)' }}>
                 {orders.length} {t('orders', 'طلبات')}
               </p>
             )}
@@ -336,16 +336,17 @@ export default function OrdersPage() {
             {FILTER_TABS.map(tab => (
               <button key={tab.key}
                 onClick={() => setFilterTab(tab.key)}
-                className={`flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold
-                  transition-all whitespace-nowrap
-                  ${filterTab === tab.key
-                    ? 'bg-slate-900 text-white shadow-sm'
-                    : 'border border-stone-200 bg-white text-slate-500 hover:border-stone-300'
-                  }`}>
+                className="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap border"
+                style={filterTab === tab.key
+                  ? { background: 'var(--ink)', color: '#fff', borderColor: 'var(--ink)' }
+                  : { background: '#fff', color: 'var(--mute)', borderColor: 'var(--line)' }}>
                 {locale === 'ar' ? tab.ar : tab.en}
                 {tab.key !== -1 && (
-                  <span className={`ms-1.5 px-1.5 py-0.5 rounded-full text-[10px]
-                    ${filterTab === tab.key ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                  <span
+                    className="ms-1.5 px-1.5 py-0.5 rounded-full text-[10px]"
+                    style={filterTab === tab.key
+                      ? { background: 'rgba(255,255,255,0.2)', color: '#fff' }
+                      : { background: 'var(--paper)', color: 'var(--mute)' }}>
                     {orders.filter(o => o.status === tab.key).length}
                   </span>
                 )}
@@ -356,21 +357,20 @@ export default function OrdersPage() {
 
         {/* Empty state */}
         {filtered.length === 0 ? (
-          <div className="rounded-[32px] border border-stone-200 bg-white py-24 text-center shadow-[0_16px_34px_rgba(15,23,42,0.04)]">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-50 to-stone-100
-              border border-slate-100 flex items-center justify-center mx-auto mb-5 shadow-sm">
-              <svg className="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="rounded-[32px] border bg-white py-24 text-center shadow-[0_16px_34px_rgba(15,23,42,0.04)]" style={{ borderColor: 'var(--line)' }}>
+            <div className="w-20 h-20 rounded-2xl border flex items-center justify-center mx-auto mb-5 shadow-sm" style={{ background: 'var(--paper)', borderColor: 'var(--line)' }}>
+              <svg className="w-10 h-10" style={{ color: 'var(--line)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                   d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
-            <h3 className="font-black text-slate-700 text-lg mb-2">
+            <h3 className="font-black text-lg mb-2" style={{ color: 'var(--ink)' }}>
               {filterTab === -1
                 ? t('No orders yet', 'لا توجد طلبات بعد')
                 : t('No orders here', 'لا توجد طلبات بهذه الحالة')
               }
             </h3>
-            <p className="text-sm text-slate-400 mb-6 max-w-xs mx-auto">
+            <p className="text-sm mb-6 max-w-xs mx-auto" style={{ color: 'var(--mute)' }}>
               {filterTab === -1
                 ? t('Your order history will appear here after your first purchase', 'ستظهر سجل طلباتك هنا بعد أول عملية شراء')
                 : t('Try selecting a different filter above', 'جرّب اختيار فلتر مختلف')
@@ -378,8 +378,7 @@ export default function OrdersPage() {
             </p>
             {filterTab === -1 && (
               <Link href="/shop"
-                className="px-7 py-3 bg-slate-900 text-white font-black
-                  rounded-2xl hover:bg-amber-600 transition-colors text-sm inline-flex items-center gap-2">
+                className="px-7 py-3 text-white font-black rounded-2xl transition-colors text-sm inline-flex items-center gap-2" style={{ background: 'var(--ink)' }}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -396,13 +395,12 @@ export default function OrdersPage() {
               const deliveryStatus = order.deliveryAssignment?.deliveryStatus
               return (
                 <Link key={order.id} href={`/orders?id=${order.id}`}
-                  className="block rounded-[28px] border border-stone-200 bg-white p-4
-                    transition-all hover:border-stone-300 hover:shadow-[0_16px_32px_rgba(15,23,42,0.06)] active:scale-[0.99]">
+                  className="block rounded-[28px] border bg-white p-4 transition-all active:scale-[0.99]" style={{ borderColor: 'var(--line)' }}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       {/* Order number + status */}
                       <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                        <p className="font-black text-slate-900 text-sm">{order.orderNumber}</p>
+                        <p className="font-black text-sm" style={{ color: 'var(--ink)' }}>{order.orderNumber}</p>
                         <span className={`inline-flex items-center gap-1.5 text-xs font-bold
                           px-2 py-0.5 rounded-full border ${st.color}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
@@ -423,20 +421,20 @@ export default function OrdersPage() {
                       </div>
 
                       {/* Date + branch */}
-                      <p className="text-xs text-slate-400 mb-1.5">
+                      <p className="text-xs mb-1.5" style={{ color: 'var(--mute)' }}>
                         {new Date(order.createdAt).toLocaleDateString(
                           locale === 'ar' ? 'ar-SA' : 'en-SA',
                           { day: 'numeric', month: 'long' }
                         )}
                         {' · '}
-                        <span className="text-slate-500 font-medium">{order.branchName}</span>
+                        <span className="font-medium" style={{ color: 'var(--mute)' }}>{order.branchName}</span>
                       </p>
 
                       {/* Items preview */}
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs" style={{ color: 'var(--mute)' }}>
                         {order.items.length} {t('items', 'منتجات')}
                         {order.items.length > 0 && (
-                          <span className="ms-1 text-slate-500">
+                          <span className="ms-1" style={{ color: 'var(--mute)' }}>
                             · {locale === 'ar'
                               ? (order.items[0].productNameAr || order.items[0].productNameEn)
                               : (order.items[0].productNameEn || order.items[0].productNameAr)}
@@ -449,8 +447,8 @@ export default function OrdersPage() {
                     {/* Total + arrow */}
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="text-end">
-                    <p className="font-black text-slate-900">{getAmountDue(order).toFixed(2)}</p>
-                    <p className="text-xs text-slate-400">
+                    <p className="font-black" style={{ color: 'var(--ink)' }}>{getAmountDue(order).toFixed(2)}</p>
+                    <p className="text-xs" style={{ color: 'var(--mute)' }}>
                       {getWalletAppliedAmount(order) > 0
                         ? t('Amount due', 'المبلغ المستحق')
                         : currencyLabel}
@@ -461,7 +459,7 @@ export default function OrdersPage() {
                       </p>
                     )}
                   </div>
-                      <svg className="w-4 h-4 text-slate-300 flip-rtl"
+                      <svg className="w-4 h-4 flip-rtl" style={{ color: 'var(--line)' }}
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                           d="M9 5l7 7-7 7" />
@@ -497,7 +495,7 @@ export default function OrdersPage() {
                 type="button"
                 onClick={handleLoadMore}
                 disabled={loadingMore}
-                className="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-2xl border bg-white px-4 py-3 text-sm font-black transition-colors disabled:cursor-not-allowed disabled:opacity-60" style={{ borderColor: 'var(--line)', color: 'var(--ink)' }}
               >
                 {loadingMore
                   ? t('Loading more...', 'جارٍ تحميل المزيد...')
@@ -582,13 +580,12 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
   const activityFlags = getOrderActivityFlags(order, walletDetails)
 
   return (
-    <div className="min-h-screen bg-[#f8f6f2] py-6">
+    <div className="min-h-screen py-6" style={{ background: 'var(--paper)' }}>
       <div className="max-w-xl mx-auto px-4 pb-10">
 
         {/* Back */}
         <button onClick={onBack}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500
-            hover:text-slate-900 mb-5 transition-colors group">
+          className="inline-flex items-center gap-1.5 text-sm mb-5 transition-colors group" style={{ color: 'var(--mute)' }}>
           <svg className="w-4 h-4 flip-rtl group-hover:-translate-x-0.5 transition-transform"
             fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -673,11 +670,11 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
         )}
 
         {/* Header card */}
-        <div className="mb-4 rounded-[32px] border border-stone-200 bg-white p-5 shadow-[0_16px_34px_rgba(15,23,42,0.04)]">
+        <div className="mb-4 rounded-[32px] border bg-white p-5 shadow-[0_16px_34px_rgba(15,23,42,0.04)]" style={{ borderColor: 'var(--line)' }}>
           <div className="flex items-start justify-between gap-3 mb-4">
             <div>
-              <h1 className="text-lg font-black text-slate-900">{order.orderNumber}</h1>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <h1 className="text-lg font-black" style={{ color: 'var(--ink)' }}>{order.orderNumber}</h1>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--mute)' }}>
                 {new Date(order.createdAt).toLocaleDateString(
                   locale === 'ar' ? 'ar-SA' : 'en-SA',
                   { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
@@ -713,22 +710,20 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
             <div className="mt-2 mb-2">
               <div className="flex items-start justify-between relative">
                 {/* Track bg */}
-                <div className="absolute start-[7%] end-[7%] top-3.5 h-0.5 bg-slate-200" />
+                <div className="absolute start-[7%] end-[7%] top-3.5 h-0.5" style={{ background: 'var(--line)' }} />
                 {/* Track fill */}
-                <div className="absolute start-[7%] top-3.5 h-0.5 bg-slate-900 transition-all duration-500"
-                  style={{ width: `${(currentStep / 4) * 86}%` }} />
+                <div className="absolute start-[7%] top-3.5 h-0.5 transition-all duration-500"
+                  style={{ background: 'var(--ink)', width: `${(currentStep / 4) * 86}%` }} />
                 {steps.map((label, idx) => {
                   const done    = idx <= currentStep
                   const current = idx === currentStep
                   return (
                     <div key={idx} className="flex flex-col items-center gap-1.5 z-10 flex-1">
-                      <div className={`w-7 h-7 rounded-full border-2 flex items-center
-                        justify-center transition-all
-                        ${done
-                          ? 'border-slate-900 bg-slate-900'
-                          : 'border-slate-200 bg-white'
-                        }
-                        ${current ? 'ring-4 ring-slate-200' : ''}`}>
+                      <div
+                        className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${current ? 'ring-4' : ''}`}
+                        style={done
+                          ? { borderColor: 'var(--ink)', background: 'var(--ink)', boxShadow: current ? '0 0 0 4px rgba(10,31,68,0.12)' : undefined }
+                          : { borderColor: 'var(--line)', background: '#fff' }}>
                         {done ? (
                           <svg className="w-3.5 h-3.5 text-white" fill="none"
                             stroke="currentColor" viewBox="0 0 24 24">
@@ -736,11 +731,11 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
                               strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         ) : (
-                          <div className="w-2 h-2 rounded-full bg-slate-200" />
+                          <div className="w-2 h-2 rounded-full" style={{ background: 'var(--line)' }} />
                         )}
                       </div>
-                      <span className={`text-[10px] font-semibold text-center leading-tight
-                        ${done ? 'text-slate-900' : 'text-slate-400'}`}>
+                      <span className="text-[10px] font-semibold text-center leading-tight"
+                        style={{ color: done ? 'var(--ink)' : 'var(--mute)' }}>
                         {label}
                       </span>
                     </div>
@@ -760,11 +755,10 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
           )}
 
           {/* Branch + Payment */}
-          <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-3 text-sm">
+          <div className="mt-4 pt-4 border-t grid grid-cols-2 gap-3 text-sm" style={{ borderColor: 'var(--line)' }}>
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center
-                justify-center flex-shrink-0">
-                <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--paper)' }}>
+                <svg className="w-4 h-4" style={{ color: 'var(--mute)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                     d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -772,25 +766,24 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
                 </svg>
               </div>
               <div>
-                <p className="text-[10px] text-slate-400 uppercase tracking-wide font-bold">
+                <p className="text-[10px] uppercase tracking-wide font-bold" style={{ color: 'var(--mute)' }}>
                   {t('Branch', 'الفرع')}
                 </p>
-                <p className="font-bold text-slate-800 text-xs">{order.branchName}</p>
+                <p className="font-bold text-xs" style={{ color: 'var(--ink)' }}>{order.branchName}</p>
               </div>
             </div>
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center
-                justify-center flex-shrink-0">
-                <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--paper)' }}>
+                <svg className="w-4 h-4" style={{ color: 'var(--mute)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                     d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
               </div>
               <div>
-                <p className="text-[10px] text-slate-400 uppercase tracking-wide font-bold">
+                <p className="text-[10px] uppercase tracking-wide font-bold" style={{ color: 'var(--mute)' }}>
                   {t('Payment', 'الدفع')}
                 </p>
-                <p className="font-bold text-slate-800 text-xs">
+                <p className="font-bold text-xs" style={{ color: 'var(--ink)' }}>
                   {/credit.?card/i.test(order.paymentMethodText)
                     ? t('Banking App', 'تطبيق بنكي')
                     : order.paymentMethodText}
@@ -801,40 +794,40 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
 
           {/* ✅ FIX: fulfillmentType و deliveryFee بأمان */}
           {fulfillmentType && (
-            <div className="mt-3 p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-              <p className="text-xs font-bold text-slate-500">{t('Fulfillment', 'طريقة الاستلام')}</p>
-              <p className="text-xs font-black text-slate-900">
+            <div className="mt-3 p-3 rounded-2xl border flex items-center justify-between" style={{ background: 'var(--paper)', borderColor: 'var(--line)' }}>
+              <p className="text-xs font-bold" style={{ color: 'var(--mute)' }}>{t('Fulfillment', 'طريقة الاستلام')}</p>
+              <p className="text-xs font-black" style={{ color: 'var(--ink)' }}>
                 {fulfillmentType === 'delivery' ? t('Delivery', 'توصيل') : t('Pickup', 'استلام')}
                 {fulfillmentType === 'delivery' && deliveryFee !== undefined && (
-                  <span className="text-slate-500 font-bold"> · {deliveryFee.toFixed(2)} {currencyLabel} </span>
+                  <span className="font-bold" style={{ color: 'var(--mute)' }}> · {deliveryFee.toFixed(2)} {currencyLabel} </span>
                 )}
               </p>
             </div>
           )}
 
           {fulfillmentType === 'pickup' && order.pickupAddress && (
-            <div className="mt-3 rounded-2xl border border-slate-100 bg-slate-50 p-3">
-              <p className="text-xs font-bold text-slate-500">{t('Pickup Address', 'عنوان الاستلام')}</p>
-              <p className="mt-1 text-sm font-bold text-slate-900">{order.pickupAddress.label}</p>
-              <p className="mt-1 text-xs text-slate-500">{order.pickupAddress.fullAddress}</p>
+            <div className="mt-3 rounded-2xl border p-3" style={{ borderColor: 'var(--line)', background: 'var(--paper)' }}>
+              <p className="text-xs font-bold" style={{ color: 'var(--mute)' }}>{t('Pickup Address', 'عنوان الاستلام')}</p>
+              <p className="mt-1 text-sm font-bold" style={{ color: 'var(--ink)' }}>{order.pickupAddress.label}</p>
+              <p className="mt-1 text-xs" style={{ color: 'var(--mute)' }}>{order.pickupAddress.fullAddress}</p>
             </div>
           )}
 
           {fulfillmentType === 'delivery' && order.deliveryAddress && (
-            <div className="mt-3 rounded-2xl border border-slate-100 bg-slate-50 p-3">
-              <p className="text-xs font-bold text-slate-500">{t('Delivery Address', 'عنوان التوصيل')}</p>
-              <p className="mt-1 text-sm font-bold text-slate-900">{order.deliveryAddress.label}</p>
-              <p className="mt-1 text-xs text-slate-500">{order.deliveryAddress.fullAddress}</p>
+            <div className="mt-3 rounded-2xl border p-3" style={{ borderColor: 'var(--line)', background: 'var(--paper)' }}>
+              <p className="text-xs font-bold" style={{ color: 'var(--mute)' }}>{t('Delivery Address', 'عنوان التوصيل')}</p>
+              <p className="mt-1 text-sm font-bold" style={{ color: 'var(--ink)' }}>{order.deliveryAddress.label}</p>
+              <p className="mt-1 text-xs" style={{ color: 'var(--mute)' }}>{order.deliveryAddress.fullAddress}</p>
             </div>
           )}
         </div>
 
         {fulfillmentType === 'delivery' && (
-          <div className="mb-4 rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
+          <div className="mb-4 rounded-3xl border bg-white p-5 shadow-sm" style={{ borderColor: 'var(--line)' }}>
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
-                <h3 className="text-sm font-black text-slate-900">{t('Delivery Tracking', 'تتبع التوصيل')}</h3>
-                <p className="mt-1 text-xs text-slate-400">
+                <h3 className="text-sm font-black" style={{ color: 'var(--ink)' }}>{t('Delivery Tracking', 'تتبع التوصيل')}</h3>
+                <p className="mt-1 text-xs" style={{ color: 'var(--mute)' }}>
                   {deliveryAssignment
                     ? t('Delivery progress is updated as the order moves to the customer.', 'يتم تحديث حالة التوصيل مع انتقال الطلب إلى العميل.')
                     : t('Your order is being prepared and will appear here once a vehicle is assigned.', 'طلبك قيد التجهيز وسيظهر هنا بمجرد إسناد مركبة للتوصيل.')}
@@ -880,14 +873,13 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
                   ].map((step) => (
                     <div
                       key={step.key}
-                      className={`rounded-2xl border p-3 ${
-                        step.done ? 'border-slate-200 bg-slate-50' : 'border-slate-100 bg-white'
-                      }`}
+                      className="rounded-2xl border p-3"
+                      style={{ borderColor: 'var(--line)', background: step.done ? 'var(--paper)' : '#fff' }}
                     >
-                      <p className={`text-xs font-black ${step.done ? 'text-slate-900' : 'text-slate-400'}`}>
+                      <p className="text-xs font-black" style={{ color: step.done ? 'var(--ink)' : 'var(--mute)' }}>
                         {step.icon} {locale === 'ar' ? step.ar : step.en}
                       </p>
-                      <p className="mt-1 text-[11px] text-slate-500">
+                      <p className="mt-1 text-[11px]" style={{ color: 'var(--mute)' }}>
                         {step.time
                           ? new Date(step.time).toLocaleString(locale === 'ar' ? 'ar-SA' : 'en-SA', {
                               month: 'short',
@@ -901,16 +893,16 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
                   ))}
                 </div>
 
-                <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-3">
-                  <p className="text-xs font-bold text-slate-500">{t('Assigned vehicle', 'المركبة المسندة')}</p>
-                  <p className="mt-1 text-sm font-black text-slate-900">{deliveryAssignment.plateNumber}</p>
-                  <p className="mt-1 text-xs text-slate-500">
+                <div className="mt-4 rounded-2xl border p-3" style={{ borderColor: 'var(--line)', background: 'var(--paper)' }}>
+                  <p className="text-xs font-bold" style={{ color: 'var(--mute)' }}>{t('Assigned vehicle', 'المركبة المسندة')}</p>
+                  <p className="mt-1 text-sm font-black" style={{ color: 'var(--ink)' }}>{deliveryAssignment.plateNumber}</p>
+                  <p className="mt-1 text-xs" style={{ color: 'var(--mute)' }}>
                     {deliveryAssignment.owner.fullName} · {deliveryAssignment.owner.phone}
                   </p>
                 </div>
               </>
             ) : (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm text-slate-500">
+              <div className="rounded-2xl border border-dashed px-4 py-5 text-center text-sm" style={{ borderColor: 'var(--line)', background: 'var(--paper)', color: 'var(--mute)' }}>
                 {t('No vehicle has been assigned yet.', 'لم يتم إسناد مركبة للتوصيل بعد.')}
               </div>
             )}
@@ -918,36 +910,34 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
         )}
 
         {/* Items */}
-        <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm mb-4">
-          <h3 className="font-black text-slate-900 mb-4 flex items-center gap-2">
+        <div className="bg-white rounded-3xl border p-5 shadow-sm mb-4" style={{ borderColor: 'var(--line)' }}>
+          <h3 className="font-black mb-4 flex items-center gap-2" style={{ color: 'var(--ink)' }}>
             {t('Items', 'المنتجات')}
-            <span className="text-xs font-bold text-slate-400 bg-slate-100
-              px-2 py-0.5 rounded-full">
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ color: 'var(--mute)', background: 'var(--paper)' }}>
               {order.items.length}
             </span>
           </h3>
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y" style={{ borderColor: 'var(--line)' }}>
             {order.items.map((item, i) => (
               <div key={i} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
                 {/* Qty badge */}
-                <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center
-                  justify-center flex-shrink-0">
-                  <span className="text-xs font-black text-slate-600">×{item.quantity}</span>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'var(--paper)' }}>
+                  <span className="text-xs font-black" style={{ color: 'var(--ink)' }}>×{item.quantity}</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-slate-900 truncate">
+                  <p className="text-sm font-bold truncate" style={{ color: 'var(--ink)' }}>
                     {locale === 'ar'
                       ? (item.productNameAr || item.productNameEn)
                       : (item.productNameEn || item.productNameAr)}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs" style={{ color: 'var(--mute)' }}>
                     {locale === 'ar'
                       ? (item.variantNameAr || item.variantNameEn)
                       : (item.variantNameEn || item.variantNameAr)}
                   </p>
                   {item.hadOffer && (
                     <p className="text-xs mt-0.5">
-                      <span className="line-through text-slate-400">
+                      <span className="line-through" style={{ color: 'var(--mute)' }}>
                         {item.baseUnitPrice.toFixed(2)}
                       </span>
                       <span className="text-green-600 font-semibold ms-1">
@@ -956,9 +946,9 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
                     </p>
                   )}
                 </div>
-                <p className="font-black text-slate-900 text-sm flex-shrink-0">
+                <p className="font-black text-sm flex-shrink-0" style={{ color: 'var(--ink)' }}>
                   {item.totalPrice.toFixed(2)}
-                  <span className="text-xs font-normal text-slate-400 ms-0.5">{currencyLabel}</span>
+                  <span className="text-xs font-normal ms-0.5" style={{ color: 'var(--mute)' }}>{currencyLabel}</span>
                 </p>
               </div>
             ))}
@@ -966,10 +956,10 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
         </div>
 
         {/* Payment summary */}
-        <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm">
-          <h3 className="font-black text-slate-900 mb-4">{t('Payment Summary', 'ملخص الدفع')}</h3>
+        <div className="bg-white rounded-3xl border p-5 shadow-sm" style={{ borderColor: 'var(--line)' }}>
+          <h3 className="font-black mb-4" style={{ color: 'var(--ink)' }}>{t('Payment Summary', 'ملخص الدفع')}</h3>
           <div className="space-y-3 text-sm">
-            <div className="flex justify-between text-slate-600">
+            <div className="flex justify-between" style={{ color: 'var(--mute)' }}>
               <span>{t('Price', 'السعر')}</span>
               <span className="font-semibold">{order.subtotal.toFixed(2)} {currencyLabel}</span>
             </div>
@@ -987,14 +977,13 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
                 <span>−{order.discountAmount.toFixed(2)} {currencyLabel}</span>
               </div>
             )}
-            <div className="flex justify-between text-slate-500">
+            <div className="flex justify-between" style={{ color: 'var(--mute)' }}>
               <span>{t('VAT 15%', 'ضريبة القيمة المضافة 15%')}</span>
               <span>{order.tax.toFixed(2)} {currencyLabel}</span>
             </div>
-            <div className="flex justify-between text-base font-black text-slate-900
-              pt-3 border-t border-slate-200">
+            <div className="flex justify-between text-base font-black pt-3 border-t" style={{ color: 'var(--ink)', borderColor: 'var(--line)' }}>
               <span>{t('Total', 'الإجمالي')}</span>
-              <span className="text-amber-600">{order.total.toFixed(2)} {currencyLabel}</span>
+              <span className="" style={{ color: 'var(--orange)' }}>{order.total.toFixed(2)} {currencyLabel}</span>
             </div>
             {getWalletAppliedAmount(order) > 0 && (
               <div className="flex justify-between font-semibold text-emerald-600">
@@ -1002,9 +991,9 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
                 <span>−{getWalletAppliedAmount(order).toFixed(2)} {currencyLabel}</span>
               </div>
             )}
-            <div className="flex justify-between text-base font-black text-slate-900 pt-3 border-t border-slate-200">
+            <div className="flex justify-between text-base font-black pt-3 border-t" style={{ color: 'var(--ink)', borderColor: 'var(--line)' }}>
               <span>{t('Amount due', 'المبلغ المستحق')}</span>
-              <span className="text-slate-900">{getAmountDue(order).toFixed(2)} {currencyLabel}</span>
+              <span className="" style={{ color: 'var(--ink)' }}>{getAmountDue(order).toFixed(2)} {currencyLabel}</span>
             </div>
             {order.status === 5 && getWalletAppliedAmount(order) > 0 && (
               <p className="rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
@@ -1037,11 +1026,13 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
             </div>
 
             {walletLoading ? (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm text-slate-500">
+              <div className="rounded-2xl border border-dashed px-4 py-5 text-center text-sm"
+                style={{ borderColor: 'var(--line)', background: 'var(--paper)', color: 'var(--mute)' }}>
                 {t('Loading wallet activity...', 'جارٍ تحميل حركة المحفظة...')}
               </div>
             ) : relatedWalletTransactions.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm text-slate-500">
+              <div className="rounded-2xl border border-dashed px-4 py-5 text-center text-sm"
+                style={{ borderColor: 'var(--line)', background: 'var(--paper)', color: 'var(--mute)' }}>
                 {t('No wallet transactions are linked to this order yet.', 'لا توجد حركات محفظة مرتبطة بهذا الطلب حتى الآن.')}
               </div>
             ) : (
@@ -1050,25 +1041,26 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
                   const isRefund = transaction.type === 3 || transaction.type === 4
                   const amountPrefix = isRefund ? '+' : '−'
                   return (
-                    <div key={transaction.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                    <div key={transaction.id} className="rounded-2xl border p-4"
+                      style={{ borderColor: 'var(--line)', background: 'var(--paper)' }}>
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-black text-slate-900">{transaction.typeText}</p>
-                          <p className="mt-1 text-xs text-slate-500">
+                          <p className="text-sm font-black" style={{ color: 'var(--ink)' }}>{transaction.typeText}</p>
+                          <p className="mt-1 text-xs" style={{ color: 'var(--mute)' }}>
                             {new Date(transaction.createdAt).toLocaleString(locale === 'ar' ? 'ar-SA' : 'en-SA', {
                               dateStyle: 'medium',
                               timeStyle: 'short',
                             })}
                           </p>
                           {transaction.notes && (
-                            <p className="mt-2 text-xs text-slate-600">{transaction.notes}</p>
+                            <p className="mt-2 text-xs" style={{ color: 'var(--mute)' }}>{transaction.notes}</p>
                           )}
                         </div>
                         <div className="text-end">
                           <p className={`text-sm font-black ${isRefund ? 'text-emerald-600' : 'text-amber-600'}`}>
                             {amountPrefix}{transaction.amount.toFixed(2)} {currencyLabel}
                           </p>
-                          <p className="mt-1 text-[11px] text-slate-500">
+                          <p className="mt-1 text-[11px]" style={{ color: 'var(--mute)' }}>
                             {t('Balance', 'الرصيد')}: {transaction.balanceBefore.toFixed(2)} → {transaction.balanceAfter.toFixed(2)}
                           </p>
                         </div>
@@ -1135,3 +1127,9 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
     </div>
   )
 }
+
+
+
+
+
+

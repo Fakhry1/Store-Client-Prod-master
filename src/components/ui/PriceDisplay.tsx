@@ -47,7 +47,7 @@ export function PriceDisplay({
   return (
     <div className={`flex ${layout === 'col' || hasOfferPrice ? 'flex-col gap-1' : 'items-center gap-2 flex-wrap'}`}>
       <div className="flex items-center gap-2 flex-wrap">
-        <span className={`${s.current} text-slate-900`}>
+        <span className={s.current} style={{ color: 'var(--ink)' }}>
           {currentPrice.toFixed(2)} {currencyLabel}
         </span>
 
@@ -61,7 +61,7 @@ export function PriceDisplay({
       </div>
 
       {hasOfferPrice && (
-        <span className={`${s.base} text-slate-400 line-through`}>
+        <span className={`${s.base} line-through`} style={{ color: 'var(--mute)' }}>
           {basePrice.toFixed(2)} {currencyLabel}
         </span>
       )}

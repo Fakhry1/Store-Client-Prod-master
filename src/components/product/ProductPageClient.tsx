@@ -1,16 +1,16 @@
-'use client'
+﻿'use client'
 
-import { useEffect, useState, useMemo, Suspense, useRef } from 'react'
+import { useEffect, useState, useMemo, useCallback, Suspense, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import Image from 'next/image'
 import { catalogApi, productApi, wishlistApi } from '@/lib/api'
 import { useCart } from '@/context/cart'
 import { useAuth } from '@/context/auth'
 import { useLocale } from '@/context/locale'
-import { translateApiError } from '@/lib/errors'
 import { formatSavingsLabel, getCurrencyLabel } from '@/lib/store'
 import { getPublicApiBaseUrl, joinUrl } from '@/lib/url'
 import type { Product, ProductVariant, VariantAttribute, BranchProductAvailabilityItem } from '@/types'
+import { ProductImageGallery } from '@/components/product/ProductImageGallery'
+import { AddToCartPanel } from '@/components/product/AddToCartPanel'
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Attribute Helpers Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
@@ -248,7 +248,7 @@ function ProductPageInner({
 }: ProductPageClientProps) {
   const sp = useSearchParams()
   const router = useRouter()
-  const { cart, addItem }     = useCart()
+  const { cart }               = useCart()
   const { token }             = useAuth()
   const { locale, t, isRTL } = useLocale()
 
@@ -264,20 +264,12 @@ function ProductPageInner({
     preloadedVariant ? buildSelectionFromVariant(preloadedVariant) : {}
   )
   const [loading,       setLoading]       = useState(!initialProduct)
-  const [qty,           setQty]           = useState(1)
-  const [adding,        setAdding]        = useState(false)
-  const [added,         setAdded]         = useState(false)
-  const [error,         setError]         = useState('')
   const [activeImg,     setActiveImg]     = useState(
     initialProduct ? getInitialActiveImageIndex(initialProduct, initialProductImages, preloadedVariant) : 0
   )
   const [productImages, setProductImages] = useState<string[]>(initialProductImages)
-  const [zoomed,        setZoomed]        = useState(false)
   const [wishlisted,    setWishlisted]    = useState(false)
   const [wishlistLoading, setWishlistLoading] = useState(false)
-  // Touch/swipe state for mobile image gallery
-  const touchStartX   = useRef<number | null>(null)
-  const touchStartY   = useRef<number | null>(null)
   const productCacheRef = useRef<Map<number, Product>>(initialProduct ? new Map([[initialProduct.id, initialProduct]]) : new Map())
   const productReqIdRef = useRef(0)
   const branchAvailabilityReqIdRef = useRef(0)
@@ -460,16 +452,7 @@ function ProductPageInner({
     }
   }, [branchId, product?.id, selected?.id, token])
 
-  // Close zoom on Escape
-  useEffect(() => {
-    function handler(e: KeyboardEvent) {
-      if (e.key === 'Escape') setZoomed(false)
-    }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [])
-
-  async function handleWishlist() {
+  const handleWishlist = useCallback(async () => {
     if (!token) {
       const redirectParams = new URLSearchParams({
         id: String(productId),
@@ -496,7 +479,8 @@ function ProductPageInner({
     } finally {
       setWishlistLoading(false)
     }
-  }
+  }, [token, productId, selected, wishlisted, router])
+
   useEffect(() => {
     if (!product || !hasAttrs || !Object.keys(sel).length) return
     const match = findMatchingVariant(activeVariants, sel)
@@ -510,7 +494,7 @@ function ProductPageInner({
     }
   }, [sel, product, activeVariants, hasAttrs, allImages, selected?.id])
 
-  function selectOption(attrId: number, valueEn: string) {
+  const selectOption = useCallback((attrId: number, valueEn: string) => {
     setSel(prev => {
       const next: Record<number, string> = { ...prev, [attrId]: valueEn }
 
@@ -529,79 +513,7 @@ function ProductPageInner({
       // fallback: Ã™ÂÃ™â€šÃ˜Â· Ã˜Â§Ã™â€žÃ™â€šÃ™Å Ã™â€¦Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯Ã˜Â©
       return { [attrId]: valueEn }
     })
-    setError('')
-  }
-
-  async function handleAddToCart() {
-    if (!selected || !product) return
-    if (hasAttrs && attrKeys.length !== Object.keys(sel).length) {
-      setError(t('Please select all options', '\u064a\u0631\u062c\u0649 \u062a\u062d\u062f\u064a\u062f \u062c\u0645\u064a\u0639 \u0627\u0644\u062e\u064a\u0627\u0631\u0627\u062a'))
-      return
-    }
-    if (!selected.isActive || remainingStock <= 0) {
-      setError(t('This option is out of stock', '\u0647\u0630\u0627 \u0627\u0644\u062e\u064a\u0627\u0631 \u063a\u064a\u0631 \u0645\u062a\u0648\u0641\u0631'))
-      return
-    }
-    if (qty > remainingStock) {
-      setError(
-        t(
-          `Only ${remainingStock} item(s) can be added for this option`,
-          `يمكن إضافة ${remainingStock} قطعة فقط من هذا الخيار`
-        )
-      )
-      return
-    }
-    setAdding(true)
-    setError('')
-    try {
-      await addItem(product.id, selected.id, branchId, qty)
-      setAdded(true)
-      setTimeout(() => setAdded(false), 2500)
-    } catch (e: any) {
-      const message = typeof e?.message === 'string' ? e.message : ''
-      const requestedBranch = sp.get('branch')
-      const shouldTryFallbackBranch =
-        !requestedBranch &&
-        (message.includes('Product variant not available in this branch') || message.includes('items available'))
-
-      if (shouldTryFallbackBranch) {
-        const candidateBranches = Array.from(
-          new Set([branchId, Number(process.env.NEXT_PUBLIC_DEFAULT_BRANCH_ID ?? '1'), 1, 2, 3, 4, 5])
-        ).filter((id) => Number.isInteger(id) && id > 0)
-
-        for (const candidateBranchId of candidateBranches) {
-          if (candidateBranchId === branchId) continue
-
-          try {
-            const availability = await catalogApi.getProductAvailability(candidateBranchId, product.id)
-            const matchingVariant = availability.find((item) =>
-              item.variantId === selected.id &&
-              item.isAvailable &&
-              item.quantityInStock >= qty
-            )
-
-            if (!matchingVariant) continue
-
-            await addItem(product.id, selected.id, candidateBranchId, qty)
-            setAdded(true)
-            setTimeout(() => setAdded(false), 2500)
-            setError('')
-            router.replace(`/product?id=${product.id}&variant=${selected.id}&branch=${candidateBranchId}`)
-            return
-          } catch {
-            // Keep trying branch candidates until we find stock.
-          }
-        }
-      }
-
-      setError(translateApiError(
-        message || t('Failed to add to cart', '\u0641\u0634\u0644\u062a \u0625\u0636\u0627\u0641\u0629 \u0627\u0644\u0645\u0646\u062a\u062c \u0625\u0644\u0649 \u0627\u0644\u0633\u0644\u0629'),
-        t
-      ))
-    } finally {
-      setAdding(false)
-    }
-  }
+  }, [activeVariants])
 
   const selectedVariantId = selected?.id ?? 0
   const baseStock = Math.max(0, selected?.quantityInStock ?? 0)
@@ -614,15 +526,6 @@ function ProductPageInner({
   const remainingStock = Math.max(0, baseStock - cartQuantityForSelected)
   const maxSelectableQty = Math.max(1, Math.min(10, remainingStock))
   const inStock = Boolean(selected?.isActive) && remainingStock > 0
-
-  useEffect(() => {
-    if (!selected) return
-
-    setQty((currentQty) => {
-      if (!inStock) return 1
-      return Math.min(Math.max(1, currentQty), maxSelectableQty)
-    })
-  }, [inStock, maxSelectableQty, selected, selectedVariantId])
 
   if (loading) return <ProductSkeleton />
   if (!product || !selected) return null
@@ -653,17 +556,17 @@ function ProductPageInner({
 
       {/* Breadcrumb */}
       <div className="mx-auto max-w-7xl px-4 pb-2 pt-5 md:px-6">
-        <nav className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-          <a href={`/shop${branchId ? `?branch=${branchId}` : ''}`} className="hover:text-slate-700 transition-colors">{t('Shop', '\u0627\u0644\u0645\u062a\u062c\u0631')}</a>
+        <nav className="flex flex-wrap items-center gap-2 text-xs" style={{ color: "var(--mute)" }}>
+          <a href={`/shop${branchId ? `?branch=${branchId}` : ''}`} className="hover:text-[var(--ink)] transition-colors">{t('Shop', '\u0627\u0644\u0645\u062a\u062c\u0631')}</a>
           <span>&rsaquo;</span>
           {catName && (
             <>
               <a href={`/shop?category=${product.categoryId}&branch=${branchId}`}
-                className="hover:text-slate-700 transition-colors">{catName}</a>
+                className="hover:text-[var(--ink)] transition-colors">{catName}</a>
               <span>&rsaquo;</span>
             </>
           )}
-          <span className="text-slate-600 truncate max-w-[200px]">{name}</span>
+          <span className="truncate max-w-[200px]" style={{ color: 'var(--mute)' }}>{name}</span>
         </nav>
       </div>
 
@@ -671,211 +574,69 @@ function ProductPageInner({
         <div className="grid items-start gap-8 md:grid-cols-2 md:gap-12">
 
           {/* Ã¢â€â‚¬Ã¢â€â‚¬ Left: Image Gallery Ã¢â€â‚¬Ã¢â€â‚¬ */}
-          <div className="flex flex-col gap-3 md:sticky md:top-24">
-
-            {/* Main Image Ã¢â‚¬â€ click to zoom, swipe to navigate */}
-            <div
-              className="relative aspect-square overflow-hidden rounded-[34px] border border-stone-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)] cursor-zoom-in group"
-              onClick={() => imgSrc && setZoomed(true)}
-              onTouchStart={e => {
-                touchStartX.current = e.touches[0].clientX
-                touchStartY.current = e.touches[0].clientY
-              }}
-              onTouchEnd={e => {
-                if (touchStartX.current === null || touchStartY.current === null) return
-                const dx = e.changedTouches[0].clientX - touchStartX.current
-                const dy = e.changedTouches[0].clientY - touchStartY.current
-                // Ã™ÂÃ™â€šÃ˜Â· Ã˜Â¥Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â±Ã™Æ’Ã˜Â© Ã˜Â£Ã™ÂÃ™â€šÃ™Å Ã˜Â© Ã™Ë†Ã˜Â§Ã˜Â¶Ã˜Â­Ã˜Â© (>40px) Ã™Ë†Ã™â€žÃ™Å Ã˜Â³Ã˜Âª Ã˜Â¹Ã™â€¦Ã™Ë†Ã˜Â¯Ã™Å Ã˜Â© (scroll)
-                if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-                  if (dx < 0) {
-                    // swipe left Ã¢â€ â€™ next image
-                    setActiveImg(i => (i + 1) % allImages.length)
-                  } else {
-                    // swipe right Ã¢â€ â€™ prev image
-                    setActiveImg(i => (i - 1 + allImages.length) % allImages.length)
-                  }
-                }
-                touchStartX.current = null
-                touchStartY.current = null
-              }}>
-
-              <div
-                className="relative w-full aspect-[1/1] min-h-[340px] max-h-[520px] bg-slate-50 overflow-hidden flex items-center justify-center"
-                style={{
-                  // Ensures aspect ratio and minHeight for CLS/LCP
-                  aspectRatio: '1/1',
-                  minHeight: 340,
-                  maxHeight: 520,
-                }}
-              >
-                {imgSrc ? (
-                  <Image
-                    src={imgSrc}
-                    alt={name}
-                    fill
-                    priority
-                    fetchPriority="high"
-                    sizes="(max-width: 768px) 100vw, 520px"
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    onError={(event) => {
-                      ;(event.target as HTMLImageElement).src = '/placeholder.jpg'
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-slate-200">
-                    <svg className="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.8}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <p className="text-sm font-medium text-slate-300">{t('No image', '\u0644\u0627 \u062a\u0648\u062c\u062f \u0635\u0648\u0631\u0629')}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Discount pill */}
-              {hasSavings && (
-                <div className="absolute start-4 top-4 rounded-full bg-red-600 px-3 py-1.5 text-sm font-black text-white shadow-lg pointer-events-none">
-                  -{Math.round(selected.discountPercentage ?? 0)}% OFF
-                </div>
-              )}
-
-              {/* Zoom hint */}
-              {imgSrc && (
-                <div className="absolute bottom-3 end-3 flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1.5 text-xs font-bold text-white opacity-0 transition-opacity duration-200 pointer-events-none group-hover:opacity-100">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                  </svg>
-                  {t('Zoom', '\u062a\u0643\u0628\u064a\u0631')}
-                </div>
-              )}
-
-              {/* Wishlist button Ã¢â‚¬â€ top end corner */}
-              <button
-                onClick={e => { e.stopPropagation(); handleWishlist() }}
-                disabled={wishlistLoading}
-                className={`absolute end-3 top-3 flex h-11 w-11 items-center
-                  justify-center rounded-2xl transition-all duration-200 shadow-md
-                  ${wishlisted
-                    ? 'bg-red-500 text-white scale-110'
-                    : 'bg-white/90 text-slate-400 hover:text-red-500 hover:bg-white'
-                  }`}>
-                {wishlistLoading ? (
-                  <span className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
-                ) : (
-                  <svg className="w-5 h-5" fill={wishlisted ? 'currentColor' : 'none'}
-                    stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                )}
-              </button>
-
-              {/* Out of stock overlay */}
-              {!inStock && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white/58 backdrop-blur-[2px] pointer-events-none">
-                  <span className="px-5 py-2 bg-slate-900/80 text-white text-sm
-                    font-black rounded-full">
-                    {t('Out of stock', '\u0646\u0641\u062f \u0627\u0644\u0645\u062e\u0632\u0648\u0646')}
-                  </span>
-                </div>
-              )}
-
-              {/* Swipe dots Ã¢â‚¬â€ mobile only, shown when multiple images */}
-              {allImages.length > 1 && (
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2
-                  flex gap-1.5 md:hidden pointer-events-none">
-                  {allImages.map((_, idx) => (
-                    <span key={idx}
-                      className={`rounded-full transition-all duration-300
-                        ${activeImg === idx
-                          ? 'w-4 h-1.5 bg-white'
-                          : 'w-1.5 h-1.5 bg-white/50'
-                        }`} />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Thumbnail Strip */}
-            {allImages.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-                {allImages.map((img, idx) => {
-                    const src = buildStoreImageUrl(img)
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => setActiveImg(idx)}
-                      className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl border-2 bg-white transition-all
-                        ${activeImg === idx
-                          ? 'scale-105 border-slate-900 shadow-md'
-                          : 'border-transparent opacity-60 hover:opacity-100 hover:border-slate-300'
-                        }`}>
-                      {src && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={src} alt={`${name} ${idx + 1}`}
-                          loading={idx === 0 ? 'eager' : 'lazy'}
-                          className="w-full h-full object-cover" />
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-
-            {/* SKU */}
-            <p className="text-center font-mono text-xs text-slate-400">
-              SKU: {selected.sku}
-            </p>
-          </div>
-
+          {/* Image Gallery */}
+          <ProductImageGallery
+            allImages={allImages}
+            activeImg={activeImg}
+            onActiveImgChange={setActiveImg}
+            imgSrc={imgSrc}
+            name={name}
+            sku={selected.sku}
+            inStock={inStock}
+            hasSavings={hasSavings}
+            discountPercentage={selected.discountPercentage ?? 0}
+            wishlisted={wishlisted}
+            wishlistLoading={wishlistLoading}
+            onWishlist={handleWishlist}
+            t={t}
+          />
           {/* Ã¢â€â‚¬Ã¢â€â‚¬ Right: Details Ã¢â€â‚¬Ã¢â€â‚¬ */}
-          <div className="flex flex-col gap-5 rounded-[34px] border border-stone-200 bg-white/88 p-5 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur md:p-7">
+          <div className="flex flex-col gap-5 rounded-[34px] border bg-white p-5 backdrop-blur md:p-7" style={{ borderColor: 'var(--line)', boxShadow: '0 16px 44px rgba(10,31,68,0.06)' }}>
 
             <div className="flex flex-wrap items-center gap-2">
               {product.brand && (
-                <span className="rounded-full bg-amber-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.22em] text-amber-700">
+                <span className="rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.22em]" style={{ background: 'rgba(255,107,44,0.10)', color: 'var(--orange)' }}>
                   {product.brand}
                 </span>
               )}
               {catName && (
-                <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-[11px] font-bold text-slate-500">
+                <span className="rounded-full border px-3 py-1 text-[11px] font-bold" style={{ borderColor: 'var(--line)', background: 'var(--paper)', color: 'var(--mute)' }}>
                   {catName}
                 </span>
               )}
-              <span className="rounded-full border border-stone-200 bg-white px-3 py-1 font-mono text-[11px] text-slate-400">
+              <span className="rounded-full border bg-white px-3 py-1 font-mono text-[11px]" style={{ borderColor: 'var(--line)', color: 'var(--mute)' }}>
                 SKU: {selected.sku}
               </span>
             </div>
 
             {/* Name */}
-            <h1 className="text-2xl font-black leading-[1.18] text-slate-900 md:text-3xl lg:text-4xl lg:leading-[1.12]">
+            <h1 className="text-2xl font-black leading-[1.18] md:text-3xl lg:text-4xl lg:leading-[1.12]" style={{ color: 'var(--ink)' }}>
               {name}
             </h1>
 
             {shortDesc && (
-              <p className="max-w-2xl text-sm leading-8 text-slate-600 md:text-[15px]">
+              <p className="max-w-2xl text-sm leading-8 md:text-[15px]" style={{ color: 'var(--mute)' }}>
                 {shortDesc}
               </p>
             )}
 
-            <div className="rounded-[30px] border border-stone-200 bg-[linear-gradient(135deg,#fffefb_0%,#faf7f1_100%)] p-4 shadow-[0_12px_26px_rgba(15,23,42,0.04)]">
+            <div className="rounded-[30px] border p-4" style={{ borderColor: 'var(--line)', background: 'var(--paper)', boxShadow: '0 12px 26px rgba(10,31,68,0.04)' }}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex flex-wrap items-end gap-3">
                   <div>
-                    <p className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+                    <p className="mb-2 text-[11px] font-black uppercase tracking-[0.18em]" style={{ color: 'var(--mute)' }}>
                       {t('Current price', 'السعر الحالي')}
                     </p>
-                    <span className="text-4xl font-black leading-none text-slate-900">
+                    <span className="text-4xl font-black leading-none" style={{ color: 'var(--ink)' }}>
                     {selected.currentPrice.toFixed(2)}
-                    <span className="ms-1 text-lg font-bold text-slate-400">
+                    <span className="ms-1 text-lg font-bold" style={{ color: 'var(--mute)' }}>
                       {currencyLabel}
                     </span>
                     </span>
                   </div>
                   {hasSavings && (
                     <div className="mb-1 flex items-center gap-2">
-                      <span className="text-base text-slate-400 line-through">
+                      <span className="text-base line-through" style={{ color: 'var(--mute)' }}>
                         {selected.basePrice.toFixed(2)}
                       </span>
                       <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-black text-green-700">
@@ -895,31 +656,31 @@ function ProductPageInner({
 
             {/* Stock badge */}
             {inStock && lowStock && (
-              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <div className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--orange)' }}>
+                <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: 'var(--orange)' }} />
                 {t(`Only ${remainingStock} left to add`, `باقي ${remainingStock} فقط للإضافة`)}
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-[24px] border border-stone-200 bg-[#faf7f1] px-4 py-3">
-                <p className="text-[11px] font-bold text-slate-400">{t('Availability', '\u0627\u0644\u062a\u0648\u0641\u0631')}</p>
+              <div className="rounded-[24px] border px-4 py-3" style={{ borderColor: 'var(--line)', background: 'var(--paper)' }}>
+                <p className="text-[11px] font-bold text-[11px]" style={{ color: "var(--mute)" }}>{t('Availability', '\u0627\u0644\u062a\u0648\u0641\u0631')}</p>
                 <p className={`mt-1 text-sm font-black ${inStock ? 'text-emerald-600' : 'text-red-500'}`}>
                   {inStock ? t('In stock', '\u0645\u062a\u0648\u0641\u0631') : t('Sold out', '\u063a\u064a\u0631 \u0645\u062a\u0648\u0641\u0631')}
                 </p>
-                <p className="mt-1 text-[11px] text-slate-500">
+                <p className="mt-1 text-[11px]" style={{ color: "var(--mute)" }}>
                   {inStock
                     ? t(`${remainingStock} available to add`, `${remainingStock} متاح للإضافة`)
                     : t('No units available right now', 'لا توجد وحدات متاحة حاليًا')}
                 </p>
               </div>
-              <div className="rounded-[24px] border border-stone-200 bg-[#faf7f1] px-4 py-3">
-                <p className="text-[11px] font-bold text-slate-400">{t('Branch', '\u0627\u0644\u0641\u0631\u0639')}</p>
-                <p className="mt-1 text-sm font-black text-slate-800">#{branchId}</p>
+              <div className="rounded-[24px] border px-4 py-3" style={{ borderColor: 'var(--line)', background: 'var(--paper)' }}>
+                <p className="text-[11px] font-bold" style={{ color: 'var(--mute)' }}>{t('Branch', '\u0627\u0644\u0641\u0631\u0639')}</p>
+                <p className="mt-1 text-sm font-black" style={{ color: 'var(--ink)' }}>#{branchId}</p>
               </div>
             </div>
 
-            <div className="h-px w-full bg-slate-200" />
+            <div className="h-px w-full" style={{ background: "var(--line)" }} />
 
             {/* Ã¢â€â‚¬Ã¢â€â‚¬ Variant Attribute Selectors Ã¢â€â‚¬Ã¢â€â‚¬ */}
             {hasAttrs && (
@@ -937,12 +698,11 @@ function ProductPageInner({
                     <div key={attr.id}>
                       {/* Attribute label + selected value */}
                       <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-black text-slate-800">
+                        <span className="text-sm font-black" style={{ color: "var(--ink)" }}>
                           {attrName}
                         </span>
                         {currentVal && (
-                          <span className="text-sm text-slate-500 font-medium bg-slate-100
-                            px-2.5 py-0.5 rounded-full">
+                          <span className="text-sm font-medium px-2.5 py-0.5 rounded-full" style={{ color: "var(--mute)", background: "var(--paper-2)" }}>
                             {options.find(o => o.valueEn === currentVal)?.[locale === 'ar' ? 'valueAr' : 'valueEn'] ?? currentVal}
                           </span>
                         )}
@@ -970,9 +730,9 @@ function ProductPageInner({
                                 {/* Swatch circle */}
                                 <div className={`w-10 h-10 rounded-full transition-all duration-200
                                   ${isSel
-                                    ? 'ring-3 ring-offset-2 ring-slate-800 scale-110 shadow-lg'
+                                    ? 'ring-3 ring-[var(--ink)] ring-offset-2 scale-110 shadow-lg'
                                     : avail
-                                      ? 'ring-1 ring-black/15 hover:scale-110 hover:shadow-md hover:ring-slate-400'
+                                      ? 'ring-1 ring-black/15 hover:scale-110 hover:shadow-md hover:ring-[var(--ink)]'
                                       : 'ring-1 ring-black/10'
                                   }`}
                                   style={{ backgroundColor: hex }}>
@@ -981,7 +741,7 @@ function ProductPageInner({
                                     const isDark = isColorDark(hex)
                                     return (
                                       <div className="w-full h-full flex items-center justify-center rounded-full">
-                                        <svg className={`w-4 h-4 ${isDark ? 'text-white' : 'text-slate-900'}`}
+                                        <svg className={`w-4 h-4 ${isDark ? 'text-white' : 'text-[var(--ink)]'}`}
                                           fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                           <path strokeLinecap="round" strokeLinejoin="round"
                                             strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -997,8 +757,8 @@ function ProductPageInner({
                                   )}
                                 </div>
                                 {/* label Ã˜ÂªÃ˜Â­Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â¯Ã˜Â§Ã˜Â¦Ã˜Â±Ã˜Â© */}
-                                <span className={`text-[10px] font-bold max-w-[48px] text-center leading-tight
-                                  ${isSel ? 'text-slate-900' : 'text-slate-500'}`}>
+                                <span className="text-[10px] font-bold max-w-[48px] text-center leading-tight"
+                                  style={{ color: isSel ? 'var(--ink)' : 'var(--mute)' }}>
                                   {displayVal}
                                 </span>
                               </button>
@@ -1023,14 +783,20 @@ function ProductPageInner({
                                 className={`relative min-w-[52px] px-4 py-2.5 rounded-xl text-sm font-black
                                   border-2 transition-all duration-150 text-center
                                   ${isSel
-                                    ? 'bg-slate-900 text-white border-slate-900 shadow-md scale-[1.05]'
+                                    ? 'text-white scale-[1.05]'
                                     : avail
-                                      ? 'bg-white text-slate-700 border-slate-200 hover:border-slate-800 hover:bg-slate-50'
-                                      : 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed'
-                                  }`}>
+                                      ? 'bg-white hover:bg-paper'
+                                      : 'cursor-not-allowed'
+                                  }`}
+                                style={isSel
+                                  ? { background: 'var(--ink)', borderColor: 'var(--ink)', boxShadow: '0 4px 12px rgba(10,31,68,0.20)' }
+                                  : avail
+                                    ? { color: 'var(--ink)', borderColor: 'var(--line)' }
+                                    : { background: 'var(--paper)', color: 'var(--mute)', borderColor: 'var(--line)' }
+                                }>
                                 {!inStk && avail && (
                                   <span className="absolute inset-0 flex items-center justify-center">
-                                    <span className="w-full h-px bg-slate-400 absolute rotate-[-15deg]" />
+                                    <span className="w-full h-px absolute rotate-[-15deg]" style={{ background: 'var(--mute)' }} />
                                   </span>
                                 )}
                                 <span className={!inStk && avail ? 'opacity-60' : ''}>{displayVal}</span>
@@ -1056,11 +822,17 @@ function ProductPageInner({
                                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm
                                   font-bold border-2 transition-all duration-150
                                   ${isSel
-                                    ? 'bg-amber-500 text-white border-amber-500 shadow-md'
+                                    ? 'text-white shadow-md'
                                     : avail
-                                      ? 'bg-white text-slate-700 border-slate-200 hover:border-amber-400 hover:bg-amber-50'
-                                      : 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed'
-                                  }`}>
+                                      ? 'bg-white'
+                                      : 'cursor-not-allowed'
+                                  }`}
+                                style={isSel
+                                  ? { background: 'var(--orange)', borderColor: 'var(--orange)' }
+                                  : avail
+                                    ? { color: 'var(--ink)', borderColor: 'var(--line)' }
+                                    : { background: 'var(--paper)', color: 'var(--mute)', borderColor: 'var(--line)' }
+                                }>
                                 {opt.colorHex && (
                                   <span className="w-3.5 h-3.5 rounded-full border border-black/10 flex-shrink-0"
                                     style={{ backgroundColor: opt.colorHex }} />
@@ -1080,7 +852,7 @@ function ProductPageInner({
             {/* Fallback: variants Ã˜Â¨Ã˜Â¯Ã™Ë†Ã™â€  attributes */}
             {!hasAttrs && activeVariants.length > 1 && (
               <div>
-                <p className="text-sm font-black text-slate-700 mb-3">
+                <p className="text-sm font-black mb-3" style={{ color: "var(--ink)" }}>
                   {t('Select Option', '\u0627\u062e\u062a\u0631 \u0627\u0644\u062e\u064a\u0627\u0631')}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -1094,11 +866,17 @@ function ProductPageInner({
                         className={`px-4 py-2.5 rounded-xl text-sm font-bold border-2
                           transition-all duration-150
                           ${isSel
-                            ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                            ? 'text-white'
                             : avail
-                              ? 'bg-white text-slate-700 border-slate-200 hover:border-slate-800'
-                              : 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed'
-                          }`}>
+                              ? 'bg-white'
+                              : 'cursor-not-allowed'
+                          }`}
+                        style={isSel
+                          ? { background: 'var(--ink)', borderColor: 'var(--ink)', boxShadow: '0 4px 12px rgba(10,31,68,0.18)' }
+                          : avail
+                            ? { color: 'var(--ink)', borderColor: 'var(--line)' }
+                            : { background: 'var(--paper)', color: 'var(--mute)', borderColor: 'var(--line)' }
+                        }>
                         <span className={!avail ? 'line-through opacity-60' : ''}>
                           {locale === 'ar' ? (v.nameAr || v.nameEn) : v.nameEn}
                         </span>
@@ -1112,205 +890,38 @@ function ProductPageInner({
             {/* Description */}
             {desc && (
               <>
-                <div className="w-full h-px bg-slate-200" />
-                <div className="rounded-[28px] border border-stone-200 bg-[#faf7f1] px-5 py-4">
-                  <p className="mb-2 text-xs font-black uppercase tracking-widest text-slate-400">
+                <div className="w-full h-px" style={{ background: "var(--line)" }} />
+                <div className="rounded-[28px] border px-5 py-4" style={{ borderColor: "var(--line)", background: "var(--paper)" }}>
+                  <p className="mb-2 text-xs font-black uppercase tracking-widest" style={{ color: "var(--mute)" }}>
                     {t('Description', '\u0627\u0644\u0648\u0635\u0641')}
                   </p>
-                  <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">{desc}</p>
+                  <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: "var(--mute)" }}>{desc}</p>
                 </div>
               </>
             )}
 
-            <div className="w-full h-px bg-slate-200" />
+            <div className="w-full h-px" style={{ background: "var(--line)" }} />
 
-            {/* Error */}
-            {error && (
-              <div className="flex items-center gap-2 px-4 py-3 bg-red-50
-                border border-red-100 rounded-xl text-sm text-red-600 font-medium">
-                <svg className="w-4 h-4 flex-shrink-0" fill="none"
-                  stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {error}
-              </div>
-            )}
-
-            {/* Qty + Add to Cart */}
-            <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-20 md:static">
-              <div className="rounded-[32px] border border-stone-200 bg-white/95 p-2.5 shadow-[0_18px_34px_rgba(15,23,42,0.12)] backdrop-blur md:rounded-[30px] md:border md:bg-[#faf7f1] md:p-4 md:shadow-none">
-                <div className="mb-3 flex items-center justify-between rounded-[24px] border border-stone-200 bg-white px-3 py-3 md:mb-4">
-                  <div>
-                    <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">{t('Selected total', '\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u062d\u0627\u0644\u064a')}</p>
-                    <p className="text-base font-black text-slate-900 md:text-lg">
-                      {(selected.currentPrice * qty).toFixed(2)} {currencyLabel}
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-slate-500">{selectedVariantLabel}</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-bold text-slate-600 shadow-sm">
-                      {qty} {t('pcs', '\u0642\u0637\u0639\u0629')}
-                    </span>
-                    <span className={`text-[11px] font-bold ${inStock ? 'text-emerald-600' : 'text-rose-500'}`}>
-                      {inStock ? t('Ready to add', 'جاهز للإضافة') : t('Currently unavailable', 'غير متوفر حاليًا')}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-              <div className="flex items-center overflow-hidden rounded-2xl border-2 border-stone-200 bg-white">
-                <button type="button" aria-label={t('Decrease quantity', '\u062a\u0642\u0644\u064a\u0644 \u0627\u0644\u0643\u0645\u064a\u0629')} onClick={() => setQty(q => Math.max(1, q - 1))}
-                  className="flex h-14 w-12 items-center justify-center text-xl
-                    font-bold text-slate-500 transition-colors hover:bg-stone-50
-                    hover:text-slate-900">
-                  -
-                </button>
-                <span className="w-10 text-center text-base font-black text-slate-900">
-                  {qty}
-                </span>
-                <button type="button" aria-label={t('Increase quantity', '\u0632\u064a\u0627\u062f\u0629 \u0627\u0644\u0643\u0645\u064a\u0629')} onClick={() => setQty(q => Math.min(
-                    maxSelectableQty, q + 1
-                  ))}
-                  disabled={!inStock || qty >= maxSelectableQty}
-                  className="flex h-14 w-12 items-center justify-center text-xl
-                    font-bold text-slate-500 transition-colors hover:bg-stone-50
-                    hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300">
-                  +
-                </button>
-              </div>
-
-              <button onClick={handleAddToCart}
-                disabled={adding || !inStock}
-                className={`flex-1 h-14 rounded-2xl font-black text-base
-                  transition-all duration-300 flex items-center justify-center gap-3
-                  ${added
-                    ? 'bg-green-500 text-white'
-                    : !inStock
-                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                      : adding
-                        ? 'bg-slate-300 text-slate-500'
-                        : 'bg-slate-900 text-white hover:bg-amber-500 shadow-lg hover:shadow-amber-200 active:scale-[0.98]'
-                  }`}>
-                {adding ? (
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : added ? (
-                  <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {t('Added!', '\u062a\u0645\u062a \u0627\u0644\u0625\u0636\u0627\u0641\u0629!')}
-                  </>
-                ) : !inStock ? (
-                  t('Out of stock', '\u0646\u0641\u062f \u0627\u0644\u0645\u062e\u0632\u0648\u0646')
-                ) : (
-                  <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    {t('Add to Cart', '\u0623\u0636\u0641 \u0644\u0644\u0633\u0644\u0629')}
-                  </>
-                )}
-              </button>
-                </div>
-
-                <div className="mt-3 grid gap-2 md:hidden">
-                  <div className="rounded-[22px] border border-stone-200 bg-[#faf7f1] px-3.5 py-3">
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
-                      {t('Purchase note', 'ملاحظة الشراء')}
-                    </p>
-                    <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
-                      {t(
-                        'Choose your exact option first, then confirm quantity before adding to cart.',
-                        'اختر خيارك الدقيق أولًا، ثم أكد الكمية قبل الإضافة إلى السلة.'
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+            {/* Add to Cart */}
+            <AddToCartPanel
+              selected={selected}
+              product={product}
+              branchId={branchId}
+              inStock={inStock}
+              remainingStock={remainingStock}
+              maxSelectableQty={maxSelectableQty}
+              hasAttrs={hasAttrs}
+              attrKeys={attrKeys}
+              sel={sel}
+            />
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Zoom Modal Ã¢â€â‚¬Ã¢â€â‚¬ */}
           </div>
         </div>
       </div>
-
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Zoom Modal Ã¢â€â‚¬Ã¢â€â‚¬ */}
-      {zoomed && imgSrc && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 cursor-zoom-out"
-          onClick={() => setZoomed(false)}>
-
-          <button
-            className="absolute top-4 end-4 w-10 h-10 rounded-full bg-white/10
-              hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
-            onClick={() => setZoomed(false)}>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-
-          {allImages.length > 1 && (
-            <>
-              <button
-                onClick={e => { e.stopPropagation(); setActiveImg(i => (i - 1 + allImages.length) % allImages.length) }}
-                className="absolute start-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full
-                  bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button
-                onClick={e => { e.stopPropagation(); setActiveImg(i => (i + 1) % allImages.length) }}
-                className="absolute end-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full
-                  bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </>
-          )}
-
-          <div
-            className="relative w-full max-w-3xl aspect-square"
-            onClick={e => e.stopPropagation()}
-            onTouchStart={e => {
-              touchStartX.current = e.touches[0].clientX
-              touchStartY.current = e.touches[0].clientY
-            }}
-            onTouchEnd={e => {
-              if (touchStartX.current === null) return
-              const dx = e.changedTouches[0].clientX - touchStartX.current
-              if (Math.abs(dx) > 40) {
-                if (dx < 0) setActiveImg(i => (i + 1) % allImages.length)
-                else        setActiveImg(i => (i - 1 + allImages.length) % allImages.length)
-              }
-              touchStartX.current = null
-            }}>
-            <Image
-              src={imgSrc}
-              alt={name}
-              fill
-              sizes="100vw"
-              className="object-contain"
-            />
-          </div>
-
-          {allImages.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-              {allImages.map((_, idx) => (
-                <button key={idx}
-                  onClick={e => { e.stopPropagation(); setActiveImg(idx) }}
-                  className={`w-1.5 h-1.5 rounded-full transition-all
-                    ${activeImg === idx ? 'bg-white scale-125' : 'bg-white/40'}`} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   )
 }
+
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Color Utility Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
@@ -1338,32 +949,32 @@ function ProductSkeleton() {
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 grid md:grid-cols-2 gap-8 animate-pulse">
       <div className="flex flex-col gap-3">
-        <div className="aspect-square rounded-3xl bg-slate-200" />
+        <div className="aspect-square rounded-3xl bg-[var(--paper-2)]" />
         <div className="flex gap-2">
           {[1, 2, 3].map(i => (
-            <div key={i} className="w-16 h-16 rounded-xl bg-slate-200" />
+            <div key={i} className="w-16 h-16 rounded-xl bg-[var(--paper-2)]" />
           ))}
         </div>
       </div>
       <div className="flex flex-col gap-5 pt-2">
-        <div className="h-3 w-16 bg-slate-200 rounded-full" />
-        <div className="h-9 bg-slate-200 rounded-xl" />
-        <div className="h-10 w-40 bg-slate-200 rounded-xl" />
-        <div className="h-px bg-slate-200" />
+        <div className="h-3 w-16 bg-[var(--paper-2)] rounded-full" />
+        <div className="h-9 bg-[var(--paper-2)] rounded-xl" />
+        <div className="h-10 w-40 bg-[var(--paper-2)] rounded-xl" />
+        <div className="h-px bg-[var(--paper-2)]" />
         {/* Attribute skeletons */}
         <div className="space-y-5">
           {[1, 2].map(i => (
             <div key={i}>
-              <div className="h-4 w-20 bg-slate-200 rounded-full mb-3" />
+              <div className="h-4 w-20 bg-[var(--paper-2)] rounded-full mb-3" />
               <div className="flex gap-2">
                 {[1,2,3,4].map(j => (
-                  <div key={j} className={i === 1 ? 'w-10 h-10 rounded-full bg-slate-200' : 'w-14 h-10 rounded-xl bg-slate-200'} />
+                  <div key={j} className={i === 1 ? 'w-10 h-10 rounded-full bg-[var(--paper-2)]' : 'w-14 h-10 rounded-xl bg-[var(--paper-2)]'} />
                 ))}
               </div>
             </div>
           ))}
         </div>
-        <div className="h-14 bg-slate-200 rounded-2xl" />
+        <div className="h-14 bg-[var(--paper-2)] rounded-2xl" />
       </div>
     </div>
   )
@@ -1378,4 +989,13 @@ export default function ProductPage(props: ProductPageClientProps) {
     </Suspense>
   )
 }
+
+
+
+
+
+
+
+
+
 
