@@ -5,6 +5,7 @@ import HomeHeroSliderSection from '@/components/home/HomeHeroSliderSection'
 import { TrustBar } from '@/components/home/HomeStatic'
 import { HomeBelowFoldEntry } from '@/components/home/HomeBelowFoldEntry'
 import { HomeVitals } from '@/components/home/HomeVitals'
+import { joinUrl, getPublicApiBaseUrl } from '@/lib/url'
 
 export const revalidate = 300
 
@@ -148,8 +149,17 @@ export default async function HomePage() {
         ? newArrivals
         : offers
 
+  const firstHeroImage = heroProducts[0]?.imagePath
+    ? joinUrl(getPublicApiBaseUrl(), heroProducts[0].imagePath)
+    : null
+
   return (
-    <main className="min-h-screen bg-[#F8F6F2]">
+    <>
+      {firstHeroImage && (
+        // eslint-disable-next-line @next/next/no-head-element
+        <link rel="preload" as="image" href={firstHeroImage} fetchPriority="high" />
+      )}
+      <main className="min-h-screen bg-[#F8F6F2]">
       <HomeVitals />
 
       <HomeHeroSliderSection
@@ -168,5 +178,6 @@ export default async function HomePage() {
         branchId={branchId}
       />
     </main>
+    </>
   )
 }

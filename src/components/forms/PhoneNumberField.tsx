@@ -79,6 +79,7 @@ export function PhoneNumberField({
           <select
             value={countryIso}
             onChange={(e) => handleCountryChange(e.target.value)}
+            aria-label={t('Country code', 'رمز الدولة')}
             dir={locale === 'ar' ? 'rtl' : 'ltr'}
             className="h-full w-full appearance-none bg-transparent px-2.5 py-3 pe-7 text-sm font-bold text-transparent outline-none"
           >

@@ -44,7 +44,10 @@ export function Navbar() {
     return (
       <header className="sticky top-0 z-50 border-b bg-white shadow-sm" style={{ borderColor: 'var(--line)' }}>
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 md:h-16">
-          <div className="h-9 w-28 inone-skeleton rounded-xl" />
+          <div className="h-9 w-28 inone-skeleton rounded-xl flex-shrink-0" />
+          {/* mobile: search trigger skeleton (same as mounted) */}
+          <div className="flex min-w-0 flex-1 h-9 inone-skeleton rounded-2xl md:hidden" />
+          {/* desktop: search bar skeleton */}
           <div className="hidden max-w-md flex-1 md:flex">
             <div className="h-9 w-full inone-skeleton rounded-xl" />
           </div>
@@ -54,8 +57,13 @@ export function Navbar() {
             <span className="h-10 w-10 inone-skeleton rounded-xl" />
           </nav>
         </div>
-        <div className="px-4 pb-2.5 md:hidden">
-          <div className="h-9 w-full inone-skeleton rounded-xl" />
+        {/* keep mobile header height stable before hydration */}
+        <div className="border-t px-4 md:hidden h-11 flex items-center" style={{ borderColor: 'var(--line)' }}>
+          <div className="flex w-full items-center gap-2 overflow-hidden">
+            <span className="h-7 w-20 inone-skeleton rounded-full" />
+            <span className="h-7 w-16 inone-skeleton rounded-full" />
+            <span className="h-7 w-20 inone-skeleton rounded-full" />
+          </div>
         </div>
       </header>
     )
@@ -255,8 +263,8 @@ export function Navbar() {
       </div>
 
       {/* ── Mobile category pills ── */}
-      <div className="border-t px-4 py-2 md:hidden" style={{ borderColor: 'var(--line)' }}>
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+      <div className="border-t px-4 md:hidden h-11 flex items-center" style={{ borderColor: 'var(--line)' }}>
+        <div className="flex w-full items-center gap-2 overflow-x-auto scrollbar-hide">
           {[
             { href: '/shop?sort=newest', label: t('New in', 'وصل حديثًا'), primary: true },
             { href: '/shop?sort=price_desc', label: t('Premium', 'فاخر'), primary: false },
@@ -265,7 +273,7 @@ export function Navbar() {
             <Link
               key={pill.href}
               href={pill.href}
-              className="whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-black transition-colors"
+              className="whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-black leading-none transition-colors"
               style={pill.primary
                 ? { background: 'var(--ink)', color: '#fff' }
                 : { background: '#fff', color: 'var(--ink)', border: '1px solid var(--line)' }

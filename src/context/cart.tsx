@@ -66,7 +66,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [authLoading, token])
 
   useEffect(() => {
-    void fetchCart()
+    // Defer initial cart fetch until after first paint to reduce TBT
+    const timer = window.setTimeout(() => void fetchCart(), 0)
+    return () => window.clearTimeout(timer)
   }, [fetchCart])
 
   useEffect(() => {

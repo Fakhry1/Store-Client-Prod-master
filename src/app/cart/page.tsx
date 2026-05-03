@@ -1,4 +1,13 @@
 import CartPageClient from '@/components/cart/CartPageClient'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Cart',
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
 
 type CartStep = 'cart' | 'checkout' | 'review'
 

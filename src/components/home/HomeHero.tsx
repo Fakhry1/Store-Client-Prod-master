@@ -55,7 +55,7 @@ function buildSlides(products: CatalogItem[], branchId: number): HomeHeroSlide[]
 
 export function HomeHero({ branchId, heroProducts }: Props) {
   return (
-    <div style={{ minHeight: '560px', contain: 'layout' }}>
+    <div style={{ minHeight: '560px', contain: 'layout style' }}>
       <HomeHeroClient slides={buildSlides(heroProducts, branchId)} />
     </div>
   )

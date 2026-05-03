@@ -16,7 +16,7 @@
   --champagne-2:#D4B27E;
   --paper:      #F5F2EC;   /* Warm off-white – page bg */
   --paper-2:    #EAE5DA;   /* Deeper warm */
-  --mute:       #6B7591;   /* Muted text */
+  --mute:       #5C6B85;   /* Muted text — WCAG AA ≥4.5:1 on white */
   --black:      #070D1F;   /* Near-black */
   --line:       rgba(10,31,68,0.10);  /* Border color */
 }

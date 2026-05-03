@@ -338,7 +338,7 @@ export function PremiumHeroSlider({ slides }: Props) {
                           </span>
                         ) : null}
                         {localizedCategory ? (
-                          <span className="inline-flex items-center rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em]" style={{ borderColor: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.50)' }}>
+                          <span className="inline-flex items-center rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em]" style={{ borderColor: 'rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.72)' }}>
                             {localizedCategory}
                           </span>
                         ) : null}
@@ -346,7 +346,7 @@ export function PremiumHeroSlider({ slides }: Props) {
 
                       {/* Brand */}
                       {slide.brand ? (
-                        <div className="mb-2 text-[10px] font-black uppercase tracking-[0.28em]" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                        <div className="mb-2 text-[10px] font-black uppercase tracking-[0.28em]" style={{ color: 'rgba(255,255,255,0.72)' }}>
                           {slide.brand}
                         </div>
                       ) : null}
@@ -366,7 +366,7 @@ export function PremiumHeroSlider({ slides }: Props) {
                           <span className="ms-1.5 text-xs font-semibold" style={{ color: 'rgba(232,201,155,0.72)' }}>{currency}</span>
                         </div>
                         {slide.hasActiveOffer && slide.basePrice > slide.currentPrice ? (
-                          <div className="mb-0.5 text-sm font-semibold line-through" style={{ color: 'rgba(255,255,255,0.36)' }}>
+                          <div className="mb-0.5 text-sm font-semibold line-through" aria-hidden="true" style={{ color: 'rgba(255,255,255,0.55)' }}>
                             {slide.basePrice.toFixed(0)} {currency}
                           </div>
                         ) : null}
@@ -393,7 +393,7 @@ export function PremiumHeroSlider({ slides }: Props) {
                     </div>
 
                     {/* ── IMAGE PANEL: top on mobile, right on desktop ── */}
-                    <div className="relative order-1 lg:order-2" style={{ minHeight: '260px' }}>
+                    <div className="relative order-1 lg:order-2" style={{ minHeight: '260px', aspectRatio: '4/3', maxHeight: '420px' }}>
                       {!imageLoaded && (
                         <div
                           className="hero-shimmer absolute inset-0 z-10"

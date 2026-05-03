@@ -26,7 +26,7 @@ const notoKufi = localFont({
     { path: '../../public/fonts/noto-kufi-arabic-main.woff2', weight: '100 900', style: 'normal' },
   ],
   variable: '--font-kufi',
-  display: 'swap',
+  display: 'optional',
   preload: true,
 })
 
@@ -34,7 +34,7 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   weight: ['600'],
   variable: '--font-space-grotesk',
-  display: 'swap',
+  display: 'optional',
 })
 
 const siteUrl = getSiteUrl()
@@ -113,7 +113,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="bg-transparent font-kufi antialiased" style={{ color: 'var(--ink)' }} suppressHydrationWarning>
         {imageOrigin && (
           <>
-            <link rel="preconnect" href={imageOrigin} />
+            <link rel="preconnect" href={imageOrigin} crossOrigin="anonymous" />
             <link rel="dns-prefetch" href={imageOrigin} />
           </>
         )}

@@ -34,6 +34,7 @@ export function SortDropdown({ currentSort = 'newest' }: Props) {
       <select
         value={currentSort}
         onChange={e => handleChange(e.target.value)}
+        aria-label={locale === 'ar' ? 'ترتيب النتائج' : 'Sort results'}
         className="appearance-none ps-8 pe-3 py-2 text-sm border rounded-xl bg-white font-medium focus:outline-none cursor-pointer w-[min(52vw,190px)] sm:w-[170px]"
         style={{ borderColor: 'var(--line)', color: 'var(--ink)' }}
         onFocus={(e) => { e.target.style.borderColor = 'var(--orange)' }}

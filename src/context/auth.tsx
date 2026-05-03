@@ -79,6 +79,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let timer: any
 
     async function bootstrapAuth() {
       if (!hasAuthHint()) {
@@ -105,10 +107,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    bootstrapAuth()
+    // Defer to after first paint so auth API call doesn't block hydration TBT
+    timer = window.setTimeout(() => void bootstrapAuth(), 0)
 
     return () => {
       cancelled = true
+      if (timer !== undefined) window.clearTimeout(timer)
     }
   }, [clearSession, persistSession])
 

@@ -4,6 +4,7 @@ import ProductPageClient from '@/components/product/ProductPageClient'
 import { RelatedProducts } from '@/components/product/RelatedProducts'
 import { serverApiGet } from '@/lib/api/server'
 import { getSiteUrl, STORE_NAME } from '@/lib/store'
+import { getPublicApiBaseUrl, joinUrl } from '@/lib/url'
 import type { Product, ProductPage, ProductSummary } from '@/types'
 
 export const revalidate = 600
@@ -51,10 +52,13 @@ export async function generateMetadata({
   const params = await searchParams
   const productId = parsePositiveInt(params.id)
 
+  const siteUrl = getSiteUrl()
+
   if (!productId) {
     return {
       title: `${STORE_NAME} - Product`,
       description: `Browse premium products from ${STORE_NAME}.`,
+      alternates: { canonical: new URL('/shop', siteUrl).toString() },
     }
   }
 
@@ -84,6 +88,7 @@ export async function generateMetadata({
     return {
       title: `${STORE_NAME} - Product`,
       description: `Browse premium products from ${STORE_NAME}.`,
+      alternates: { canonical: new URL(`/product?id=${productId}`, siteUrl).toString() },
     }
   }
 }
@@ -113,8 +118,16 @@ export default async function ProductPage({ searchParams }: ProductPageProps) {
       .sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary) || a.sortOrder - b.sortOrder)
       .map((image) => image.imagePath) ?? []
 
+  const firstProductImage = initialProductImages[0]
+    ? joinUrl(getPublicApiBaseUrl(), initialProductImages[0])
+    : null
+
   return (
     <>
+      {firstProductImage && (
+        // eslint-disable-next-line @next/next/no-head-element
+        <link rel="preload" as="image" href={firstProductImage} fetchPriority="high" />
+      )}
       <ProductPageClient
         initialProduct={initialProduct}
         initialProductImages={initialProductImages}

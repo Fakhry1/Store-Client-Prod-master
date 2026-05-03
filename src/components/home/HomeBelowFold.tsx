@@ -1,7 +1,11 @@
 import type { CatalogItem, Category } from '@/types'
 import { HomeCTA, CategoriesSection, OffersHeader, ProductCollectionSection } from '@/components/home/HomeStatic'
 import { OfferCard, FeaturedCard } from '@/components/home/HomeCards'
-import { OffersCountdown } from '@/components/home/OffersCountdown'
+import dynamic from 'next/dynamic'
+
+const OffersCountdown = dynamic(
+  () => import('@/components/home/OffersCountdown').then((m) => m.OffersCountdown)
+)
 
 type Props = {
   categories: Category[]

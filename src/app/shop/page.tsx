@@ -15,6 +15,8 @@ import type { Branch, Category, Facets, ProductPage, ProductQuery } from '@/type
 import type { Metadata } from 'next'
 import { unstable_cache } from 'next/cache'
 import dynamic from 'next/dynamic'
+import { getSiteUrl, STORE_NAME } from '@/lib/store'
+import { getPublicApiBaseUrl, joinUrl } from '@/lib/url'
 
 const FacetsSidebar = dynamic(
   () => import('@/components/shop/FacetsSidebar').then((mod) => mod.FacetsSidebar)
@@ -37,21 +39,29 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const params = await searchParams
   const search = params.search
-  const baseTitle = 'LUXE Store - Shop'
+  const siteUrl = getSiteUrl()
+  const baseTitle = `${STORE_NAME} - Shop`
 
   if (search) {
     return {
-      title: `نتائج "${search}" | LUXE Store`,
-      description: `تصفح نتائج البحث عن "${search}" في LUXE Store`,
+      title: `نتائج "${search}" | ${STORE_NAME}`,
+      description: `تصفح نتائج البحث عن "${search}" في ${STORE_NAME}`,
+      robots: { index: false, follow: true },
     }
   }
 
+  const canonicalUrl = new URL('/shop', siteUrl).toString()
+
   return {
     title: baseTitle,
-    description: 'تسوق أفضل المنتجات من LUXE Store.',
+    description: `تسوق أفضل المنتجات من ${STORE_NAME}.`,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       title: baseTitle,
-      description: 'تسوق أفضل المنتجات من LUXE Store.',
+      description: `تسوق أفضل المنتجات من ${STORE_NAME}.`,
+      url: canonicalUrl,
       type: 'website',
     },
   }
@@ -181,9 +191,17 @@ export default async function ShopPage({ searchParams }: PageProps) {
   const groups = products.map((product) => summaryToGroup(product, selectedBranch))
   const activeCategory = categories.find((category) => category.id === selectedCat)
   const activeBranch = activeBranches.find((branch) => branch.id === selectedBranch)
+  const firstShopImage = products[0]?.imagePath
+    ? joinUrl(getPublicApiBaseUrl(), products[0].imagePath)
+    : null
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#f8f6f2]">
+    <>
+      {firstShopImage && (
+        // eslint-disable-next-line @next/next/no-head-element
+        <link rel="preload" as="image" href={firstShopImage} fetchPriority="high" />
+      )}
+      <div className="min-h-screen overflow-x-hidden bg-[#f8f6f2]">
       <ShopHeader
         totalCount={totalCount}
         search={params.search}
@@ -369,7 +387,7 @@ export default async function ShopPage({ searchParams }: PageProps) {
                     key={group.productId}
                     group={group}
                     branchId={selectedBranch}
-                    priority={index < 4}
+                    priority={index === 0}
                   />
                 ))}
               </div>
@@ -388,7 +406,8 @@ export default async function ShopPage({ searchParams }: PageProps) {
           )}
         </main>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
 

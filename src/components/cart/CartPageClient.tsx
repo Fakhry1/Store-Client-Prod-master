@@ -389,7 +389,7 @@ function OrderSummaryCard({
                 <div className="w-9 h-9 rounded-lg flex-shrink-0 overflow-hidden relative border" style={{ background: 'var(--paper)', borderColor: 'var(--line)' }}>
                   {item.imagePath ? (
                     <Image src={joinUrl(API_URL, item.imagePath) || '/placeholder.jpg'}
-                      alt="" fill className="object-cover" />
+                      alt="" fill sizes="36px" className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--line)' }}>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -939,19 +939,12 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
 
     if (isLoading && !cart) {
       return (
-        <div className="min-h-screen pb-28 md:pb-0" style={{ background: 'var(--paper)' }}>
-          <div className="mx-auto max-w-6xl px-4 py-5 md:px-6 md:py-10 space-y-5">
-            <div className="h-20 animate-pulse rounded-[32px] border bg-white" style={{ borderColor: 'var(--line)' }} />
-            <div className="h-14 animate-pulse rounded-2xl" style={{ background: 'var(--paper-2)' }} />
-            <div className="grid gap-5 lg:grid-cols-5">
-              <div className="space-y-3 lg:col-span-3">
-                <div className="h-32 animate-pulse rounded-[30px] border bg-white" style={{ borderColor: 'var(--line)' }} />
-                <div className="h-24 animate-pulse rounded-2xl border bg-white" style={{ borderColor: 'var(--line)' }} />
-                <div className="h-24 animate-pulse rounded-2xl border bg-white" style={{ borderColor: 'var(--line)' }} />
-                <div className="h-24 animate-pulse rounded-2xl border bg-white" style={{ borderColor: 'var(--line)' }} />
-              </div>
-              <div className="h-[460px] animate-pulse rounded-[32px] border bg-white lg:col-span-2" style={{ borderColor: 'var(--line)' }} />
-            </div>
+        <div className="min-h-[80svh] px-6 text-center" style={{ background: 'var(--paper)' }}>
+          <div className="mx-auto flex min-h-[80svh] max-w-md flex-col items-center justify-center">
+            <div className="mb-6 h-24 w-24 animate-pulse rounded-[32px] border bg-white" style={{ borderColor: 'var(--line)' }} />
+            <div className="mb-2 h-8 w-52 animate-pulse rounded-xl" style={{ background: 'var(--paper-2)' }} />
+            <div className="mb-8 h-5 w-44 animate-pulse rounded-xl" style={{ background: 'var(--paper-2)' }} />
+            <div className="h-12 w-40 animate-pulse rounded-2xl" style={{ background: 'var(--paper-2)' }} />
           </div>
         </div>
       )
