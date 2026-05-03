@@ -95,7 +95,7 @@ export const branchApi = {
 
 // ─── Categories ──────────────────────────────────────────────────────────────
 export const settingsApi = {
-  tax: () => apiRequest<TaxSettings>('/api/settings/tax', { cacheMode: 'default' }),
+  tax: () => apiRequest<TaxSettings>('/api/admin/settings/tax', { cacheMode: 'default' }),
 }
 
 export const categoryApi = {

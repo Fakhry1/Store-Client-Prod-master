@@ -3,11 +3,11 @@
 import { startTransition, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { orderApi, walletApi } from '@/lib/api'
+import { orderApi, settingsApi, walletApi } from '@/lib/api'
 import { useAuth } from '@/context/auth'
 import { useLocale } from '@/context/locale'
 import { getCurrencyLabel } from '@/lib/store'
-import type { CustomerWalletDetails, DeliveryStatus, Order } from '@/types'
+import type { CustomerWalletDetails, DeliveryStatus, Order, TaxSettings } from '@/types'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STATUS: Record<number, { en: string; ar: string; color: string; dot: string }> = {
@@ -190,9 +190,32 @@ export default function OrdersPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalOrders, setTotalOrders] = useState(0)
   const [filterTab,  setFilterTab]  = useState(-1)
+  const [taxSettings, setTaxSettings] = useState<TaxSettings | null>(null)
   const ordersLoadedRef = useRef(false)
   const detailCacheRef = useRef<Map<number, Order>>(new Map())
   const requestIdRef = useRef(0)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadTaxSettings() {
+      try {
+        const settings = await settingsApi.tax()
+        if (!cancelled) {
+          setTaxSettings(settings)
+        }
+      } catch {
+        if (!cancelled) {
+          setTaxSettings(null)
+        }
+      }
+    }
+
+    void loadTaxSettings()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (authLoading) return
@@ -264,6 +287,7 @@ export default function OrdersPage() {
     return (
       <OrderDetail
         order={detail} isNew={isNew}
+        taxSettings={taxSettings}
         remainingInCart={remainingInCart}
         onBack={() => router.push('/orders')}
       />
@@ -510,8 +534,8 @@ export default function OrdersPage() {
 }
 
 // ─── Order Detail ─────────────────────────────────────────────────────────────
-function OrderDetail({ order, isNew, remainingInCart, onBack }: {
-  order: Order; isNew: boolean; remainingInCart: number; onBack: () => void
+function OrderDetail({ order, isNew, taxSettings, remainingInCart, onBack }: {
+  order: Order; isNew: boolean; taxSettings: TaxSettings | null; remainingInCart: number; onBack: () => void
 }) {
   const { token } = useAuth()
   const { t, locale } = useLocale()
@@ -977,10 +1001,16 @@ function OrderDetail({ order, isNew, remainingInCart, onBack }: {
                 <span>−{order.discountAmount.toFixed(2)} {currencyLabel}</span>
               </div>
             )}
-            <div className="flex justify-between" style={{ color: 'var(--mute)' }}>
-              <span>{t('VAT 15%', 'ضريبة القيمة المضافة 15%')}</span>
-              <span>{order.tax.toFixed(2)} {currencyLabel}</span>
-            </div>
+            {((taxSettings?.isEnabled && (taxSettings?.ratePercent ?? 0) > 0) || (!taxSettings && order.tax > 0)) && (
+              <div className="flex justify-between" style={{ color: 'var(--mute)' }}>
+                <span>
+                  {(taxSettings?.isEnabled && (taxSettings?.ratePercent ?? 0) > 0)
+                    ? t(`VAT ${taxSettings.ratePercent}%`, `ضريبة القيمة المضافة ${taxSettings.ratePercent}%`)
+                    : t('Tax', 'الضريبة')}
+                </span>
+                <span>{order.tax.toFixed(2)} {currencyLabel}</span>
+              </div>
+            )}
             <div className="flex justify-between text-base font-black pt-3 border-t" style={{ color: 'var(--ink)', borderColor: 'var(--line)' }}>
               <span>{t('Total', 'الإجمالي')}</span>
               <span className="" style={{ color: 'var(--orange)' }}>{order.total.toFixed(2)} {currencyLabel}</span>

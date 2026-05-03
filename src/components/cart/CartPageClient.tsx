@@ -8,8 +8,8 @@ import { useRouter } from 'next/navigation'
 import { useCart } from '@/context/cart'
 import { useAuth } from '@/context/auth'
 import { useLocale } from '@/context/locale'
-import { promoApi, orderApi, addressApi, walletApi } from '@/lib/api'
-import type { PromoResult, CustomerAddress, CartItem, Cart, CustomerWalletDetails } from '@/types'
+import { promoApi, orderApi, addressApi, walletApi, settingsApi } from '@/lib/api'
+import type { PromoResult, CustomerAddress, CartItem, Cart, CustomerWalletDetails, TaxSettings } from '@/types'
 import { getCurrencyLabel } from '@/lib/store'
 import { getPublicApiBaseUrl, joinUrl } from '@/lib/url'
 
@@ -350,13 +350,13 @@ function TermsConsentCard({
 // â”€â”€â”€ Order Summary Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function OrderSummaryCard({
-  cart, subtotal, discount, vat, deliveryFee, finalTotal,
+  cart, subtotal, discount, taxAmount, showTaxRow, taxRatePercent, deliveryFee, finalTotal,
   step, promo, setPromo, promoResult, promoLoading, onApplyPromo, onRemovePromo,
   onProceed, placing, hasOut, name, phone, selectedAddr,
   walletBalance, walletLoading, useWalletBalance, onToggleWallet, walletApplied, amountDue,
   agreedToTerms, t, locale, isRTL, orderError
 }: {
-  cart: Cart | null; subtotal: number; discount: number; vat: number
+  cart: Cart | null; subtotal: number; discount: number; taxAmount: number; showTaxRow: boolean; taxRatePercent: number
   deliveryFee: number; finalTotal: number; step: 'cart' | 'checkout' | 'review'
   promo: string; setPromo: (v: string) => void; promoResult: PromoResult | null
   promoLoading: boolean; onApplyPromo: () => void; onRemovePromo: () => void
@@ -373,6 +373,9 @@ function OrderSummaryCard({
     ? !!name && !!phone && !!selectedAddr
     : !!cart && cart.items.length > 0
   const currencyLabel = getCurrencyLabel(locale)
+  const taxLabel = taxRatePercent > 0
+    ? t(`VAT ${taxRatePercent}%`, `ضريبة القيمة المضافة ${taxRatePercent}%`)
+    : t('Tax', 'الضريبة')
 
   return (
     <div className="overflow-hidden rounded-[32px] border bg-white shadow-[0_18px_38px_rgba(15,23,42,0.06)]" style={{ borderColor: 'var(--line)' }}>
@@ -442,10 +445,12 @@ function OrderSummaryCard({
               <span>−{discount.toFixed(2)} {currencyLabel}</span>
             </div>
           )}
-          <div className="flex justify-between">
-            <span style={{ color: 'var(--mute)' }}>{t('VAT 15%', 'ضريبة 15%')}</span>
-            <span className="font-semibold" style={{ color: 'var(--ink)' }}>{vat.toFixed(2)} {currencyLabel}</span>
-          </div>
+          {showTaxRow && (
+            <div className="flex justify-between">
+              <span style={{ color: 'var(--mute)' }}>{taxLabel}</span>
+              <span className="font-semibold" style={{ color: 'var(--ink)' }}>{taxAmount.toFixed(2)} {currencyLabel}</span>
+            </div>
+          )}
           {deliveryFee > 0 && (
             <div className="flex justify-between">
               <span style={{ color: 'var(--mute)' }}>{t('Delivery', 'توصيل')}</span>
@@ -725,6 +730,7 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
   const [walletLoading, setWalletLoading] = useState(false)
   const [useWalletBalance, setUseWalletBalance] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
+  const [taxSettings, setTaxSettings] = useState<TaxSettings | null>(null)
 
   const [addresses, setAddresses]       = useState<CustomerAddress[]>([])
   const [selectedAddr, setSelectedAddr] = useState<number | null>(null)
@@ -819,6 +825,28 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
 
     void loadWallet()
   }, [token])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadTaxSettings() {
+      try {
+        const settings = await settingsApi.tax()
+        if (!cancelled) {
+          setTaxSettings(settings)
+        }
+      } catch {
+        if (!cancelled) {
+          setTaxSettings(null)
+        }
+      }
+    }
+
+    void loadTaxSettings()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const showToast = useCallback((msg: string, tone: 'error' | 'success' | 'info' = 'error') => {
     setToastMsg(msg); setToastTone(tone); setToastOpen(true)
@@ -917,11 +945,23 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
     }
   }
 
-  const discount    = promoResult?.isValid ? (promoResult.discountAmount ?? 0) : 0
-  const subtotal    = cart?.subtotal ?? 0
+  const backendDiscount = cart?.discountAmount ?? 0
+  const promoDiscount = promoResult?.isValid ? (promoResult.discountAmount ?? 0) : 0
+  const discount = promoDiscount > 0 ? promoDiscount : backendDiscount
+  const subtotal = cart?.subtotal ?? 0
+  const taxAmount = cart?.tax ?? 0
   const deliveryFee = fulfillment === 'delivery' ? DELIVERY_FEE : 0
-  const vat         = (subtotal - discount) * 0.15
-  const finalTotal  = (subtotal - discount) * 1.15 + deliveryFee
+  const backendCartTotal = cart?.total ?? Math.max(0, subtotal - discount + taxAmount)
+  const promoAdjustedTotal = promoResult?.isValid
+    ? (typeof promoResult.finalTotal === 'number'
+      ? promoResult.finalTotal
+      : Math.max(0, backendCartTotal - promoDiscount))
+    : backendCartTotal
+  const finalTotal = promoAdjustedTotal + deliveryFee
+  const taxRatePercent = taxSettings?.isEnabled ? Math.max(0, taxSettings.ratePercent ?? 0) : 0
+  const showTaxRow = taxSettings
+    ? taxSettings.isEnabled && (taxSettings.ratePercent ?? 0) > 0
+    : taxAmount > 0
   const walletBalance = walletDetails?.balance ?? 0
   const walletApplied = useWalletBalance ? Math.min(walletBalance, finalTotal) : 0
   const amountDue = Math.max(0, finalTotal - walletApplied)
@@ -1090,7 +1130,8 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
           {/* Right: Summary */}
           <div className="w-full lg:col-span-2 lg:sticky lg:top-24">
             <OrderSummaryCard
-              cart={cart} subtotal={subtotal} discount={discount} vat={vat}
+              cart={cart} subtotal={subtotal} discount={discount} taxAmount={taxAmount}
+              showTaxRow={showTaxRow} taxRatePercent={taxRatePercent}
               deliveryFee={deliveryFee} finalTotal={finalTotal} step={step}
               promo={promo} setPromo={setPromo} promoResult={promoResult}
               promoLoading={promoLoading} onApplyPromo={handleApplyPromo}
