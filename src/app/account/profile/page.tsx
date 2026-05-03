@@ -210,7 +210,7 @@ export default function ProfilePage() {
                   {initials}
                 </div>
                 <div className="min-w-0 pt-3">
-                  <h1 className="truncate text-2xl font-black">{displayName}</h1>
+                  <h1 className="truncate text-2xl font-black" style={{ color: '#fff' }}>{displayName}</h1>
                   <p className="mt-1 text-sm text-white/70" dir="ltr">
                     {phoneNumber || user.phoneNumber}
                   </p>

@@ -19,6 +19,7 @@ function replaceCountMessage(
 export function translateApiError(message: string, t: TranslateFn) {
   const normalized = message.trim()
   const normalizedLower = normalized.toLowerCase()
+  const hasAny = (needles: string[]) => needles.some((needle) => normalizedLower.includes(needle))
 
   if (!normalized) {
     return t(
@@ -100,6 +101,18 @@ export function translateApiError(message: string, t: TranslateFn) {
       en: 'There are no active offers right now.',
       ar: 'لا توجد عروض فعالة حاليًا.',
     },
+    'Phone number already exists': {
+      en: 'This phone number is already registered. Please sign in or use a different number.',
+      ar: 'رقم الهاتف هذا مسجل مسبقًا. يرجى تسجيل الدخول أو استخدام رقم آخر.',
+    },
+    'Phone number is already registered': {
+      en: 'This phone number is already registered. Please sign in or use a different number.',
+      ar: 'رقم الهاتف هذا مسجل مسبقًا. يرجى تسجيل الدخول أو استخدام رقم آخر.',
+    },
+    'Email already exists': {
+      en: 'This email is already registered. Please sign in or use a different email.',
+      ar: 'هذا البريد الإلكتروني مسجل مسبقًا. يرجى تسجيل الدخول أو استخدام بريد آخر.',
+    },
   }
 
   const mapped = exactMap[normalized]
@@ -133,18 +146,36 @@ export function translateApiError(message: string, t: TranslateFn) {
     return t('Current password is incorrect.', 'كلمة المرور الحالية غير صحيحة.')
   }
 
-  if (normalizedLower.includes('already exists') && normalizedLower.includes('phone')) {
+  if (
+    hasAny(['phone', 'phonenumber', 'mobile']) &&
+    hasAny(['already exists', 'already registered', 'already in use', 'duplicate', 'taken', 'exists', 'used'])
+  ) {
     return t(
-      'An account with this phone number already exists.',
-      'يوجد حساب مسجل بهذا الرقم بالفعل.'
+      'This phone number is already registered. Please sign in or use a different number.',
+      'رقم الهاتف هذا مسجل مسبقًا. يرجى تسجيل الدخول أو استخدام رقم آخر.'
     )
   }
 
-  if (normalizedLower.includes('already exists') && normalizedLower.includes('email')) {
+  if (
+    normalizedLower.includes('email') &&
+    hasAny(['already exists', 'already registered', 'already in use', 'duplicate', 'taken', 'exists', 'used'])
+  ) {
     return t(
-      'An account with this email already exists.',
-      'يوجد حساب مسجل بهذا البريد بالفعل.'
+      'This email is already registered. Please sign in or use a different email.',
+      'هذا البريد الإلكتروني مسجل مسبقًا. يرجى تسجيل الدخول أو استخدام بريد آخر.'
     )
+  }
+
+  if (normalizedLower.includes('confirm') && normalizedLower.includes('password')) {
+    return t('Passwords do not match.', 'كلمتا المرور غير متطابقتين.')
+  }
+
+  if (normalizedLower.includes('phone') && normalizedLower.includes('invalid')) {
+    return t('Phone number format is invalid.', 'تنسيق رقم الهاتف غير صحيح.')
+  }
+
+  if (normalizedLower.includes('email') && normalizedLower.includes('invalid')) {
+    return t('Email format is invalid.', 'تنسيق البريد الإلكتروني غير صحيح.')
   }
 
   if (normalizedLower.includes('required')) {

@@ -11,6 +11,20 @@ export const revalidate = 300
 
 const DEFAULT_BRANCH = Number(process.env.NEXT_PUBLIC_DEFAULT_BRANCH_ID ?? '1')
 const PRODUCT_PREVIEW_LIMIT = 12
+const HOME_FAST_TIMEOUT_MS = 3000
+
+type HomeData = {
+  categories: Category[]
+  offers: CatalogItem[]
+  newArrivals: CatalogItem[]
+  bestSellers: CatalogItem[]
+  premiumPicks: CatalogItem[]
+  branchId: number
+}
+
+// Best-effort in-memory safety net: if upstream is temporarily slow/unreachable,
+// serve the latest successful home payload instead of an empty page.
+let lastKnownGoodHomeData: HomeData | null = null
 
 function summaryToCatalogItem(summary: ProductSummary): CatalogItem {
   return {
@@ -52,31 +66,12 @@ function dedupeProducts(items: CatalogItem[]) {
  * non-empty branch succeeds. This avoids waiting for slower branches.
  */
 async function getCatalogFallback(candidateBranches: number[]) {
-  const [primaryBranch, ...fallbackBranches] = candidateBranches
-
-  if (primaryBranch) {
-    try {
-      const primaryItems = await serverApiGet<CatalogItem[]>(
-        `/api/branchinventory/public/branch/${primaryBranch}/catalog`
-      )
-
-      if (Array.isArray(primaryItems) && primaryItems.length > 0) {
-        return { items: primaryItems, branchId: primaryBranch }
-      }
-    } catch {
-      // Fall through to secondary branches.
-    }
-  }
-
-  if (fallbackBranches.length === 0) {
-    return { items: [] as CatalogItem[], branchId: primaryBranch ?? DEFAULT_BRANCH }
-  }
-
   try {
     return await Promise.any(
-      fallbackBranches.map(async (branchId) => {
+      candidateBranches.map(async (branchId) => {
         const items = await serverApiGet<CatalogItem[]>(
-          `/api/branchinventory/public/branch/${branchId}/catalog`
+          `/api/branchinventory/public/branch/${branchId}/catalog`,
+          { timeoutMs: HOME_FAST_TIMEOUT_MS }
         )
 
         if (!Array.isArray(items) || items.length === 0) {
@@ -99,8 +94,11 @@ async function getHomeData() {
   // builds successfully with empty collections — populated on first revalidate after deploy.
   const [{ items, branchId: resolvedBranchId }, categories, productPage] = await Promise.all([
     getCatalogFallback(candidateBranches),
-    serverApiGet<Category[]>('/api/category').catch(() => [] as Category[]),
-    serverApiGet<ProductPage>(`/api/product?page=1&limit=${PRODUCT_PREVIEW_LIMIT}&sort=newest`).catch(() => null),
+    serverApiGet<Category[]>('/api/category', { timeoutMs: HOME_FAST_TIMEOUT_MS }).catch(() => [] as Category[]),
+    serverApiGet<ProductPage>(
+      `/api/product?page=1&limit=${PRODUCT_PREVIEW_LIMIT}&sort=newest`,
+      { timeoutMs: HOME_FAST_TIMEOUT_MS }
+    ).catch(() => null),
   ])
 
   const fallbackItems = productPage?.items?.length
@@ -125,7 +123,7 @@ async function getHomeData() {
     .sort((a, b) => b.currentPrice - a.currentPrice)
     .slice(0, 4)
 
-  return {
+  const result: HomeData = {
     categories: Array.isArray(categories) ? categories.filter((category) => !category.parentCategoryId) : [],
     offers,
     newArrivals,
@@ -133,6 +131,19 @@ async function getHomeData() {
     premiumPicks,
     branchId: resolvedBranchId,
   }
+
+  const hasRenderableContent =
+    result.bestSellers.length > 0 ||
+    result.premiumPicks.length > 0 ||
+    result.newArrivals.length > 0 ||
+    result.offers.length > 0
+
+  if (hasRenderableContent) {
+    lastKnownGoodHomeData = result
+    return result
+  }
+
+  return lastKnownGoodHomeData ?? result
 }
 
 const getCachedHomeData = unstable_cache(getHomeData, ['home-page-data'], {

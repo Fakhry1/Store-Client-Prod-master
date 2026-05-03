@@ -11,6 +11,49 @@ import { validateLocalPhoneInput } from '@/lib/phone'
 
 type FieldErrors = Partial<Record<'firstName' | 'phoneNumber' | 'password' | 'confirmPassword' | 'email', string>>
 
+function inferRegisterFieldErrors(message: string, t: (en: string, ar: string) => string): FieldErrors {
+  const normalized = (message || '').trim().toLowerCase()
+  const hasAny = (terms: string[]) => terms.some((term) => normalized.includes(term))
+
+  const duplicateTerms = ['already exists', 'already registered', 'already in use', 'duplicate', 'taken', 'used', 'exists']
+
+  if (hasAny(['phone', 'phonenumber', 'mobile']) && hasAny(duplicateTerms)) {
+    return {
+      phoneNumber: t(
+        'This phone number is already registered. Try signing in instead.',
+        'رقم الهاتف هذا مسجل مسبقًا. جرّب تسجيل الدخول بدلًا من إنشاء حساب جديد.'
+      ),
+    }
+  }
+
+  if (normalized.includes('email') && hasAny(duplicateTerms)) {
+    return {
+      email: t(
+        'This email is already registered. Use another email or sign in.',
+        'هذا البريد الإلكتروني مسجل مسبقًا. استخدم بريدًا آخر أو سجّل الدخول.'
+      ),
+    }
+  }
+
+  if (normalized.includes('confirm') && normalized.includes('password')) {
+    return { confirmPassword: t('Passwords do not match.', 'كلمتا المرور غير متطابقتين.') }
+  }
+
+  if (normalized.includes('password') && (normalized.includes('at least') || normalized.includes('minimum'))) {
+    return { password: t('Password must be at least 8 characters.', 'كلمة المرور يجب أن تكون 8 أحرف على الأقل.') }
+  }
+
+  if (normalized.includes('phone') && normalized.includes('invalid')) {
+    return { phoneNumber: t('Phone number format is invalid.', 'تنسيق رقم الهاتف غير صحيح.') }
+  }
+
+  if (normalized.includes('email') && normalized.includes('invalid')) {
+    return { email: t('Email format is invalid.', 'تنسيق البريد الإلكتروني غير صحيح.') }
+  }
+
+  return {}
+}
+
 export default function RegisterPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -61,7 +104,15 @@ export default function RegisterPage() {
       await register({ firstName: form.firstName.trim(), lastName: form.lastName.trim() || undefined, email: form.email.trim() || undefined, phoneNumber: form.phoneNumber, password: form.password, confirmPassword: form.confirmPassword })
       router.replace(redirect)
     } catch (err: any) {
-      setError(translateApiError(err.message || 'Failed to create account', t))
+      const rawMessage = err?.message || 'Failed to create account'
+      const translated = translateApiError(rawMessage, t)
+      const inferredFieldErrors = inferRegisterFieldErrors(rawMessage, t)
+
+      if (Object.keys(inferredFieldErrors).length > 0) {
+        setFieldErrors((current) => ({ ...current, ...inferredFieldErrors }))
+      }
+
+      setError(translated)
     } finally {
       setLoading(false)
     }

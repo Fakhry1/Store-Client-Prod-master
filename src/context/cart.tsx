@@ -66,6 +66,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [authLoading, token])
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/auth')) {
+      setLoading(false)
+      return
+    }
+
     // Defer initial cart fetch until after first paint to reduce TBT
     const timer = window.setTimeout(() => void fetchCart(), 0)
     return () => window.clearTimeout(timer)

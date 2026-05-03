@@ -11,6 +11,7 @@ import { SearchBar, SearchIcon } from '@/components/ui/SearchBar'
 
 export function Navbar() {
   const pathname = usePathname()
+  const hideOnAuthRoute = pathname.startsWith('/auth')
   const { user, logout, isLoading } = useAuth()
   const { itemCount } = useCart()
   const { locale, toggle, t } = useLocale()
@@ -39,6 +40,10 @@ export function Navbar() {
   const initials = user
     ? `${user.firstName?.charAt(0) ?? ''}${user.lastName?.charAt(0) ?? ''}`.toUpperCase()
     : ''
+
+  if (hideOnAuthRoute) {
+    return null
+  }
 
   if (!mounted) {
     return (
