@@ -80,6 +80,11 @@ function sanitizeAttribution(attribution?: Record<string, unknown>) {
 }
 
 function reportMetric(metric: HomeVitalMetric) {
+  const isMobile = typeof window !== 'undefined' ? window.matchMedia('(max-width: 767px)').matches : false
+  const debugEnabled =
+    process.env.NODE_ENV === 'development' ||
+    (typeof window !== 'undefined' && window.localStorage.getItem('debug:web-vitals') === '1')
+
   const payload = {
     id: metric.id,
     name: metric.name,
@@ -90,6 +95,8 @@ function reportMetric(metric: HomeVitalMetric) {
     navigationType: metric.navigationType,
     entries: summarizeEntries(metric.entries),
     attribution: sanitizeAttribution(metric.attribution),
+    deviceType: isMobile ? 'mobile' : 'desktop',
+    viewportWidth: typeof window !== 'undefined' ? window.innerWidth : undefined,
     recordedAt: new Date().toISOString(),
   }
 
@@ -99,7 +106,9 @@ function reportMetric(metric: HomeVitalMetric) {
       ? '[web-vitals][warn]'
       : '[web-vitals]'
 
-  console.info(prefix, payload)
+  if (debugEnabled) {
+    console.info(prefix, payload)
+  }
 
   const body = JSON.stringify(payload)
 

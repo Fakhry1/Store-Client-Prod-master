@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "npx next start -p 3000",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "perf:compare-baseline": "node scripts/perf/compare-baseline.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.7.0",

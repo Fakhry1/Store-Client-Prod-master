@@ -198,7 +198,6 @@ export default async function ShopPage({ searchParams }: PageProps) {
   return (
     <>
       {firstShopImage && (
-        // eslint-disable-next-line @next/next/no-head-element
         <link rel="preload" as="image" href={firstShopImage} fetchPriority="high" />
       )}
       <div className="min-h-screen overflow-x-hidden bg-[#f8f6f2]">

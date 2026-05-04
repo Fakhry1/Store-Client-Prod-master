@@ -3,11 +3,8 @@ import localFont from 'next/font/local'
 import { Space_Grotesk } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/context/auth'
-import { CartProvider } from '@/context/cart'
 import { LocaleProvider } from '@/context/locale'
-import { Navbar } from '@/components/layout/Navbar'
-import { BottomNav } from '@/components/layout/BottomNav'
-import { ToastProvider } from '@/components/ui/Toaster'
+import { RouteScopedShell } from '@/components/layout/RouteScopedShell'
 import { getSiteUrl, getStoreDescription, STORE_KEYWORDS, STORE_NAME } from '@/lib/store'
 import type { ReactNode } from 'react'
 
@@ -119,13 +116,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         )}
         <LocaleProvider>
           <AuthProvider>
-            <CartProvider>
-              <ToastProvider>
-                <Navbar />
-                <main className="pb-20 md:pb-0">{children}</main>
-                <BottomNav />
-              </ToastProvider>
-            </CartProvider>
+            <RouteScopedShell>{children}</RouteScopedShell>
           </AuthProvider>
         </LocaleProvider>
       </body>

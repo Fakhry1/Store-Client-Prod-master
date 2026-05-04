@@ -167,7 +167,6 @@ export default async function HomePage() {
   return (
     <>
       {firstHeroImage && (
-        // eslint-disable-next-line @next/next/no-head-element
         <link rel="preload" as="image" href={firstHeroImage} fetchPriority="high" />
       )}
       <main className="min-h-screen bg-[#F8F6F2]">

@@ -2,15 +2,35 @@
 
 import { useEffect, useState, useMemo, useCallback, Suspense, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { catalogApi, productApi, wishlistApi } from '@/lib/api'
+import dynamic from 'next/dynamic'
+import { productApi, wishlistApi } from '@/lib/api'
 import { useCart } from '@/context/cart'
 import { useAuth } from '@/context/auth'
 import { useLocale } from '@/context/locale'
 import { formatSavingsLabel, getCurrencyLabel } from '@/lib/store'
 import { getPublicApiBaseUrl, joinUrl } from '@/lib/url'
-import type { Product, ProductVariant, VariantAttribute, BranchProductAvailabilityItem } from '@/types'
+import type { Product, ProductVariant, VariantAttribute } from '@/types'
 import { ProductImageGallery } from '@/components/product/ProductImageGallery'
-import { AddToCartPanel } from '@/components/product/AddToCartPanel'
+import {
+  useAvailabilitySync,
+  useVariantSelection,
+  useWishlistOrchestration,
+} from '@/components/product/hooks/orchestration'
+
+const AddToCartPanel = dynamic(
+  () => import('@/components/product/AddToCartPanel').then((module) => module.AddToCartPanel),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-20 md:static">
+        <div
+          className="h-32 animate-pulse rounded-[32px] border bg-white/95 p-2.5 backdrop-blur md:rounded-[30px] md:border md:p-4"
+          style={{ borderColor: 'var(--line)', boxShadow: '0 18px 34px rgba(10,31,68,0.12)' }}
+        />
+      </div>
+    ),
+  }
+)
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Attribute Helpers Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
@@ -272,7 +292,6 @@ function ProductPageInner({
   const [wishlistLoading, setWishlistLoading] = useState(false)
   const productCacheRef = useRef<Map<number, Product>>(initialProduct ? new Map([[initialProduct.id, initialProduct]]) : new Map())
   const productReqIdRef = useRef(0)
-  const branchAvailabilityReqIdRef = useRef(0)
 
   const activeVariants = useMemo(() => product?.variants.filter(v => v.isActive) ?? [], [product])
   const attrKeys       = useMemo(() => getAttrKeys(activeVariants), [activeVariants])
@@ -365,79 +384,31 @@ function ProductPageInner({
       })
   }, [productId, variantId, router, initialProduct, initialProductImages, preloadedVariantId, token, branchId])
 
-  // Keep wishlist + branch availability in sync for all entry paths
-  // (SSR initial product, cached product, and fresh fetch).
   useEffect(() => {
-    if (!product?.id) return
+    if (!token || !selected?.id) {
+      setWishlisted(false)
+      return
+    }
 
-    const reqId = ++branchAvailabilityReqIdRef.current
     let cancelled = false
-    const syncAvailabilityAndWishlist = () => {
-      Promise.all([
-        token && selected?.id
-          ? wishlistApi.check(token, selected.id).catch(() => ({ isWishlisted: false }))
-          : Promise.resolve({ isWishlisted: false }),
-        branchId
-          ? catalogApi.getProductAvailability(branchId, product.id).catch(() => [])
-          : Promise.resolve([]),
-      ])
-        .then(([wishlistResult, availabilityItems]) => {
-          if (cancelled || reqId !== branchAvailabilityReqIdRef.current) return
-
-          if (wishlistResult?.isWishlisted !== undefined) {
-            setWishlisted(wishlistResult.isWishlisted)
+    const checkWishlist = () => {
+      void wishlistApi.check(token, selected.id)
+        .then((result) => {
+          if (!cancelled && result?.isWishlisted !== undefined) {
+            setWishlisted(result.isWishlisted)
           }
-
-          if (!Array.isArray(availabilityItems) || availabilityItems.length === 0) return
-
-          const availabilityByVariantId = new Map(
-            (availabilityItems as BranchProductAvailabilityItem[]).map((item) => [Number(item.variantId), item] as const)
-          )
-
-          setProduct((currentProduct) => {
-            if (!currentProduct || currentProduct.id !== product.id) return currentProduct
-
-            const nextVariants = currentProduct.variants.map((variant) => {
-              const availability = availabilityByVariantId.get(variant.id)
-              if (!availability) return variant
-
-              const rawStock = availability.isAvailable ? Number(availability.quantityInStock) : 0
-              const nextStock = Number.isFinite(rawStock) ? Math.max(0, rawStock) : 0
-
-              return {
-                ...variant,
-                quantityInStock: nextStock,
-              }
-            })
-
-            return {
-              ...currentProduct,
-              variants: nextVariants,
-            }
-          })
-
-          setSelected((currentSelected) => {
-            if (!currentSelected) return currentSelected
-
-            const availability = availabilityByVariantId.get(currentSelected.id)
-            if (!availability) return currentSelected
-
-            const rawStock = availability.isAvailable ? Number(availability.quantityInStock) : 0
-            const nextStock = Number.isFinite(rawStock) ? Math.max(0, rawStock) : 0
-
-            return {
-              ...currentSelected,
-              quantityInStock: nextStock,
-            }
-          })
         })
-        .catch(() => {})
+        .catch(() => {
+          if (!cancelled) {
+            setWishlisted(false)
+          }
+        })
     }
 
     const hasIdleCallback = typeof window !== 'undefined' && 'requestIdleCallback' in window
     const handle = hasIdleCallback
-      ? window.requestIdleCallback(syncAvailabilityAndWishlist)
-      : window.setTimeout(syncAvailabilityAndWishlist, 250)
+      ? window.requestIdleCallback(checkWishlist, { timeout: 1200 })
+      : window.setTimeout(checkWishlist, 250)
 
     return () => {
       cancelled = true
@@ -446,40 +417,29 @@ function ProductPageInner({
       } else {
         window.clearTimeout(handle)
       }
-      if (reqId === branchAvailabilityReqIdRef.current) {
-        branchAvailabilityReqIdRef.current += 1
-      }
     }
-  }, [branchId, product?.id, selected?.id, token])
+  }, [token, selected?.id])
 
-  const handleWishlist = useCallback(async () => {
-    if (!token) {
-      const redirectParams = new URLSearchParams({
-        id: String(productId),
-        variant: String(selected?.id ?? ''),
-        branch: String(branchId),
-      })
-      router.push(`/auth/login?redirect=${encodeURIComponent(`/product?${redirectParams.toString()}`)}`)
-      return
-    }
-    if (!selected) return
+  useAvailabilitySync({
+    branchId,
+    product,
+    selected,
+    setProduct,
+    setSelected,
+  })
 
-    // Optimistic update — flip immediately, revert on failure
-    const prev = wishlisted
-    setWishlisted(!prev)
-    setWishlistLoading(true)
-    try {
-      if (prev) {
-        await wishlistApi.remove(token, selected.id)
-      } else {
-        await wishlistApi.add(token, productId, selected.id)
-      }
-    } catch {
-      setWishlisted(prev)
-    } finally {
-      setWishlistLoading(false)
-    }
-  }, [token, productId, selected, wishlisted, router])
+  const handleWishlist = useWishlistOrchestration({
+    token,
+    productId,
+    selectedVariantId: selected?.id,
+    branchId,
+    wishlisted,
+    setWishlisted,
+    setWishlistLoading,
+    onRequireLogin: (redirect) => {
+      router.push(`/auth/login?redirect=${encodeURIComponent(redirect)}`)
+    },
+  })
 
   useEffect(() => {
     if (!product || !hasAttrs || !Object.keys(sel).length) return
@@ -494,26 +454,15 @@ function ProductPageInner({
     }
   }, [sel, product, activeVariants, hasAttrs, allImages, selected?.id])
 
-  const selectOption = useCallback((attrId: number, valueEn: string) => {
-    setSel(prev => {
-      const next: Record<number, string> = { ...prev, [attrId]: valueEn }
-
-      // Ã™â€¡Ã™â€ž Ã™Å Ã™Ë†Ã˜Â¬Ã˜Â¯ variant Ã™Å Ã˜Â·Ã˜Â§Ã˜Â¨Ã™â€š Ã˜Â§Ã™â€žÃ™â‚¬ selection Ã˜Â§Ã™â€žÃ™Æ’Ã˜Â§Ã™â€¦Ã™â€žÃ˜Å¸
-      const exactMatch = activeVariants.some(v => v.isActive && variantMatchesSel(v, next))
-      if (exactMatch) return next
-
-      // Ã™â€žÃ˜Â§ Ã™Å Ã™Ë†Ã˜Â¬Ã˜Â¯ Ã˜ÂªÃ˜Â·Ã˜Â§Ã˜Â¨Ã™â€š Ã™Æ’Ã˜Â§Ã™â€¦Ã™â€ž Ã¢â€ â€™ Ã˜Â§Ã˜Â¨Ã˜Â­Ã˜Â« Ã˜Â¹Ã™â€  Ã˜Â£Ã™â€šÃ˜Â±Ã˜Â¨ variant Ã™Å Ã˜Â­Ã˜ÂªÃ™Ë†Ã™Å  Ã˜Â§Ã™â€žÃ™â€šÃ™Å Ã™â€¦Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯Ã˜Â©
-      // Ã™Ë†Ã˜Â¹Ã˜Â¯Ã™â€˜Ã™â€ž Ã˜Â¨Ã˜Â§Ã™â€šÃ™Å  Ã˜Â§Ã™â€žÃ˜Â®Ã˜ÂµÃ˜Â§Ã˜Â¦Ã˜Âµ Ã˜ÂªÃ™â€žÃ™â€šÃ˜Â§Ã˜Â¦Ã™Å Ã˜Â§Ã™â€¹ Ã™â€žÃ˜ÂªÃ˜ÂªÃ™Ë†Ã˜Â§Ã™ÂÃ™â€š Ã™â€¦Ã˜Â¹Ã™â€¡
-      const compatible = activeVariants.find(v =>
-        v.isActive &&
-        getVariantAttrs(v).some(a => a.attributeId === attrId && (a.valueEn ?? a.rawValue) === valueEn)
-      )
-      if (compatible) return buildSelectionFromVariant(compatible)
-
-      // fallback: Ã™ÂÃ™â€šÃ˜Â· Ã˜Â§Ã™â€žÃ™â€šÃ™Å Ã™â€¦Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯Ã˜Â©
-      return { [attrId]: valueEn }
-    })
-  }, [activeVariants])
+  const selectOption = useVariantSelection({
+    activeVariants,
+    helpers: {
+      getVariantAttrs,
+      variantMatchesSel,
+      buildSelectionFromVariant,
+    },
+    setSel,
+  })
 
   const selectedVariantId = selected?.id ?? 0
   const baseStock = Math.max(0, selected?.quantityInStock ?? 0)
@@ -947,34 +896,35 @@ function isColorDark(hex: string): boolean {
 
 function ProductSkeleton() {
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 grid md:grid-cols-2 gap-8 animate-pulse">
-      <div className="flex flex-col gap-3">
-        <div className="aspect-square rounded-3xl bg-[var(--paper-2)]" />
-        <div className="flex gap-2">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="w-16 h-16 rounded-xl bg-[var(--paper-2)]" />
-          ))}
+    <div className="min-h-screen bg-[linear-gradient(180deg,#f8f6f2_0%,#ffffff_42%,#f4ede1_100%)]">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 grid md:grid-cols-2 gap-8 animate-pulse">
+        <div className="flex flex-col gap-3">
+          <div className="aspect-square rounded-3xl bg-[var(--paper-2)]" />
+          <div className="flex gap-2">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="w-16 h-16 rounded-xl bg-[var(--paper-2)]" />
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="flex flex-col gap-5 pt-2">
-        <div className="h-3 w-16 bg-[var(--paper-2)] rounded-full" />
-        <div className="h-9 bg-[var(--paper-2)] rounded-xl" />
-        <div className="h-10 w-40 bg-[var(--paper-2)] rounded-xl" />
-        <div className="h-px bg-[var(--paper-2)]" />
-        {/* Attribute skeletons */}
-        <div className="space-y-5">
-          {[1, 2].map(i => (
-            <div key={i}>
-              <div className="h-4 w-20 bg-[var(--paper-2)] rounded-full mb-3" />
-              <div className="flex gap-2">
-                {[1,2,3,4].map(j => (
-                  <div key={j} className={i === 1 ? 'w-10 h-10 rounded-full bg-[var(--paper-2)]' : 'w-14 h-10 rounded-xl bg-[var(--paper-2)]'} />
-                ))}
+        <div className="flex flex-col gap-5 pt-2">
+          <div className="h-3 w-16 bg-[var(--paper-2)] rounded-full" />
+          <div className="h-9 bg-[var(--paper-2)] rounded-xl" />
+          <div className="h-10 w-40 bg-[var(--paper-2)] rounded-xl" />
+          <div className="h-px bg-[var(--paper-2)]" />
+          <div className="space-y-5">
+            {[1, 2].map(i => (
+              <div key={i}>
+                <div className="h-4 w-20 bg-[var(--paper-2)] rounded-full mb-3" />
+                <div className="flex gap-2">
+                  {[1,2,3,4].map(j => (
+                    <div key={j} className={i === 1 ? 'w-10 h-10 rounded-full bg-[var(--paper-2)]' : 'w-14 h-10 rounded-xl bg-[var(--paper-2)]'} />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+          <div className="h-14 bg-[var(--paper-2)] rounded-2xl" />
         </div>
-        <div className="h-14 bg-[var(--paper-2)] rounded-2xl" />
       </div>
     </div>
   )

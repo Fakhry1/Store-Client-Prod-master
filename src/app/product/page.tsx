@@ -125,7 +125,6 @@ export default async function ProductPage({ searchParams }: ProductPageProps) {
   return (
     <>
       {firstProductImage && (
-        // eslint-disable-next-line @next/next/no-head-element
         <link rel="preload" as="image" href={firstProductImage} fetchPriority="high" />
       )}
       <ProductPageClient

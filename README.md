@@ -8,6 +8,16 @@ npm run dev
 # → http://localhost:3000
 ```
 
+## Performance Baseline Compare
+
+```bash
+npm run perf:compare-baseline
+```
+
+- Baseline file: `lh-reports/perf-baseline.json`
+- Command compares baseline against the latest matching `new-*-3101*.json` files in `lh-reports/`.
+- Use this after generating fresh Lighthouse runs to get instant deltas for Home, Shop, Product, and Cart.
+
 ## إعداد `.env.local`
 
 ```env

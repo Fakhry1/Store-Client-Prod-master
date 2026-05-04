@@ -30,7 +30,7 @@ export const authApi = {
     }),
 
   me: (token?: string) =>
-    apiRequest<CustomerUser>('/api/customer/auth/me', { token }),
+    apiRequest<CustomerUser>('/api/customer/auth/me', { token, cacheStrategy: 'realtime' }),
 
   logout: (token?: string) =>
     apiRequest<{ message: string }>('/api/customer/auth/logout', {
@@ -90,17 +90,17 @@ export const authApi = {
 
 // ─── Branches ────────────────────────────────────────────────────────────────
 export const branchApi = {
-  list: (token?: string) => apiRequest<Branch[]>('/api/branch', { token }),
+  list: (token?: string) => apiRequest<Branch[]>('/api/branch', { token, cacheStrategy: 'semi-static' }),
 }
 
 // ─── Categories ──────────────────────────────────────────────────────────────
 export const settingsApi = {
-  tax: () => apiRequest<TaxSettings>('/api/admin/settings/tax', { cacheMode: 'default' }),
+  tax: () => apiRequest<TaxSettings>('/api/admin/settings/tax', { cacheStrategy: 'semi-static' }),
 }
 
 export const categoryApi = {
-  list: () => apiRequest<Category[]>('/api/category', { cacheMode: 'default' }),
-  tree: () => apiRequest<CategoryTreeNode[]>('/api/category/tree', { cacheMode: 'default' }),
+  list: () => apiRequest<Category[]>('/api/category', { cacheStrategy: 'semi-static' }),
+  tree: () => apiRequest<CategoryTreeNode[]>('/api/category/tree', { cacheStrategy: 'semi-static' }),
 }
 
 // ─── Catalog (public) ────────────────────────────────────────────────────────
@@ -111,22 +111,24 @@ export const catalogApi = {
     if (params?.searchTerm) qs.set('searchTerm',  params.searchTerm)
     const query = qs.toString() ? `?${qs}` : ''
     return apiRequest<CatalogItem[]>(
-      `/api/branchinventory/public/branch/${branchId}/catalog${query}`
+      `/api/branchinventory/public/branch/${branchId}/catalog${query}`,
+      { cacheStrategy: 'semi-static' }
     )
   },
   getProductAvailability: (branchId: number, productId: number) =>
     apiRequest<BranchProductAvailabilityItem[]>(
-      `/api/branchinventory/public/branch/${branchId}/product/${productId}`
+      `/api/branchinventory/public/branch/${branchId}/product/${productId}`,
+      { cacheStrategy: 'realtime' }
     ),
 }
 
 // ─── Products ────────────────────────────────────────────────────────────────
 export const productApi = {
   getById: (id: number) =>
-    apiRequest<Product>(`/api/product/${id}`, { cacheMode: 'default' }),
+    apiRequest<Product>(`/api/product/${id}`, { cacheStrategy: 'semi-static' }),
 
   images: (id: number) =>
-    apiRequest<ProductImage[]>(`/api/product/${id}/images`, { cacheMode: 'default' }),
+    apiRequest<ProductImage[]>(`/api/product/${id}/images`, { cacheStrategy: 'semi-static' }),
 
   list: (query: ProductQuery = {}) => {
     const qs = new URLSearchParams()
@@ -144,7 +146,7 @@ export const productApi = {
         if (optionIds) qs.set(`attrs[${attrId}]`, optionIds)
       })
     }
-    return apiRequest<ProductPage>(`/api/product?${qs}`, { cacheMode: 'default' })
+    return apiRequest<ProductPage>(`/api/product?${qs}`, { cacheStrategy: 'semi-static' })
   },
 
   facets: (query: ProductQuery = {}) => {
@@ -160,14 +162,14 @@ export const productApi = {
         if (optionIds) qs.set(`attrs[${attrId}]`, optionIds)
       })
     }
-    return apiRequest<Facets>(`/api/product/facets?${qs}`, { cacheMode: 'default' })
+    return apiRequest<Facets>(`/api/product/facets?${qs}`, { cacheStrategy: 'semi-static' })
   },
 }
 
 // ─── Cart ────────────────────────────────────────────────────────────────────
 export const cartApi = {
   get:        (token?: string) =>
-    apiRequest<Cart>('/api/cart', { token }),
+    apiRequest<Cart>('/api/cart', { token, cacheStrategy: 'realtime' }),
 
   add:        (token: string | undefined, data: { productId: number; productVariantId: number; branchId: number; quantity: number }) =>
     apiRequest<void>('/api/cart/add', { method: 'POST', token, body: data }),
@@ -182,13 +184,13 @@ export const cartApi = {
     apiRequest<void>('/api/cart/clear', { method: 'DELETE', token }),
 
   count:      (token: string | undefined) =>
-    apiRequest<{ count: number }>('/api/cart/count', { token }),
+    apiRequest<{ count: number }>('/api/cart/count', { token, cacheStrategy: 'realtime' }),
 
   mergeGuest: (token: string | undefined, sessionId: string) =>
     apiRequest<void>(`/api/cart/merge/${sessionId}`, { method: 'POST', token }),
 
   getGuest:        (sessionId: string) =>
-    apiRequest<Cart>(`/api/cart/guest/${sessionId}`),
+    apiRequest<Cart>(`/api/cart/guest/${sessionId}`, { cacheStrategy: 'realtime' }),
 
   addGuest:        (sessionId: string, data: { productId: number; productVariantId: number; branchId: number; quantity: number }) =>
     apiRequest<void>(`/api/cart/guest/${sessionId}/add`, { method: 'POST', body: data }),
@@ -200,7 +202,7 @@ export const cartApi = {
     apiRequest<void>(`/api/cart/guest/${sessionId}/item/${itemId}`, { method: 'DELETE' }),
 
   guestCount:      (sessionId: string) =>
-    apiRequest<{ count: number }>(`/api/cart/guest/${sessionId}/count`),
+    apiRequest<{ count: number }>(`/api/cart/guest/${sessionId}/count`, { cacheStrategy: 'realtime' }),
 }
 
 // ─── Promo ───────────────────────────────────────────────────────────────────
@@ -239,7 +241,7 @@ export const orderApi = {
   },
 
   getById: (token: string | undefined, id: number) =>
-    apiRequest<Order>(`/api/order/${id}`, { token }),
+    apiRequest<Order>(`/api/order/${id}`, { token, cacheStrategy: 'realtime' }),
 
   cancel: (token: string | undefined, id: number) =>
     apiRequest<void>(`/api/order/${id}/cancel`, { method: 'POST', token }),
@@ -247,13 +249,13 @@ export const orderApi = {
 
 export const walletApi = {
   me: (token: string | undefined, limit = 20) =>
-    apiRequest<CustomerWalletDetails>(`/api/customer/wallet/me?limit=${limit}`, { token }),
+    apiRequest<CustomerWalletDetails>(`/api/customer/wallet/me?limit=${limit}`, { token, cacheStrategy: 'realtime' }),
 }
 
 // ─── Addresses ───────────────────────────────────────────────────────────────
 export const addressApi = {
   list: (token?: string) =>
-    apiRequest<{ total: number; addresses: CustomerAddress[] }>('/api/customer/addresses', { token }),
+    apiRequest<{ total: number; addresses: CustomerAddress[] }>('/api/customer/addresses', { token, cacheStrategy: 'realtime' }),
 
   create: (token: string | undefined, data: Omit<CustomerAddress, 'id'>) =>
     apiRequest<CustomerAddress>('/api/customer/addresses', { method: 'POST', token, body: data }),
@@ -271,7 +273,7 @@ export const addressApi = {
 // ─── Wishlist ────────────────────────────────────────────────────────────────
 export const wishlistApi = {
   list: (token?: string) =>
-    apiRequest<Wishlist>('/api/wishlist', { token }),
+    apiRequest<Wishlist>('/api/wishlist', { token, cacheStrategy: 'realtime' }),
 
   add: (token: string | undefined, productId: number, productVariantId: number) =>
     apiRequest<void>('/api/wishlist/add', {
@@ -284,7 +286,7 @@ export const wishlistApi = {
   check: (token: string | undefined, variantId: number) =>
     apiRequest<{ isWishlisted?: boolean; isInWishlist?: boolean }>(
       `/api/wishlist/check/${variantId}`,
-      { token }
+      { token, cacheStrategy: 'realtime' }
     ).then(res => ({ isWishlisted: res.isWishlisted ?? res.isInWishlist ?? false })),
 
   moveToCart: (token: string | undefined, variantId: number, branchId: number) =>

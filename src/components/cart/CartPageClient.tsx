@@ -8,10 +8,13 @@ import { useRouter } from 'next/navigation'
 import { useCart } from '@/context/cart'
 import { useAuth } from '@/context/auth'
 import { useLocale } from '@/context/locale'
-import { promoApi, orderApi, addressApi, walletApi, settingsApi } from '@/lib/api'
-import type { PromoResult, CustomerAddress, CartItem, Cart, CustomerWalletDetails, TaxSettings } from '@/types'
+import { orderApi, addressApi, settingsApi } from '@/lib/api'
+import type { PromoResult, CustomerAddress, CartItem, Cart, TaxSettings } from '@/types'
 import { getCurrencyLabel } from '@/lib/store'
 import { getPublicApiBaseUrl, joinUrl } from '@/lib/url'
+import { useCheckoutStep } from '@/components/cart/state/useCheckoutStep'
+import { usePromoWallet } from '@/components/cart/hooks/usePromoWallet'
+import { CartOrderSummaryModule } from '@/components/cart/modules/CartOrderSummaryModule'
 
 const AddressModal = dynamic(() => import('@/components/AddressModal'), {
   loading: () => null,
@@ -708,17 +711,19 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
   const { token, user }  = useAuth()
   const { t, locale }    = useLocale()
   const isRTL = (locale as string) === 'ar'
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    setHydrated(true)
+  }, [])
 
   const [fulfillment, setFulfillment] = useState<'pickup' | 'delivery'>('pickup')
-  const [promo, setPromo]             = useState('')
-  const [promoResult, setPromoResult] = useState<PromoResult | null>(null)
-  const [promoLoading, setPromoLoading] = useState(false)
 
   const [toastOpen, setToastOpen]   = useState(false)
   const [toastMsg, setToastMsg]     = useState('')
   const [toastTone, setToastTone]   = useState<'error' | 'success' | 'info'>('error')
 
-  const [step, setStep] = useState<CartStep>(initialStep)
+  const { step, setStep, canGoBack, back } = useCheckoutStep(initialStep)
   const [placing, setPlacing]       = useState(false)
   const [orderError, setOrderError] = useState('')
 
@@ -726,9 +731,6 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
   const [phone, setPhone]   = useState(user?.phoneNumber ?? '')
   const [notes, setNotes]   = useState('')
   const [payment, setPayment] = useState(1)
-  const [walletDetails, setWalletDetails] = useState<CustomerWalletDetails | null>(null)
-  const [walletLoading, setWalletLoading] = useState(false)
-  const [useWalletBalance, setUseWalletBalance] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [taxSettings, setTaxSettings] = useState<TaxSettings | null>(null)
 
@@ -738,7 +740,6 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
   const [showAddressModal, setShowAddressModal] = useState(false)
   const addrLoadedRef = useRef(false)
   const addrLoadingPromiseRef = useRef<Promise<void> | null>(null)
-  const walletReqIdRef = useRef(0)
 
   const hasOut = !!cart?.items?.some(i => !i.isAvailable || i.stockQuantity < i.quantity)
 
@@ -793,40 +794,6 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
   }, [step, token, loadAddresses, user, name, phone])
 
   useEffect(() => {
-    const reqId = ++walletReqIdRef.current
-
-    async function loadWallet() {
-      if (!token) {
-        if (reqId === walletReqIdRef.current) {
-          setWalletDetails(null)
-          setUseWalletBalance(false)
-        }
-        return
-      }
-
-      setWalletLoading(true)
-      try {
-        const res = await walletApi.me(token, 10)
-        if (reqId === walletReqIdRef.current) {
-          startTransition(() => {
-            setWalletDetails(res)
-            if ((res?.balance ?? 0) <= 0) setUseWalletBalance(false)
-          })
-        }
-      } catch {
-        if (reqId === walletReqIdRef.current) {
-          setWalletDetails(null)
-          setUseWalletBalance(false)
-        }
-      } finally {
-        if (reqId === walletReqIdRef.current) setWalletLoading(false)
-      }
-    }
-
-    void loadWallet()
-  }, [token])
-
-  useEffect(() => {
     let cancelled = false
 
     async function loadTaxSettings() {
@@ -852,6 +819,27 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
     setToastMsg(msg); setToastTone(tone); setToastOpen(true)
   }, [])
 
+  const {
+    promo,
+    setPromo,
+    promoResult,
+    promoLoading,
+    handleApplyPromo,
+    handleRemovePromo,
+    walletDetails,
+    walletLoading,
+    useWalletBalance,
+    setUseWalletBalance,
+  } = usePromoWallet({
+    token,
+    cart,
+    t,
+    onInfo: (message) => showToast(message, 'info'),
+    onRequireLogin: () => {
+      router.push('/auth/login?redirect=' + encodeURIComponent('/cart?step=checkout'))
+    },
+  })
+
   const handleRemoveItem = useCallback(async (id: number) => {
     await removeItem(id)
     showToast(t('Removed from cart', 'تم الحذف من السلة'), 'success')
@@ -861,25 +849,6 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
     try { await updateItem(id, qty) }
     catch (e: any) { showToast(e?.message || t('Failed', 'فشل'), 'error'); throw e }
   }, [updateItem, showToast, t])
-
-  async function handleApplyPromo() {
-    if (!promo.trim() || !cart) return
-    if (!token) {
-      showToast(t('Login first to apply promo codes', 'سجّل الدخول أولاً لتطبيق أكواد الخصم'), 'info')
-      router.push('/auth/login?redirect=' + encodeURIComponent('/cart?step=checkout'))
-      return
-    }
-    setPromoLoading(true); setPromoResult(null)
-    try {
-      const res = await promoApi.validate(token, promo.trim().toUpperCase(), cart.subtotal)
-      setPromoResult(res)
-      if ((res as any)?.isValid) showToast(t('Promo applied!', 'تم تطبيق الكود! 🎉'), 'success')
-    } catch {
-      setPromoResult({ isValid: false, errorMessage: t('Failed to validate', 'فشل التحقق') })
-    } finally { setPromoLoading(false) }
-  }
-
-  function handleRemovePromo() { setPromoResult(null); setPromo('') }
 
   async function handlePlaceOrder() {
     if (!token) { router.push('/auth/login?redirect=/cart'); return }
@@ -977,10 +946,10 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
         ? t('Review Order', 'مراجعة الطلب')
         : t('Place Order', 'تأكيد الطلب')
 
-    if (isLoading && !cart) {
+    if ((!hydrated || isLoading) && !cart) {
       return (
-        <div className="min-h-[80svh] px-6 text-center" style={{ background: 'var(--paper)' }}>
-          <div className="mx-auto flex min-h-[80svh] max-w-md flex-col items-center justify-center">
+        <div className="min-h-screen px-6 text-center" style={{ background: 'var(--paper)' }}>
+          <div className="mx-auto flex min-h-[calc(100svh-5rem)] max-w-md flex-col items-center justify-center">
             <div className="mb-6 h-24 w-24 animate-pulse rounded-[32px] border bg-white" style={{ borderColor: 'var(--line)' }} />
             <div className="mb-2 h-8 w-52 animate-pulse rounded-xl" style={{ background: 'var(--paper-2)' }} />
             <div className="mb-8 h-5 w-44 animate-pulse rounded-xl" style={{ background: 'var(--paper-2)' }} />
@@ -1015,7 +984,7 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
   }
 
   return (
-    <div className="min-h-screen pb-28 md:pb-0" style={{ background: 'var(--paper)' }}>
+    <div className="min-h-[100svh] pb-28 md:pb-0" style={{ background: 'var(--paper)' }}>
       <div className="mx-auto max-w-6xl px-4 py-5 md:px-6 md:py-10">
 
         {/* Header */}
@@ -1031,8 +1000,8 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
             )}
           </div>
 
-          {step !== 'cart' && (
-            <button onClick={() => setStep(step === 'review' ? 'checkout' : 'cart')}
+          {canGoBack && (
+            <button onClick={back}
               className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-bold transition-colors"
               style={{ borderColor: 'var(--line)', background: 'var(--paper)', color: 'var(--mute)' }}>
               <svg className={`w-4 h-4 ${isRTL ? '' : 'rotate-180'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1128,7 +1097,7 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
           </div>
 
           {/* Right: Summary */}
-          <div className="w-full lg:col-span-2 lg:sticky lg:top-24">
+          <CartOrderSummaryModule>
             <OrderSummaryCard
               cart={cart} subtotal={subtotal} discount={discount} taxAmount={taxAmount}
               showTaxRow={showTaxRow} taxRatePercent={taxRatePercent}
@@ -1144,7 +1113,7 @@ export default function CartPageClient({ initialStep = 'cart' }: CartPageClientP
               selectedAddr={selectedAddr} t={t} locale={locale as string}
               isRTL={isRTL} orderError={orderError}
             />
-          </div>
+          </CartOrderSummaryModule>
         </div>
       </div>
 

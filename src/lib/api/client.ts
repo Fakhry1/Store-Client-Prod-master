@@ -24,6 +24,7 @@ type RequestOptions = {
   signal?: AbortSignal
   credentials?: RequestCredentials
   cacheMode?: RequestCache
+  cacheStrategy?: 'semi-static' | 'realtime'
   timeoutMs?: number
 }
 
@@ -62,10 +63,16 @@ function toPascalCase(obj: unknown): unknown {
 
 export async function apiRequest<T>(
   path: string,
-  { method = 'GET', body, token, signal, credentials, cacheMode, timeoutMs = 8000 }: RequestOptions = {}
+  { method = 'GET', body, token, signal, credentials, cacheMode, cacheStrategy, timeoutMs = 8000 }: RequestOptions = {}
 ): Promise<T> {
   const headers: Record<string, string> = {}
-  const defaultCacheMode = 'no-store'
+  const normalizedMethod = method.toUpperCase()
+  const defaultCacheMode: RequestCache =
+    cacheStrategy === 'realtime'
+      ? 'no-store'
+      : normalizedMethod === 'GET'
+        ? 'force-cache'
+        : 'no-store'
   const controller = new AbortController()
   const finalSignal = combineAbortSignals(signal, controller.signal)
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
@@ -83,12 +90,12 @@ export async function apiRequest<T>(
   const baseUrl = getBaseUrl()
 
   if (process.env.NODE_ENV === 'development') {
-    console.log(`-> API [${method}] ${baseUrl}${path}`)
+    console.log(`-> API [${normalizedMethod}] ${baseUrl}${path}`)
   }
 
   try {
     const res = await fetch(`${baseUrl}${path}`, {
-      method,
+      method: normalizedMethod,
       headers,
       credentials: credentials ?? (usesCookieSession ? 'include' : 'omit'),
       body: body ? JSON.stringify(toPascalCase(body)) : undefined,

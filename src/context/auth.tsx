@@ -79,8 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let timer: any
+    let timer: number | undefined
 
     async function bootstrapAuth() {
       if (!hasAuthHint()) {
